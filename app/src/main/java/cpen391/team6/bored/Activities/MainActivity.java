@@ -8,6 +8,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -92,6 +93,13 @@ public class MainActivity extends AppCompatActivity {
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
         if (mDrawerToggle.onOptionsItemSelected(item)) {
+
+            /* If the create note fragment is active, we have to manually open the drawer as
+             * swipe gesture activation would have been disabled
+             */
+            if(getSupportFragmentManager().findFragmentByTag("create_note").isVisible())
+                mDrawerLayout.openDrawer(Gravity.LEFT);
+
             return true;
         }
 
@@ -143,10 +151,15 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void lockDrawer(){
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+    }
+
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             selectItem(position);
         }
     }
+
 }

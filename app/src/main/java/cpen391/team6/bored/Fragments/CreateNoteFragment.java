@@ -4,9 +4,11 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import cpen391.team6.bored.Activities.MainActivity;
 import cpen391.team6.bored.R;
 
 /**
@@ -31,8 +33,19 @@ public class CreateNoteFragment extends Fragment {
         /* Ensure that the fragment is displayed in landscape mode */
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
+        /* We don't want to interfere with the drawing space so disable gesture activation of the
+         * drawer layout
+         */
+        ((MainActivity) getActivity()).lockDrawer();
+
 
         return view;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+
+        return true;
     }
 
 }
