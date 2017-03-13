@@ -98,7 +98,11 @@ public class MainActivity extends AppCompatActivity {
              * swipe gesture activation would have been disabled
              */
             if(getSupportFragmentManager().findFragmentByTag("create_note").isVisible())
-                mDrawerLayout.openDrawer(Gravity.LEFT);
+                if(!mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+                    mDrawerLayout.openDrawer(Gravity.LEFT);
+                }else{
+                    mDrawerLayout.closeDrawer(Gravity.LEFT);
+                }
 
             return true;
         }
