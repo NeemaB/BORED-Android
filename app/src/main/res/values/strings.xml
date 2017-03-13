@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Bored</string>
+    <string-array name="drawer_list_array">
+        <item>View Notes</item>
+        <item>Create Notes</item>
+        <item>Settings</item>
+    </string-array>
+
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
 </resources>

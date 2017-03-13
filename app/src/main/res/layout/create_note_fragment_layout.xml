@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/drawing_space"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="7">
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:orientation="vertical"
+        android:background="@color/colorPrimary"
+        android:layout_height="match_parent"
+        android:layout_weight="1">
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:layout_width="match_parent"
+            android:paddingTop="8dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:textColor="@color/colorSecondary"
+            android:layout_weight="1"
+            android:text="{entypo-colours}"
+            android:textSize="30sp"/>
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textColor="@color/colorSecondary"
+            android:gravity="center"
+            android:text="{fa-paint-brush}"
+            android:textSize="30sp"/>
+
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textColor="@color/colorSecondary"
+            android:gravity="center"
+            android:text="{md-redo}"
+            android:textSize="30sp"/>
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textColor="@color/colorSecondary"
+            android:gravity="center"
+            android:text="{md-undo}"
+            android:textSize="30sp"/>
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textColor="@color/colorSecondary"
+            android:gravity="center"
+            android:text="{md-format-color-fill}"
+            android:textSize="30sp"/>
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:paddingTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textColor="@color/colorSecondary"
+            android:gravity="center"
+            android:text="{md-wrap-text}"
+            android:textSize="30sp"/>
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:textColor="@color/colorSecondary"
+            android:gravity="center"
+            android:text="{md-delete}"
+            android:textSize="30sp"/>
+
+    </LinearLayout>
+
+</LinearLayout>
