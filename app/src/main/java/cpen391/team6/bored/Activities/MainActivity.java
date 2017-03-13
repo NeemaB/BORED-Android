@@ -1,8 +1,9 @@
 package cpen391.team6.bored.Activities;
 
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -97,11 +98,14 @@ public class MainActivity extends AppCompatActivity {
             /* If the create note fragment is active, we have to manually open the drawer as
              * swipe gesture activation would have been disabled
              */
-            if(getSupportFragmentManager().findFragmentByTag("create_note").isVisible())
-                if(!mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
-                    mDrawerLayout.openDrawer(Gravity.LEFT);
-                }else{
-                    mDrawerLayout.closeDrawer(Gravity.LEFT);
+            Fragment fragment = getFragmentManager().findFragmentByTag("create_note");
+            if(fragment != null)
+                if(fragment.isVisible()) {
+                    if (!mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+                        mDrawerLayout.openDrawer(Gravity.LEFT);
+                    } else {
+                        mDrawerLayout.closeDrawer(Gravity.LEFT);
+                    }
                 }
 
             return true;
@@ -120,13 +124,13 @@ public class MainActivity extends AppCompatActivity {
 
         /* Create a new fragment and specify the view to show depending on which option is chosen */
         Fragment fragment = null;
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
         switch(position){
 
             case 1:
             /* First check to see if a fragment exists before we create a new one */
-            fragment = getSupportFragmentManager().findFragmentByTag("create_note");
+            fragment = getFragmentManager().findFragmentByTag("create_note");
             if(fragment == null)
                 fragment = new CreateNoteFragment();
 
@@ -143,6 +147,14 @@ public class MainActivity extends AppCompatActivity {
 
             /* Actually make the transition */
             transaction.commit();
+
+            /* We don't want to interfere with the drawing space so disable gesture activation of the
+            * drawer layout
+            */
+            lockDrawer();
+
+            /* Ensure that the fragment is displayed in landscape mode */
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
             break;
         }
