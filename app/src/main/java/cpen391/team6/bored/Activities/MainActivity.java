@@ -17,10 +17,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import cpen391.team6.bored.Fragments.CreateNoteFragment;
+import cpen391.team6.bored.Fragments.ViewNotesFragment;
 import cpen391.team6.bored.R;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Fragment mCurrentFragment;
     private String[] mDrawerTitles;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -68,6 +70,15 @@ public class MainActivity extends AppCompatActivity {
                 R.layout.drawer_list_item, mDrawerTitles));
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+        ViewNotesFragment fragment = new ViewNotesFragment();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.content_frame,
+                fragment,
+                getString(R.string.view_notes_fragment_tag));
+
+        fragmentTransaction.commit();
+        mCurrentFragment = fragment;
     }
 
     @Override
@@ -98,9 +109,11 @@ public class MainActivity extends AppCompatActivity {
             /* If the create note fragment is active, we have to manually open the drawer as
              * swipe gesture activation would have been disabled
              */
-            Fragment fragment = getFragmentManager().findFragmentByTag("create_note");
-            if(fragment != null)
-                if(fragment.isVisible()) {
+            Fragment fragment = getFragmentManager()
+                    .findFragmentByTag(getString(R.string.create_note_fragment_tag));
+
+            if (fragment != null)
+                if (fragment.isVisible()) {
                     if (!mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
                         mDrawerLayout.openDrawer(Gravity.LEFT);
                     } else {
@@ -115,48 +128,85 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed(){
+    public void onBackPressed() {
         super.onBackPressed();
         finish();
     }
 
-    private void selectItem(int position){
+    private void selectItem(int position) {
 
         /* Create a new fragment and specify the view to show depending on which option is chosen */
         Fragment fragment = null;
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-        switch(position){
+        switch (position) {
+
+            case 0:
+
+                /* First check to see if a fragment exists before we create a new one */
+                fragment = getFragmentManager()
+                        .findFragmentByTag(getString(R.string.view_notes_fragment_tag));
+
+                if (fragment == null)
+                    fragment = new ViewNotesFragment();
+
+                /* Replace the current fragment that is being displayed, provide it with a tag so we can
+                 * locate it in the future
+                 */
+                transaction.remove(mCurrentFragment);
+
+                transaction.replace(R.id.content_frame,
+                        fragment,
+                        getString(R.string.view_notes_fragment_tag));
+
+                /* This call is necessary so we don't create a new fragment by default, not sure why */
+                transaction.addToBackStack(null);
+
+                /* Ensure that the fragment is displayed in portrait mode */
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+                /* Actually make the transition */
+                transaction.commit();
+
+                /* Allow swipe activation of drawer
+                */
+                unLockDrawer();
+
+                break;
+
 
             case 1:
             /* First check to see if a fragment exists before we create a new one */
-            fragment = getFragmentManager().findFragmentByTag("create_note");
-            if(fragment == null)
-                fragment = new CreateNoteFragment();
+                fragment = getFragmentManager()
+                        .findFragmentByTag(getString(R.string.create_note_fragment_tag));
 
-            /* Replace the current fragment that is being displayed, provide it with a tag so we can
-             * locate it in the future
-             */
-            transaction.replace(R.id.content_frame, fragment, "create_note");
+                if (fragment == null)
+                    fragment = new CreateNoteFragment();
 
-            /* This call is necessary so we don't create a new fragment by default, not sure why */
-            transaction.addToBackStack(null);
+                /* Replace the current fragment that is being displayed, provide it with a tag so we can
+                 * locate it in the future
+                 */
+                transaction.remove(mCurrentFragment);
 
-            /* allows for smoother transitions between screens */
-            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                transaction.replace(R.id.content_frame,
+                        fragment,
+                        getString(R.string.create_note_fragment_tag));
 
-            /* Actually make the transition */
-            transaction.commit();
+                /* This call is necessary so we don't create a new fragment by default, not sure why */
+                transaction.addToBackStack(null);
 
-            /* We don't want to interfere with the drawing space so disable gesture activation of the
-            * drawer layout
-            */
-            lockDrawer();
+                /* Actually make the transition */
+                transaction.commit();
 
-            /* Ensure that the fragment is displayed in landscape mode */
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                /* We don't want to interfere with the drawing space so disable gesture activation of the
+                * drawer layout
+                */
+                lockDrawer();
 
-            break;
+                /* Ensure that the fragment is displayed in landscape mode */
+                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+                break;
         }
 
         // Highlight the selected item, update the title, and close the drawer
@@ -167,9 +217,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void lockDrawer(){
+    private void lockDrawer() {
         mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
     }
+
+    private void unLockDrawer() {
+        mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
+    }
+
 
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override

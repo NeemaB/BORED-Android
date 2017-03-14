@@ -10,6 +10,10 @@
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
 
+    <!-- Fragment tags -->
+    <string name="view_notes_fragment_tag">view_notes</string>
+    <string name="create_note_fragment_tag">create_note</string>
+
     <!-- Draw Fragment Strings -->
     <string name="clear_confirmation_title">Clear</string>
     <string name="clear_confirmation_message">Are you sure you want to clear the screen?</string>
