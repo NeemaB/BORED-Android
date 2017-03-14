@@ -5,18 +5,16 @@ import android.widget.FrameLayout;
 
 import java.util.EnumSet;
 
+import cpen391.team6.bored.Fragments.DrawerFragment;
 import processing.core.PApplet;
 
 /**
  * Created by neema on 2017-03-13.
  */
-public abstract class ColourMenu extends PopUpMenu{
+public abstract class ColourMenu extends PopUpMenu {
 
 
-    public static int VALID_PRESS_HANDLE = 1; // Set if a press handler can successfully find the corresponding item
-    public static int INVALID_PRESS_HANDLE = 0; // Set if a press handler can't successfully find the corresponding item
-
-    private EnumSet<Colour> colourSet;
+    private EnumSet<Colour> mColourSet;
     private static ColourMenu mColourMenu;
 
     /* Every colour that will be displayed in the colour menu is represented here
@@ -42,25 +40,25 @@ public abstract class ColourMenu extends PopUpMenu{
         WHITE(0xFF, 0xFF, 0xFF, 3, 3);
 
         private ColourRGB colour;
-        public int row;
-        public int coloumn;
+        private int row;
+        private int coloumn;
 
-        private Colour(int colourR, int colourG, int colourB, int row, int coloumn){
+        private Colour(int colourR, int colourG, int colourB, int row, int coloumn) {
             this.colour = new ColourRGB(colourR, colourG, colourB);
             this.row = row;
             this.coloumn = coloumn;
 
         }
 
-        public int getColourR(){
+        public int getColourR() {
             return colour.R;
         }
 
-        public int getColourG(){
+        public int getColourG() {
             return colour.G;
         }
 
-        public int getColourB(){
+        public int getColourB() {
             return colour.B;
         }
 
@@ -75,11 +73,11 @@ public abstract class ColourMenu extends PopUpMenu{
      * @Param int menuHeight, the height of the menu
      */
 
-    public ColourMenu(PApplet drawer, int locX, int locY,
-                      int menuWidth, int menuHeight){
+    public ColourMenu(DrawerFragment drawer, int locX, int locY,
+                      int menuWidth, int menuHeight) {
 
         this.mDrawer = drawer;
-        this.colourSet = EnumSet.allOf(Colour.class);
+        this.mColourSet = EnumSet.allOf(Colour.class);
         this.mWidth = menuWidth;
         this.mHeight = menuHeight;
         this.mLocX = locX;
@@ -89,43 +87,41 @@ public abstract class ColourMenu extends PopUpMenu{
     }
 
     @Override
-    public void drawSelf(){
+    public void drawSelf() {
 
         mDrawer.stroke(0);
+        mDrawer.strokeWeight(1);
 
         /* Draw a rectangle for each colour in our colour set */
-        for(Colour colour : colourSet){
-            mDrawer.fill(colour.getColourR(),
-                            colour.getColourG(),
-                            colour.getColourB());
+        for (Colour colour : mColourSet) {
+            mDrawer.fill(colour);
 
-            mDrawer.rect(this.mLocX + colour.coloumn * mWidth/4,
-                            this.mLocY + colour.row * mHeight/4,
-                            mWidth/4,
-                            mHeight/4);
+            mDrawer.rect(this.mLocX + colour.coloumn * mWidth / 4,
+                    this.mLocY + colour.row * mHeight / 4,
+                    mWidth / 4,
+                    mHeight / 4);
         }
 
 
     }
 
     @Override
-    public void hideSelf(){
+    public void hideSelf() {
 
         /* Set the fill colour and the outline colour to white */
-        mDrawer.fill(255, 255, 255);
+        mDrawer.fill(255);
         mDrawer.stroke(255);
         mDrawer.strokeWeight(5);
 
         /* Draw a white rectangle overtop of the existing ones */
-        for(Colour colour : colourSet){
+        for (Colour colour : mColourSet) {
 
-            mDrawer.rect(this.mLocX + colour.coloumn * mWidth/4,
-                    this.mLocY + colour.row * mHeight/4,
-                    mWidth/4,
-                    mHeight/4);
+            mDrawer.rect(this.mLocX + colour.coloumn * mWidth / 4,
+                    this.mLocY + colour.row * mHeight / 4,
+                    mWidth / 4,
+                    mHeight / 4);
         }
 
-        mDrawer.strokeWeight(1);
 
     }
 
@@ -149,23 +145,22 @@ public abstract class ColourMenu extends PopUpMenu{
      */
 
     @Override
-    public void handlePress(Point loc){
+    public void handlePress(Point loc) {
 
-        for(Colour colour : colourSet){
+        for (Colour colour : mColourSet) {
 
             /* Check if press was within colour bounds */
-            if( loc.locX <= mLocX + (colour.coloumn+1) * mWidth/4
-                && loc.locX >= mLocX + (colour.coloumn) * mWidth/4
-                && loc.locY <= mLocY + (colour.row+1) * mHeight/4
-                && loc.locY >= mLocY + (colour.row) * mHeight/4)
-            {
+            if (loc.locX <= mLocX + (colour.coloumn + 1) * mWidth / 4
+                    && loc.locX >= mLocX + (colour.coloumn) * mWidth / 4
+                    && loc.locY <= mLocY + (colour.row + 1) * mHeight / 4
+                    && loc.locY >= mLocY + (colour.row) * mHeight / 4) {
                 handlePress(colour, VALID_PRESS_HANDLE);
 
             }
         }
 
         /* User pressed a different part of the screen */
-        handlePress(null, INVALID_PRESS_HANDLE );
+        handlePress(null, INVALID_PRESS_HANDLE);
 
 
     }

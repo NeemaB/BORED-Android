@@ -23,7 +23,7 @@ import processing.core.PApplet;
  */
 public class CreateNoteFragment extends Fragment implements View.OnClickListener {
 
-    private PApplet mDrawer;
+    private DrawerFragment mDrawer;
     private FrameLayout mDrawFrame;
 
     private int mDrawFrameWidth;
@@ -143,7 +143,15 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         switch(v.getId()){
 
             case R.id.colour_pallette:
-                ((DrawerFragment) mDrawer).toggleColourMenu();
+                mDrawer.toggleColourMenu();
+                break;
+
+            case R.id.pen_width:
+                mDrawer.togglePenWidthMenu();
+                break;
+
+            case R.id.clear_screen:
+                mDrawer.clearScreen();
         }
 
     }
