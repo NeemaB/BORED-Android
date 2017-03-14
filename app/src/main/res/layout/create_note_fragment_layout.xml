@@ -21,6 +21,7 @@
         android:layout_weight="1">
 
         <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/colour_pallette"
             android:layout_width="match_parent"
             android:paddingTop="8dp"
             android:layout_height="0dp"
@@ -31,6 +32,7 @@
             android:textSize="30sp"/>
 
         <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/pen_width"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -41,6 +43,7 @@
 
 
         <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/redo"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -50,6 +53,7 @@
             android:textSize="30sp"/>
 
         <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/undo"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -59,6 +63,7 @@
             android:textSize="30sp"/>
 
         <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/fill"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -68,6 +73,7 @@
             android:textSize="30sp"/>
 
         <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/text_box"
             android:paddingTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -78,6 +84,7 @@
             android:textSize="30sp"/>
 
         <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/clear_screen"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
