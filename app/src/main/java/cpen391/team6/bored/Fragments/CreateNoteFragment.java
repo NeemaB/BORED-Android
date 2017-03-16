@@ -1,11 +1,18 @@
 package cpen391.team6.bored.Fragments;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.Rect;
 import android.os.Bundle;
+
 
 import android.app.Fragment;
 
 import android.app.FragmentTransaction;
+import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,8 +21,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import com.joanzapata.iconify.widget.IconTextView;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.Buffer;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.LongBuffer;
+import java.nio.ShortBuffer;
 
 import cpen391.team6.bored.Activities.BluetoothActivity;
 import cpen391.team6.bored.BoredApplication;
@@ -28,6 +53,7 @@ import processing.core.PApplet;
  */
 public class CreateNoteFragment extends Fragment implements View.OnClickListener {
 
+    private static String LOG_TAG = "CreateNoteFragment";
     private DrawerFragment mDrawer;
     private FrameLayout mDrawFrame;
 
@@ -43,7 +69,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     private IconTextView mClear;
 
     @Override
-    public void onCreate(Bundle onSavedInstanceState){
+    public void onCreate(Bundle onSavedInstanceState) {
         super.onCreate(onSavedInstanceState);
 
         /* We may want to contribute to the action bar menu */
@@ -52,7 +78,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.create_note_fragment_layout, container, false);
 
@@ -85,7 +111,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
             @Override
             public void onGlobalLayout() {
                 mDrawFrame.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                if(mDrawer == null) {
+                if (mDrawer == null) {
 
                     /* Get Width and add an additional offset, for some reason getWidth()
                      * doesn't provide the full width of the layout
@@ -100,8 +126,14 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     //pass width and height of screen as arguments to launch animation
                     Bundle arguments = new Bundle();
 
-                    arguments.putDouble("width", mDrawFrameWidth);
-                    arguments.putDouble("height", mDrawFrameHeight);
+                    //arguments.putDouble("width", mDrawFrameWidth);
+                   //arguments.putDouble("height", mDrawFrameHeight);
+
+                    //TODO: These values are hardcoded so it will be easier to compress the image on the DE1 side,
+                    //TODO: Need to find a better work around to accomodate variable screen sizes
+
+                    arguments.putDouble("width", 1362);
+                    arguments.putDouble("height", 956);
 
                     mDrawer = new DrawerFragment();
                     mDrawer.setArguments(arguments);
@@ -130,17 +162,20 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item){
+    public boolean onOptionsItemSelected(MenuItem item) {
 
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
 
             case R.id.stream_to_device:
 
                 Intent intent = new Intent(getActivity(), BluetoothActivity.class);
 
-                if(BoredApplication.isConnectedToBluetooth){
+                /* Close the bluetooth connection */
+                if (BoredApplication.isConnectedToBluetooth) {
                     intent.putExtra("bluetooth_request", BluetoothActivity.CLOSE_CONNECTION);
-                }else{
+
+                    /* Open the connection so we can stream data to the bluetooth chip */
+                } else {
                     intent.putExtra("bluetooth_request", BluetoothActivity.OPEN_CONNECTION);
                 }
 
@@ -152,29 +187,33 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu){
+    public void onPrepareOptionsMenu(Menu menu) {
 
         menu.getItem(0).setVisible(true);
         menu.getItem(0).setEnabled(true);
-        if(BoredApplication.isConnectedToBluetooth) {
+
+        /* Depending on whether we are connected to the device
+         * change the title of this option
+         */
+        if (BoredApplication.isConnectedToBluetooth) {
             menu.getItem(0).setTitle(R.string.close_bluetooth_stream);
-        }else{
+        } else {
             menu.getItem(0).setTitle(R.string.open_bluetooth_stream);
         }
 
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
 
     }
 
     @Override
-    public void onClick(View v){
+    public void onClick(View v) {
 
 
-        switch(v.getId()){
+        switch (v.getId()) {
 
             case R.id.colour_pallette:
                 mDrawer.toggleColourMenu();
@@ -186,6 +225,75 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
             case R.id.clear_screen:
                 mDrawer.clearScreen();
+                break;
+
+            case R.id.undo:
+                byte[] pixelData = mDrawer.saveScreen();
+                for(int i = 0; i < 30; i++) {
+                    int data = pixelData[i] & 255;
+                    System.out.println(data);
+                }
+
+                Bitmap bitmap = BitmapFactory.decodeByteArray(pixelData, 0, pixelData.length, new BitmapFactory.Options());
+                if(bitmap == null){
+                    Log.e(LOG_TAG, "Failed to Decode Byte Array");
+                }else{
+                    Log.i(LOG_TAG, "Success, Bitmap Decoded From Byte Array");
+                }
+
+                break;
+
+//                File file = getActivity().getFilesDir();
+//
+//                String path = file.getAbsolutePath();
+//
+//                Log.i(LOG_TAG, "path to files:" + path);
+//
+//                mDrawer.saveFrame(path + "/frame.jpg");
+//
+//                File frame = new File(path + "/frame.jpg");
+//                for (int i = 0; i < file.listFiles().length; i++) {
+//                    String s = file.listFiles()[i].toString();
+//                    long size = file.listFiles()[i].getTotalSpace();
+//                    Log.i(LOG_TAG, "file contained in app directory: " + s);
+//                    Log.i(LOG_TAG, "file contained" + size + "bytes");
+//                }
+//                FileInputStream inputStream = null;
+//                try {
+//                    inputStream = new FileInputStream(frame);
+//                } catch (FileNotFoundException e) {
+//                }
+//
+//                //final BitmapFactory.Options options = new BitmapFactory.Options();
+//                //options.inJustDecodeBounds = true;
+//                BitmapFactory.Options o = new BitmapFactory.Options();
+//                o.inPreferredConfig = Bitmap.Config.ARGB_8888;
+//
+//                Rect rect = new Rect(50, 50, 50, 50);
+//                Bitmap frameBitmap = null;
+//                try {
+//                    frameBitmap = BitmapRegionDecoder.newInstance(inputStream, true).decodeRegion(rect, o);
+//                } catch (IOException e) {
+//                }
+//                Toast.makeText(getActivity(), "Sending frame to bluetooth...", Toast.LENGTH_SHORT).show();
+
+//                int size = frameBitmap.getRowBytes() * frameBitmap.getHeight();
+//                ByteBuffer b = ByteBuffer.allocate(size);
+//
+//                frameBitmap.copyPixelsToBuffer(b);
+
+//                byte[] bytes = new byte[size];
+//
+//                try {
+//                    b.get(bytes, 0, bytes.length);
+//                } catch (BufferUnderflowException e) {
+//                    // always happens
+//                }
+//
+//                //BluetoothActivity.writeToBTDevice(bytes.toString());
+//                System.out.println("bitmap file:" + bytes.toString());
+
+                // do something with byte[]
         }
 
     }

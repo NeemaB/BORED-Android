@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.app.AlertDialog;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 
 import cpen391.team6.bored.Items.ColourMenu;
@@ -17,6 +18,8 @@ import processing.core.PApplet;
  * Created by neema on 2017-03-12.
  */
 public class DrawerFragment extends PApplet {
+
+    public static String LOG_TAG = "Drawer_Fragment";
 
     private int mColourMenuX;
     private int mColourMenuY;
@@ -147,6 +150,7 @@ public class DrawerFragment extends PApplet {
     public void mousePressed() {
 
         switch (mState) {
+
 
             case DRAWING:
 
@@ -319,6 +323,25 @@ public class DrawerFragment extends PApplet {
 
     public ColourMenu.Colour getPenColour() {
         return mPenColour;
+    }
+
+    public byte[] saveScreen(){
+
+        loadPixels();
+
+        long startTime = System.currentTimeMillis();
+
+        byte[] pixelData = new byte[width * height * 3];
+        for(int i = 0; i < 20; i++){
+             pixelData[i*3] =  (byte) ((pixels[i] >> 16) & 255);
+             pixelData[i*3 + 1] =  (byte) ((pixels[i] >> 8) & 255);
+             pixelData[i*3 + 2] =  (byte) (pixels[i] & 255);
+            System.out.println("pixel data at index " + i + pixelData[i] + " " + pixelData[i+1] + " " + pixelData[i+2]);
+        }
+
+        Log.i(LOG_TAG, "Time to write bitmap as byte array:" + (System.currentTimeMillis() - startTime));
+
+        return pixelData;
     }
 
 

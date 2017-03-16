@@ -17,6 +17,7 @@ public abstract class ColourMenu extends PopUpMenu {
     private EnumSet<Colour> mColourSet;
     private static ColourMenu mColourMenu;
 
+
     /* Every colour that will be displayed in the colour menu is represented here
      * each entry has 3 int values representing their RGB values
      */
@@ -92,6 +93,8 @@ public abstract class ColourMenu extends PopUpMenu {
         mDrawer.stroke(0);
         mDrawer.strokeWeight(1);
 
+        saveScreenState();
+
         /* Draw a rectangle for each colour in our colour set */
         for (Colour colour : mColourSet) {
             mDrawer.fill(colour);
@@ -103,24 +106,15 @@ public abstract class ColourMenu extends PopUpMenu {
         }
 
 
+
+
     }
+
 
     @Override
     public void hideSelf() {
 
-        /* Set the fill colour and the outline colour to white */
-        mDrawer.fill(255);
-        mDrawer.stroke(255);
-        mDrawer.strokeWeight(5);
-
-        /* Draw a white rectangle overtop of the existing ones */
-        for (Colour colour : mColourSet) {
-
-            mDrawer.rect(this.mLocX + colour.coloumn * mWidth / 4,
-                    this.mLocY + colour.row * mHeight / 4,
-                    mWidth / 4,
-                    mHeight / 4);
-        }
+        restoreScreenState();
 
 
     }

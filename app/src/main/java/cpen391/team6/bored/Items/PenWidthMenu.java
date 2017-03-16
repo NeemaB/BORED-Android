@@ -46,6 +46,8 @@ public abstract class PenWidthMenu extends PopUpMenu {
         mDrawer.stroke(0);
         mDrawer.strokeWeight(1);
 
+        saveScreenState();
+
         for (PenWidth penWidth : mPenWidthSet) {
 
             mDrawer.fill(ColourMenu.Colour.SLATE_GRAY);
@@ -67,13 +69,7 @@ public abstract class PenWidthMenu extends PopUpMenu {
     @Override
     public void hideSelf() {
 
-        mDrawer.stroke(255);
-        mDrawer.strokeWeight(5);
-
-        mDrawer.fill(ColourMenu.Colour.WHITE);
-        mDrawer.rect(this.mLocX, this.mLocY, mWidth, mHeight);
-
-        mDrawer.strokeWeight(1);
+        restoreScreenState();
 
     }
 
