@@ -12,9 +12,14 @@ import com.joanzapata.iconify.fonts.MaterialModule;
  */
 public class BoredApplication extends Application {
 
+    /* Global variable that the application can set to see if we are connected to the bluetooth chip */
+    public static boolean isConnectedToBluetooth = false;
+
     @Override
     public void onCreate() {
         super.onCreate();
+
+
 
         /* Make use of the following icon bitmap libraries */
         Iconify.

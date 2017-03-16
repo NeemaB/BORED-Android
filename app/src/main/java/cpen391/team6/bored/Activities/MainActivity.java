@@ -1,5 +1,6 @@
 package cpen391.team6.bored.Activities;
 
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.app.Fragment;
@@ -10,11 +11,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import cpen391.team6.bored.Fragments.CreateNoteFragment;
 import cpen391.team6.bored.Fragments.ViewNotesFragment;
@@ -79,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentTransaction.commit();
         mCurrentFragment = fragment;
+
     }
 
     @Override
@@ -98,6 +102,28 @@ public class MainActivity extends AppCompatActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.create_note_fragment_menu, menu);
+
+        menu.getItem(0).setVisible(false);
+        menu.getItem(0).setEnabled(false);
+
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu){
+
+        if(menu != null) {
+            //Hides MenuItem action_edit
+            menu.getItem(0).setVisible(false);
+            menu.getItem(0).setEnabled(false);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -232,5 +258,6 @@ public class MainActivity extends AppCompatActivity {
             selectItem(position);
         }
     }
+
 
 }

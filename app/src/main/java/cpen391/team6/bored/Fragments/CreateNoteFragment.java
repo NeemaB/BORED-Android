@@ -1,11 +1,14 @@
 package cpen391.team6.bored.Fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import android.app.Fragment;
 
 import android.app.FragmentTransaction;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +17,8 @@ import android.widget.FrameLayout;
 
 import com.joanzapata.iconify.widget.IconTextView;
 
+import cpen391.team6.bored.Activities.BluetoothActivity;
+import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Items.ColourMenu;
 import cpen391.team6.bored.R;
 import processing.core.PApplet;
@@ -127,7 +132,36 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
 
+        switch(item.getItemId()){
+
+            case R.id.stream_to_device:
+
+                Intent intent = new Intent(getActivity(), BluetoothActivity.class);
+
+                if(BoredApplication.isConnectedToBluetooth){
+                    intent.putExtra("bluetooth_request", BluetoothActivity.CLOSE_CONNECTION);
+                }else{
+                    intent.putExtra("bluetooth_request", BluetoothActivity.OPEN_CONNECTION);
+                }
+
+                startActivity(intent);
+
+        }
+
         return true;
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu){
+
+        menu.getItem(0).setVisible(true);
+        menu.getItem(0).setEnabled(true);
+        if(BoredApplication.isConnectedToBluetooth) {
+            menu.getItem(0).setTitle(R.string.close_bluetooth_stream);
+        }else{
+            menu.getItem(0).setTitle(R.string.open_bluetooth_stream);
+        }
+
     }
 
     @Override

@@ -21,4 +21,13 @@
     <!-- Miscellaneous -->
     <string name="yes">Yes</string>
     <string name="no">No</string>
+
+    <!--Bluetooth-->
+    <string name="device_name">Team 6</string>
+    <string name="dialog_connecting_bluetooth">Connecting To Bluetooth...</string>
+    <string name="dialog_disconnecting_bluetooth">Disconnecting from Bluetooth...</string>
+    <string name="open_bluetooth_stream">Stream To Bluetooth</string>
+    <string name="close_bluetooth_stream">Close Bluetooth Stream</string>
+
+
 </resources>
