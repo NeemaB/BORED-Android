@@ -1,0 +1,59 @@
+{
+  "project_info": {
+    "project_number": "240266274754",
+    "firebase_url": "https://boredpupil-ceed0.firebaseio.com",
+    "project_id": "boredpupil-ceed0",
+    "storage_bucket": "boredpupil-ceed0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:240266274754:android:d8ec8505003d1ef5",
+        "android_client_info": {
+          "package_name": "cpen391.team6.bored"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "240266274754-f7eohp8h8glnn14cbhcl9rpkfdktiggd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "cpen391.team6.bored",
+            "certificate_hash": "e5abd4868a0d8b785487e2efdf59d7ca5ab2f943"
+          }
+        },
+        {
+          "client_id": "240266274754-dbgnhlbto5il9qkfkib5v6ahdl4e98r9.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "240266274754-f60piqj3qhae3uhkha5frvehist69jma.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBu3nKMlK5gvxq2FqgCsf9M0RoOPX4eFdI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "240266274754-dbgnhlbto5il9qkfkib5v6ahdl4e98r9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

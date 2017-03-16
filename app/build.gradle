@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    buildToolsVersion '25.0.0'
     defaultConfig {
         applicationId "cpen391.team6.bored"
         minSdkVersion 13
@@ -21,13 +21,22 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.joanzapata.iconify:android-iconify-fontawesome:2.2.2'
-    compile 'com.joanzapata.iconify:android-iconify-material:2.2.1' // (v2.0.0)
-    compile 'com.joanzapata.iconify:android-iconify-entypo:2.2.1' // (v3,2015)
+    // (v2.0.0)
+    // (v3,2015)
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:23.4.0'
     compile files('libs/processing-core.jar')
+    compile 'com.joanzapata.iconify:android-iconify-fontawesome:2.2.2'
+    compile 'com.joanzapata.iconify:android-iconify-material:2.2.1'
+    compile 'com.joanzapata.iconify:android-iconify-entypo:2.2.1'
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.google.firebase:firebase-database:10.0.1'
+    compile 'com.google.firebase:firebase-storage:10.0.1'
+    compile 'com.google.firebase:firebase-auth:10.0.1'
     testCompile 'junit:junit:4.12'
 }
+
+
+
+apply plugin: 'com.google.gms.google-services'
