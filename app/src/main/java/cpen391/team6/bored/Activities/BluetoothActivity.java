@@ -78,6 +78,21 @@ public class BluetoothActivity extends Activity {
 
         }
     }
+
+    public static void writeToBTDevice(byte [] bytes){
+        String s = new String("\r\n");
+        byte [] newline = s.getBytes();
+
+       // System.out.println("Sending:" + msgBuffer.toString());
+        try {
+            mmOutStream.write(bytes) ;
+            mmOutStream.write(newline) ;
+        } catch (IOException e) {
+
+        }
+
+
+    }
     public static String readFromBTDevice(){
 
         byte c ;

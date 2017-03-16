@@ -229,17 +229,20 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
             case R.id.undo:
                 byte[] pixelData = mDrawer.saveScreen();
-                for(int i = 0; i < 30; i++) {
-                    int data = pixelData[i] & 255;
-                    System.out.println(data);
-                }
+//                for(int i = 0; i < 30; i++) {
+//                    int data = pixelData[i] & 255;
+//                    System.out.println(data);
+//                }
+                Toast.makeText(getActivity(), "Sending frame to bluetooth...", Toast.LENGTH_SHORT).show();
 
-                Bitmap bitmap = BitmapFactory.decodeByteArray(pixelData, 0, pixelData.length, new BitmapFactory.Options());
-                if(bitmap == null){
-                    Log.e(LOG_TAG, "Failed to Decode Byte Array");
-                }else{
-                    Log.i(LOG_TAG, "Success, Bitmap Decoded From Byte Array");
-                }
+                BluetoothActivity.writeToBTDevice(pixelData);
+
+//                Bitmap bitmap = BitmapFactory.decodeByteArray(pixelData, 0, pixelData.length, new BitmapFactory.Options());
+//                if(bitmap == null){
+//                    Log.e(LOG_TAG, "Failed to Decode Byte Array");
+//                }else{
+//                    Log.i(LOG_TAG, "Success, Bitmap Decoded From Byte Array");
+//                }
 
                 break;
 
@@ -275,7 +278,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 //                    frameBitmap = BitmapRegionDecoder.newInstance(inputStream, true).decodeRegion(rect, o);
 //                } catch (IOException e) {
 //                }
-//                Toast.makeText(getActivity(), "Sending frame to bluetooth...", Toast.LENGTH_SHORT).show();
+//
 
 //                int size = frameBitmap.getRowBytes() * frameBitmap.getHeight();
 //                ByteBuffer b = ByteBuffer.allocate(size);
