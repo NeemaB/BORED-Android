@@ -229,30 +229,31 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 break;
 
             case R.id.undo:
-                final byte[] pixelData = mDrawer.saveScreen();
-
-                int sendSize = 20;
-                final byte [] sendData = new byte[sendSize];
-                for (int i = 0; i < sendSize; i++){
-                    sendData[i] = pixelData[i];
-                }
-//                for(int i = 0; i < 30; i++) {
-//                    int data = pixelData[i] & 255;
-//                    System.out.println(data);
+                break;
+//                final byte[] pixelData = mDrawer.saveScreen();
+//
+//                int sendSize = 20;
+//                final byte [] sendData = new byte[sendSize];
+//                for (int i = 0; i < sendSize; i++){
+//                    sendData[i] = pixelData[i];
 //                }
-
-                if(BoredApplication.isConnectedToBluetooth) {
-                    Toast.makeText(getActivity(), "Sending frame to bluetooth...", Toast.LENGTH_SHORT).show();
-                    Thread thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            BluetoothActivity.writeToBTDevice(sendData);
-                        }
-                    });
-                    thread.start();
-                }else{
-                    Toast.makeText(getActivity(), "Failed to send frame, not connected", Toast.LENGTH_SHORT).show();
-                }
+////                for(int i = 0; i < 30; i++) {
+////                    int data = pixelData[i] & 255;
+////                    System.out.println(data);
+////                }
+//
+//                if(BoredApplication.isConnectedToBluetooth) {
+//                    Toast.makeText(getActivity(), "Sending frame to bluetooth...", Toast.LENGTH_SHORT).show();
+//                    Thread thread = new Thread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            BluetoothActivity.writeToBTDevice(sendData);
+//                        }
+//                    });
+//                    thread.start();
+//                }else{
+//                    Toast.makeText(getActivity(), "Failed to send frame, not connected", Toast.LENGTH_SHORT).show();
+//                }
 
 
 //                Bitmap bitmap = BitmapFactory.decodeByteArray(pixelData, 0, pixelData.length, new BitmapFactory.Options());
@@ -262,7 +263,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 //                    Log.i(LOG_TAG, "Success, Bitmap Decoded From Byte Array");
 //                }
 
-                break;
+
 
 //                File file = getActivity().getFilesDir();
 //

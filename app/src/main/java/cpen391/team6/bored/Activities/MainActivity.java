@@ -73,14 +73,21 @@ public class MainActivity extends AppCompatActivity {
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        ViewNotesFragment fragment = new ViewNotesFragment();
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.content_frame,
-                fragment,
-                getString(R.string.view_notes_fragment_tag));
+        /* Only set the current fragment here on the first onCreate, fragment transactions
+         * should only be handled by the drawer menu from that point onwards otherwise we
+         * get weird UI bugs where the view notes fragment UI is placed on top of the
+         * Create Notes fragment UI
+         */
+        if(savedInstanceState == null) {
+            ViewNotesFragment fragment = new ViewNotesFragment();
+            FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+            fragmentTransaction.add(R.id.content_frame,
+                    fragment,
+                    getString(R.string.view_notes_fragment_tag));
 
-        fragmentTransaction.commit();
-        mCurrentFragment = fragment;
+            fragmentTransaction.commit();
+            mCurrentFragment = fragment;
+        }
 
     }
 
@@ -178,14 +185,10 @@ public class MainActivity extends AppCompatActivity {
                 /* Replace the current fragment that is being displayed, provide it with a tag so we can
                  * locate it in the future
                  */
-                transaction.remove(mCurrentFragment);
 
                 transaction.replace(R.id.content_frame,
                         fragment,
                         getString(R.string.view_notes_fragment_tag));
-
-                /* This call is necessary so we don't create a new fragment by default, not sure why */
-                transaction.addToBackStack(null);
 
                 /* Ensure that the fragment is displayed in portrait mode */
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -214,14 +217,11 @@ public class MainActivity extends AppCompatActivity {
                 /* Replace the current fragment that is being displayed, provide it with a tag so we can
                  * locate it in the future
                  */
-                transaction.remove(mCurrentFragment);
 
                 transaction.replace(R.id.content_frame,
                         fragment,
                         getString(R.string.create_note_fragment_tag));
 
-                /* This call is necessary so we don't create a new fragment by default, not sure why */
-                transaction.addToBackStack(null);
 
                 /* Actually make the transition */
                 transaction.commit();

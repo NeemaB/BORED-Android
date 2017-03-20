@@ -197,6 +197,23 @@ public class DrawerFragment extends PApplet {
     }
 
     public void clearScreen() {
+
+        switch (mState) {
+            case DRAWING:
+                /* Do Nothing */
+                break;
+
+            /* Clear Active Menus */
+            case COLOUR_MENU_ACTIVE:
+                deactivateColourMenu();
+                break;
+            case WIDTH_MENU_ACTIVE:
+                deactivatePenWidthMenu();
+                break;
+
+            //TODO: when other menu items have been implemented, make sure to deactivate active menu items
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(
                 new ContextThemeWrapper(getActivity(), R.style.DialogTheme));
 
