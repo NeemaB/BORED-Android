@@ -75,6 +75,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         /* We may want to contribute to the action bar menu */
         setHasOptionsMenu(true);
 
+
     }
 
     @Override
@@ -126,14 +127,14 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     //pass width and height of screen as arguments to launch animation
                     Bundle arguments = new Bundle();
 
-                    //arguments.putDouble("width", mDrawFrameWidth);
-                   //arguments.putDouble("height", mDrawFrameHeight);
+                    arguments.putDouble("width", mDrawFrameWidth);
+                    arguments.putDouble("height", mDrawFrameHeight);
 
                     //TODO: These values are hardcoded so it will be easier to compress the image on the DE1 side,
                     //TODO: Need to find a better work around to accomodate variable screen sizes
 
-                    arguments.putDouble("width", 1362);
-                    arguments.putDouble("height", 956);
+                    //arguments.putDouble("width", 1362);
+                    //arguments.putDouble("height", 956);
 
                     mDrawer = new DrawerFragment();
                     mDrawer.setArguments(arguments);
@@ -228,14 +229,31 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 break;
 
             case R.id.undo:
-                byte[] pixelData = mDrawer.saveScreen();
+                final byte[] pixelData = mDrawer.saveScreen();
+
+                int sendSize = 20;
+                final byte [] sendData = new byte[sendSize];
+                for (int i = 0; i < sendSize; i++){
+                    sendData[i] = pixelData[i];
+                }
 //                for(int i = 0; i < 30; i++) {
 //                    int data = pixelData[i] & 255;
 //                    System.out.println(data);
 //                }
-                Toast.makeText(getActivity(), "Sending frame to bluetooth...", Toast.LENGTH_SHORT).show();
 
-                BluetoothActivity.writeToBTDevice(pixelData);
+                if(BoredApplication.isConnectedToBluetooth) {
+                    Toast.makeText(getActivity(), "Sending frame to bluetooth...", Toast.LENGTH_SHORT).show();
+                    Thread thread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            BluetoothActivity.writeToBTDevice(sendData);
+                        }
+                    });
+                    thread.start();
+                }else{
+                    Toast.makeText(getActivity(), "Failed to send frame, not connected", Toast.LENGTH_SHORT).show();
+                }
+
 
 //                Bitmap bitmap = BitmapFactory.decodeByteArray(pixelData, 0, pixelData.length, new BitmapFactory.Options());
 //                if(bitmap == null){

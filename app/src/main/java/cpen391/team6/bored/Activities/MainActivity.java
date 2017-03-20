@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Fragment mCurrentFragment;
     private String[] mDrawerTitles;
+    private int mCurrentPosition;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private ListView mDrawerList;
@@ -49,14 +50,12 @@ public class MainActivity extends AppCompatActivity {
             /** Called when a drawer has settled in a completely closed state. */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                setTitle(mTitle);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
             /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                //setTitle(mDrawerTitle);
                 invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
@@ -194,6 +193,9 @@ public class MainActivity extends AppCompatActivity {
                 /* Actually make the transition */
                 transaction.commit();
 
+                mCurrentFragment = fragment;
+
+
                 /* Allow swipe activation of drawer
                 */
                 unLockDrawer();
@@ -224,6 +226,8 @@ public class MainActivity extends AppCompatActivity {
                 /* Actually make the transition */
                 transaction.commit();
 
+                mCurrentFragment = fragment;
+
                 /* We don't want to interfere with the drawing space so disable gesture activation of the
                 * drawer layout
                 */
@@ -237,10 +241,15 @@ public class MainActivity extends AppCompatActivity {
 
         // Highlight the selected item, update the title, and close the drawer
         mDrawerList.setItemChecked(position, true);
-        setTitle(mDrawerTitles[position]);
+        //setTitle(mDrawerTitles[position]);
         mDrawerLayout.closeDrawer(mDrawerList);
 
 
+    }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        //setTitle(mCurrentFragment.getTag());
     }
 
     private void lockDrawer() {

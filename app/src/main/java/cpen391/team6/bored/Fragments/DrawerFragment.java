@@ -6,6 +6,9 @@ import android.support.v4.app.Fragment;
 import android.app.AlertDialog;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import cpen391.team6.bored.Items.ColourMenu;
 import cpen391.team6.bored.Items.PenWidthMenu;
@@ -50,6 +53,10 @@ public class DrawerFragment extends PApplet {
         TEXT_BOX_ACTIVE
     }
 
+    @Override
+    public void onStart(){
+        super.onStart();
+    }
 
     @Override
     public void setup() {

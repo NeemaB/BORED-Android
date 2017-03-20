@@ -15,14 +15,24 @@ public class ViewNotesFragment extends Fragment {
 
 
     @Override
+    public void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+
+    }
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
         View view = inflater.inflate(R.layout.view_notes_fragment_layout, container, false);
 
-
         //TODO: Write code for this fragment in a different branch
 
         return view;
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+
     }
 
 }

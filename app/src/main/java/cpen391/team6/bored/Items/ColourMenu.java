@@ -40,6 +40,7 @@ public abstract class ColourMenu extends PopUpMenu {
         BLACK(0x00, 0x00, 0x00, 3, 2),
         WHITE(0xFF, 0xFF, 0xFF, 3, 3);
 
+
         private ColourRGB colour;
         private int row;
         private int coloumn;
@@ -63,6 +64,11 @@ public abstract class ColourMenu extends PopUpMenu {
             return colour.B;
         }
 
+        public int convertColourToIndex (ColourRGB colour){
+
+            //TODO: Implement this
+            return -1;
+        }
     }
 
     /* Constructor for a colour menu

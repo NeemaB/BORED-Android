@@ -126,7 +126,7 @@ public class BluetoothActivity extends Activity {
                 .setView(R.layout.dialog_progress_bar);
 
         mConnectionDialog = builder.create();
-        mConnectionDialog.setCanceledOnTouchOutside(true);
+        mConnectionDialog.setCanceledOnTouchOutside(false);
         mConnectionDialog.show();
 
         UI_Util.setDialogStyle(mConnectionDialog, this);
