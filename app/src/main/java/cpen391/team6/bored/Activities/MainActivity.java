@@ -22,6 +22,7 @@ import android.widget.Toast;
 import cpen391.team6.bored.Fragments.CreateNoteFragment;
 import cpen391.team6.bored.Fragments.ViewNotesFragment;
 import cpen391.team6.bored.R;
+import cpen391.team6.bored.Utility.UI_Util;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -113,6 +114,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.create_note_fragment_menu, menu);
+
+        UI_Util.setOverflowButtonColor(this, getResources().getColor(R.color.colorSecondary));
 
         menu.getItem(0).setVisible(false);
         menu.getItem(0).setEnabled(false);
