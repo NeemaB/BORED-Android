@@ -23,34 +23,38 @@ public abstract class ColourMenu extends PopUpMenu {
      */
     public enum Colour {
 
-        RED(0xFF, 0x00, 0x00, 0, 0),
-        DARKRED(0x8B, 0x00, 0x00, 0, 1),
-        ORANGE(0xFF, 0xA5, 0x00, 0, 2),
-        PINK(0xFF, 0xC0, 0xCB, 0, 3),
-        TEAL(0x00, 0x80, 0x80, 1, 0),
-        LIME(0x32, 0xCD, 0x32, 1, 1),
-        GREEN(0x00, 0xFF, 0x00, 1, 2),
-        DARK_SEA_GREEN(0x8F, 0xBC, 0x8F, 1, 3),
-        CYAN(0x00, 0xFF, 0xFF, 2, 0),
-        NAVY(0x00, 0x00, 0x80, 2, 1),
-        PURPLE(0x80, 0x00, 0x80, 2, 2),
-        MAGENTA(0xFF, 0x00, 0xFF, 2, 3),
-        CHOCOLATE(0xD2, 0x69, 0x1E, 3, 0),
-        SLATE_GRAY(0x70, 0x80, 0x90, 3, 1),
-        BLACK(0x00, 0x00, 0x00, 3, 2),
-        WHITE(0xFF, 0xFF, 0xFF, 3, 3);
+        RED(0xFF, 0x00, 0x00, 0, 0, 0),
+        DARKRED(0x8B, 0x00, 0x00, 0, 1, 1),
+        ORANGE(0xFF, 0xA5, 0x00, 0, 2, 2),
+        PINK(0xFF, 0xC0, 0xCB, 0, 3, 3),
+        TEAL(0x00, 0x80, 0x80, 1, 0, 4),
+        LIME(0x32, 0xCD, 0x32, 1, 1, 5),
+        GREEN(0x00, 0xFF, 0x00, 1, 2, 6),
+        DARK_SEA_GREEN(0x8F, 0xBC, 0x8F, 1, 3, 7),
+        CYAN(0x00, 0xFF, 0xFF, 2, 0, 8),
+        NAVY(0x00, 0x00, 0x80, 2, 1, 9),
+        PURPLE(0x80, 0x00, 0x80, 2, 2, 10),
+        MAGENTA(0xFF, 0x00, 0xFF, 2, 3, 11),
+        CHOCOLATE(0xD2, 0x69, 0x1E, 3, 0, 12),
+        SLATE_GRAY(0x70, 0x80, 0x90, 3, 1, 13),
+        BLACK(0x00, 0x00, 0x00, 3, 2, 14),
+        WHITE(0xFF, 0xFF, 0xFF, 3, 3, 15);
 
 
         private ColourRGB colour;
         private int row;
         private int coloumn;
+        private int index;
 
-        private Colour(int colourR, int colourG, int colourB, int row, int coloumn) {
+        private Colour(int colourR, int colourG, int colourB, int row, int coloumn, int index) {
             this.colour = new ColourRGB(colourR, colourG, colourB);
             this.row = row;
             this.coloumn = coloumn;
+            this.index = index;
 
         }
+
+        public int getIndex() { return index;}
 
         public int getColourR() {
             return colour.R;

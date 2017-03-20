@@ -10,7 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import cpen391.team6.bored.Activities.BluetoothActivity;
+import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Items.ColourMenu;
+import cpen391.team6.bored.Items.Command;
 import cpen391.team6.bored.Items.PenWidthMenu;
 import cpen391.team6.bored.Items.Point;
 import cpen391.team6.bored.R;
@@ -84,9 +87,22 @@ public class DrawerFragment extends PApplet {
                 mColourMenuWidth, mColourMenuHeight) {
             @Override
             public void handlePress(ColourMenu.Colour colour, int flag) {
-                if (flag == VALID_PRESS_HANDLE)
+                if (flag == VALID_PRESS_HANDLE) {
                     mPenColour = colour;
 
+                    /* If we are streaming to the device, send a command string
+                     * to change the colour on the BORED
+                     */
+                    if(BoredApplication.isConnectedToBluetooth){
+                        String cmd;
+                        cmd = Command.createCommand(
+                                Command.CHANGE_COLOUR,
+                                colour.getIndex());
+
+                        BluetoothActivity.writeToBTDevice(cmd);
+                        Log.i(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
+                    }
+                }
                 deactivateColourMenu();
             }
         };
@@ -128,6 +144,22 @@ public class DrawerFragment extends PApplet {
                     line(mLastLocX, mLastLocY, mouseX, mouseY);
                 }
 
+//                if(BoredApplication.isConnectedToBluetooth){
+//
+//
+//
+//                    Integer [] params = new Integer [4];
+//                    params[0] = mLastLocX;
+//                    params[1] = mLastLocY;
+//                    params[2] = mouseX;
+//                    params[3] = mouseY;
+//
+//                    BluetoothActivity.writeToBTDevice(
+//                            Command.createCommand(
+//                                    Command.DRAW_LINE,
+//                                    params));
+//                }
+
         /* Save the last mouse location */
                 mLastLocX = mouseX;
                 mLastLocY = mouseY;
@@ -164,7 +196,6 @@ public class DrawerFragment extends PApplet {
                 break;
 
             case COLOUR_MENU_ACTIVE:
-
                 /* Handle the press and revert back to our default state */
                 mColourMenu.handlePress(new Point(mouseX, mouseY));
 
