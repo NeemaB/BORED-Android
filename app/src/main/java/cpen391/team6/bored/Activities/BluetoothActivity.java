@@ -218,6 +218,8 @@ public class BluetoothActivity extends Activity {
 
                                     //Toast toast = Toast.makeText(getApplicationContext(), "Connected to bluetooth device and sent sample message!", Toast.LENGTH_SHORT);
                                     //toast.show();
+
+                                    setResult(RESULT_OK);
                                     killActivity();
 
                                 } else if (create_or_close == CLOSE_CONNECTION) {

@@ -58,6 +58,8 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     private DrawerFragment mDrawer;
     private FrameLayout mDrawFrame;
 
+    private static int INIT_REMOTE_SCREEN = 0;
+
     private int mDrawFrameWidth;
     private int mDrawFrameHeight;
 
@@ -179,13 +181,15 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     Log.i(LOG_TAG, "Sent terminate connection command to bluetooth:" + cmd);
 
                     intent.putExtra("bluetooth_request", BluetoothActivity.CLOSE_CONNECTION);
+                    startActivity(intent);
 
                     /* Open the connection so we can stream data to the bluetooth chip */
                 } else {
                     intent.putExtra("bluetooth_request", BluetoothActivity.OPEN_CONNECTION);
+                    startActivityForResult(intent, INIT_REMOTE_SCREEN);
                 }
 
-                startActivity(intent);
+
 
         }
 
@@ -240,6 +244,9 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
             case R.id.redo:
                 mDrawer.redo();
                 break;
+
+            case R.id.fill:
+                mDrawer.toggleFillActive();
 
 //                final byte[] pixelData = mDrawer.saveScreen();
 //

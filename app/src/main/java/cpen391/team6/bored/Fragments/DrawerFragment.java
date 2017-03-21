@@ -1,6 +1,8 @@
 package cpen391.team6.bored.Fragments;
 
+import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.app.AlertDialog;
@@ -221,13 +223,10 @@ public class DrawerFragment extends PApplet {
                     /* Map the current and last point on the android draw space to a point
                      * on the device
                      */
-//                    Point lastLoc = ImageUtil.mapPointToDevice(new Point(mLastLocX, mLastLocY),
-//                            this.width, this.height);
 
                     Point startPoint = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
                             this.width, this.height);
 
-                    //Log.d(LOG_TAG, "lastLoc on the device will be:" + lastLoc.locX + " " + lastLoc.locY);
                     Log.d(LOG_TAG, "Start drawing on the device from:" + startPoint.locX + " " + startPoint.locY);
 
                     /* Create our parameter list out of the new points */
@@ -261,6 +260,31 @@ public class DrawerFragment extends PApplet {
 
             case FILL_ACTIVE:
 
+                //TODO: Implement fill on the android device as well
+
+                if(BoredApplication.isConnectedToBluetooth){
+
+                    /* Map the current and last point on the android draw space to a point
+                     * on the device
+                     */
+                    Point fillPoint = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
+                            this.width, this.height);
+
+                    Log.d(LOG_TAG, "Send fill command to bluetooth at:" + fillPoint.locX + " " + fillPoint.locY);
+
+                    /* Create our parameter list out of the new points */
+                    Integer [] params = new Integer [2];
+                    params[0] = fillPoint.locX;
+                    params[1] = fillPoint.locY;
+
+                    BluetoothActivity.writeToBTDevice(
+                            Command.createCommand(
+                                    Command.FILL,
+                                    params));
+
+                }
+
+                mState = DrawerState.DRAWING;
                 break;
         }
 
@@ -283,6 +307,30 @@ public class DrawerFragment extends PApplet {
         }
 
         mValid = false;
+
+    }
+
+    /*
+     * Initializes the NIOS II screen so that it has the same parameters as
+     *
+     *
+     */
+    public void initRemoteScreen(){
+
+        String cmd;
+        cmd = Command.createCommand(
+                Command.CHANGE_COLOUR,
+                mPenColour.getIndex());
+
+        BluetoothActivity.writeToBTDevice(cmd);
+        Log.d(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
+
+        cmd = Command.createCommand(
+                Command.CHANGE_PEN_WIDTH,
+                mPenWidth.getSize());
+
+        BluetoothActivity.writeToBTDevice(cmd);
+        Log.d(LOG_TAG, "Sent change pen width command to bluetooth:" + cmd);
 
     }
 
@@ -336,6 +384,7 @@ public class DrawerFragment extends PApplet {
         UI_Util.setDialogStyle(clearConfirmationDialog, getActivity());
 
     }
+
     
     public void undo(){
 
@@ -364,6 +413,7 @@ public class DrawerFragment extends PApplet {
         }
 
     }
+
 
     public void toggleColourMenu() {
 
@@ -401,6 +451,16 @@ public class DrawerFragment extends PApplet {
 
         mColourMenu.hideSelf();
         mState = DrawerState.DRAWING;
+
+    }
+
+    public void toggleFillActive(){
+
+        if(mState == DrawerState.FILL_ACTIVE){
+            mState = DrawerState.DRAWING;
+        }else {
+            mState = DrawerState.FILL_ACTIVE;
+        }
 
     }
 
@@ -492,7 +552,6 @@ public class DrawerFragment extends PApplet {
 
         return pixelData;
     }
-
 
     @Override
     public void settings() {

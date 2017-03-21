@@ -1,5 +1,6 @@
 package cpen391.team6.bored.Activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -19,6 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Fragments.CreateNoteFragment;
 import cpen391.team6.bored.Fragments.ViewNotesFragment;
 import cpen391.team6.bored.R;
@@ -249,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
     @Override
     protected void onResume(){
         super.onResume();
