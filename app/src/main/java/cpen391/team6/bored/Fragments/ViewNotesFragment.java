@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 
 import cpen391.team6.bored.R;
 
+
+
 /**
  * Created by neema on 2017-03-14.
  */
@@ -20,7 +22,6 @@ public class ViewNotesFragment extends Fragment {
         View view = inflater.inflate(R.layout.view_notes_fragment_layout, container, false);
 
 
-        //TODO: Write code for this fragment in a different branch
 
         return view;
     }
