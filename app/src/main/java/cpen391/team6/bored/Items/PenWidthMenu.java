@@ -24,7 +24,15 @@ public abstract class PenWidthMenu extends PopUpMenu {
             this.dp = dp;
             this.index = index;
         }
+
+        public int getIndex() { return index;}
+
+        /* The sizes are as follows 0 - 2 where 0 is the smallest and 2 is the largest
+         * so we have to return the inverse of the index
+         */
+        public int getSize(){ return 2 - index; }
     }
+
 
 
     public PenWidthMenu(DrawerFragment drawer, int locX, int locY,

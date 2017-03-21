@@ -77,6 +77,10 @@ public class BluetoothActivity extends Activity {
         } catch (IOException e) {
 
         }
+
+//        try {
+//            Thread.sleep(60);
+//        }catch(InterruptedException e){}
     }
 
     public static void writeToBTDevice(byte [] bytes){

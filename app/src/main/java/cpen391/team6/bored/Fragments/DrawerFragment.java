@@ -17,6 +17,7 @@ import cpen391.team6.bored.Items.Command;
 import cpen391.team6.bored.Items.PenWidthMenu;
 import cpen391.team6.bored.Items.Point;
 import cpen391.team6.bored.R;
+import cpen391.team6.bored.Utility.ImageUtil;
 import cpen391.team6.bored.Utility.UI_Util;
 import processing.core.PApplet;
 
@@ -97,10 +98,10 @@ public class DrawerFragment extends PApplet {
                         String cmd;
                         cmd = Command.createCommand(
                                 Command.CHANGE_COLOUR,
-                                colour.getIndex());
+                                mPenColour.getIndex());
 
                         BluetoothActivity.writeToBTDevice(cmd);
-                        Log.i(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
+                        Log.d(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
                     }
                 }
                 deactivateColourMenu();
@@ -111,9 +112,22 @@ public class DrawerFragment extends PApplet {
                 mPenWidthMenuWidth, mPenWidthMenuHeight) {
             @Override
             public void handlePress(PenWidth penWidth, int flag) {
-                if (flag == VALID_PRESS_HANDLE)
+                if (flag == VALID_PRESS_HANDLE) {
                     mPenWidth = penWidth;
 
+                    /* If we are streaming to the device, send a command string
+                     * to change the pen width on the BORED
+                     */
+                    if (BoredApplication.isConnectedToBluetooth) {
+                        String cmd;
+                        cmd = Command.createCommand(
+                                Command.CHANGE_PEN_WIDTH,
+                                mPenWidth.getSize());
+
+                        BluetoothActivity.writeToBTDevice(cmd);
+                        Log.d(LOG_TAG, "Sent change pen width command to bluetooth:" + cmd);
+                    }
+                }
                 deactivatePenWidthMenu();
 
             }
@@ -142,23 +156,32 @@ public class DrawerFragment extends PApplet {
                     mValid = true;
                 } else {
                     line(mLastLocX, mLastLocY, mouseX, mouseY);
-                }
 
-//                if(BoredApplication.isConnectedToBluetooth){
-//
-//
-//
-//                    Integer [] params = new Integer [4];
-//                    params[0] = mLastLocX;
-//                    params[1] = mLastLocY;
-//                    params[2] = mouseX;
-//                    params[3] = mouseY;
-//
-//                    BluetoothActivity.writeToBTDevice(
-//                            Command.createCommand(
-//                                    Command.DRAW_LINE,
-//                                    params));
-//                }
+                    if(BoredApplication.isConnectedToBluetooth){
+
+                    /* Map the current and last point on the android draw space to a point
+                     * on the device
+                     */
+//                        Point lastLoc = ImageUtil.mapPointToDevice(new Point(mLastLocX, mLastLocY),
+//                                this.width, this.height);
+
+                        Point currentLoc = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
+                                this.width, this.height);
+
+                        //Log.d(LOG_TAG, "lastLoc on the device will be:" + lastLoc.locX + " " + lastLoc.locY);
+                        Log.d(LOG_TAG, "currentLoc on the device will be:" + currentLoc.locX + " " + currentLoc.locY);
+
+                        /* Create our parameter list out of the new points */
+                        Integer [] params = new Integer [2];
+                        params[0] = currentLoc.locX;
+                        params[1] = currentLoc.locY;
+
+                        BluetoothActivity.writeToBTDevice(
+                                Command.createCommand(
+                                        Command.POINT,
+                                        params));
+                    }
+                }
 
         /* Save the last mouse location */
                 mLastLocX = mouseX;
@@ -193,11 +216,37 @@ public class DrawerFragment extends PApplet {
 
             case DRAWING:
 
+                if(BoredApplication.isConnectedToBluetooth){
+
+                    /* Map the current and last point on the android draw space to a point
+                     * on the device
+                     */
+//                    Point lastLoc = ImageUtil.mapPointToDevice(new Point(mLastLocX, mLastLocY),
+//                            this.width, this.height);
+
+                    Point startPoint = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
+                            this.width, this.height);
+
+                    //Log.d(LOG_TAG, "lastLoc on the device will be:" + lastLoc.locX + " " + lastLoc.locY);
+                    Log.d(LOG_TAG, "Start drawing on the device from:" + startPoint.locX + " " + startPoint.locY);
+
+                    /* Create our parameter list out of the new points */
+                    Integer [] params = new Integer [2];
+                    params[0] = startPoint.locX;
+                    params[1] = startPoint.locY;
+
+                    BluetoothActivity.writeToBTDevice(
+                            Command.createCommand(
+                                    Command.START_DRAWING,
+                                    params));
+                }
+
                 break;
 
             case COLOUR_MENU_ACTIVE:
                 /* Handle the press and revert back to our default state */
                 mColourMenu.handlePress(new Point(mouseX, mouseY));
+
 
                 break;
 
@@ -224,7 +273,17 @@ public class DrawerFragment extends PApplet {
         /* InValidate last location since we don't want to draw a line
          * as soon as the user presses the screen again
          */
+
+        if(BoredApplication.isConnectedToBluetooth){
+
+            BluetoothActivity.writeToBTDevice(
+                    Command.createCommand(
+                            Command.STOP_DRAWING));
+
+        }
+
         mValid = false;
+
     }
 
     public void clearScreen() {
@@ -254,6 +313,13 @@ public class DrawerFragment extends PApplet {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         background(255);
+                        if(BoredApplication.isConnectedToBluetooth){
+                            String cmd;
+                            cmd = Command.createCommand(Command.CLEAR);
+                            BluetoothActivity.writeToBTDevice(cmd);
+                            Log.d(LOG_TAG, "Sent clear screen command to bluetooth:" + cmd);
+
+                        }
                         dialog.dismiss();
                     }
                 }).setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
@@ -268,6 +334,34 @@ public class DrawerFragment extends PApplet {
         clearConfirmationDialog.show();
 
         UI_Util.setDialogStyle(clearConfirmationDialog, getActivity());
+
+    }
+    
+    public void undo(){
+
+        //TODO: Implement this on the android device, currently it just sends commands to NIOS
+
+        if(BoredApplication.isConnectedToBluetooth){
+            String cmd;
+            cmd = Command.createCommand(Command.UNDO);
+            BluetoothActivity.writeToBTDevice(cmd);
+            Log.d(LOG_TAG, "Sent undo command to device:" + cmd);
+            
+        }
+        
+    }
+
+    public void redo(){
+
+        //TODO: Implement this on the android device, currently it just sends commands to NIOS
+
+        if(BoredApplication.isConnectedToBluetooth){
+            String cmd;
+            cmd = Command.createCommand(Command.REDO);
+            BluetoothActivity.writeToBTDevice(cmd);
+            Log.d(LOG_TAG, "Sent redo command to device:" + cmd);
+
+        }
 
     }
 
@@ -394,7 +488,7 @@ public class DrawerFragment extends PApplet {
             System.out.println("pixel data at index " + i + pixelData[i] + " " + pixelData[i+1] + " " + pixelData[i+2]);
         }
 
-        Log.i(LOG_TAG, "Time to write bitmap as byte array:" + (System.currentTimeMillis() - startTime));
+        Log.d(LOG_TAG, "Time to write bitmap as byte array:" + (System.currentTimeMillis() - startTime));
 
         return pixelData;
     }

@@ -8,7 +8,9 @@ public enum Command {
     /* List of commands that we can send to BORED */
     CHANGE_COLOUR,
     CHANGE_PEN_WIDTH,
-    DRAW_LINE,
+    START_DRAWING,
+    POINT,
+    STOP_DRAWING,
     FILL,
     REDO,
     UNDO,
@@ -40,7 +42,7 @@ public enum Command {
                 command = "S" + params[0].toString();
                 break;
 
-            case DRAW_LINE:
+            case START_DRAWING:
 
                 /* Send the 'D' character accompanied with the X and Y co-ordinates of the
                  * old point and the new point to draw the line between
@@ -60,6 +62,31 @@ public enum Command {
                     command += params[j].toString();
                 }
                 break;
+
+            case POINT:
+
+                /* Send the 'P' character accompanied with the X and Y co-ordinates of the
+                 * first point to start drawing lines from
+                 */
+                command = "P";
+
+                for(int j = 0; j < params.length; j++) {
+                    for (int i = 0; i < 3 - params[j].toString().length(); i++) {
+                        command += "0";
+                    }
+                    command += params[j].toString();
+                }
+                break;
+
+            case STOP_DRAWING:
+
+                /* Send the 'L' character to indicate that this is the last point to draw
+                 * on the NIOS II
+                 */
+
+                command = "L";
+                break;
+
 
             case FILL:
 

@@ -15,6 +15,7 @@ public class BoredApplication extends Application {
     /* Global variable that the application can set to see if we are connected to the bluetooth chip */
     public static boolean isConnectedToBluetooth = false;
 
+    /* Global variables for the width and height of the actual device in pixels */
     public static int boredScreenWidth = 681;
     public static int boredScreenHeight = 478;
 

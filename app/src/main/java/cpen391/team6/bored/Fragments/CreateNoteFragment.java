@@ -45,6 +45,7 @@ import java.nio.ShortBuffer;
 import cpen391.team6.bored.Activities.BluetoothActivity;
 import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Items.ColourMenu;
+import cpen391.team6.bored.Items.Command;
 import cpen391.team6.bored.R;
 import processing.core.PApplet;
 
@@ -173,6 +174,10 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
                 /* Close the bluetooth connection */
                 if (BoredApplication.isConnectedToBluetooth) {
+                    String cmd = Command.createCommand(Command.TERMINATE);
+                    BluetoothActivity.writeToBTDevice(cmd);
+                    Log.i(LOG_TAG, "Sent terminate connection command to bluetooth:" + cmd);
+
                     intent.putExtra("bluetooth_request", BluetoothActivity.CLOSE_CONNECTION);
 
                     /* Open the connection so we can stream data to the bluetooth chip */
@@ -229,7 +234,13 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 break;
 
             case R.id.undo:
+                mDrawer.undo();
                 break;
+
+            case R.id.redo:
+                mDrawer.redo();
+                break;
+
 //                final byte[] pixelData = mDrawer.saveScreen();
 //
 //                int sendSize = 20;
