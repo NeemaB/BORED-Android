@@ -18,9 +18,11 @@ public abstract class ColourMenu extends PopUpMenu {
     private static ColourMenu mColourMenu;
 
 
-    /* Every colour that will be displayed in the colour menu is represented here
+    /***********************************************************************************************
+     * Every colour that will be displayed in the colour menu is represented here
      * each entry has 3 int values representing their RGB values
-     */
+     *
+     **********************************************************************************************/
     public enum Colour {
 
         RED(0xFF, 0x00, 0x00, 0, 0, 0),
@@ -29,8 +31,8 @@ public abstract class ColourMenu extends PopUpMenu {
         PINK(0xFF, 0xC0, 0xCB, 0, 3, 3),
         TEAL(0xFF, 0xFF, 0x00, 1, 0, 4),
         LIME(0x32, 0xCD, 0x32, 1, 1, 5),
-        GREEN(0x00, 0xFF, 0x00, 1, 2, 6),
-        DARK_SEA_GREEN(0x8F, 0xBC, 0x8F, 1, 3, 7),
+        DARK_SEA_GREEN(0x8F, 0xBC, 0x8F, 1, 3, 6),
+        GREEN(0x00, 0xFF, 0x00, 1, 2, 7),
         CYAN(0x00, 0xFF, 0xFF, 2, 0, 8),
         NAVY(0x00, 0x00, 0x80, 2, 1, 9),
         PURPLE(0x80, 0x00, 0x80, 2, 2, 10),
@@ -75,14 +77,15 @@ public abstract class ColourMenu extends PopUpMenu {
         }
     }
 
-    /* Constructor for a colour menu
+    /**********************************************************************************************
+     * Constructor for a colour menu
      *
      * @Param PApplet drawer, this will be the drawer used for subsequent draw events
      * @Param int locX, the x location of this menu in the draw space
      * @Param int locY, the y location of this menu in the draw space
      * @Param int menuWidth, the width of the menu
      * @Param int menuHeight, the height of the menu
-     */
+     **********************************************************************************************/
 
     public ColourMenu(DrawerFragment drawer, int locX, int locY,
                       int menuWidth, int menuHeight) {
@@ -129,24 +132,24 @@ public abstract class ColourMenu extends PopUpMenu {
 
     }
 
-    /*
+    /***********************************************************************************************
      * This function can be handled by the draw fragment itself
      * the only part handled in this class is the identification of the colour
      * that was picked from the menu
      *
-     * @param Colour colour, the colour that was chosen, null if no colour was chosen
-     * @param int flag, a flag indicating whether a colour was chosen or not
+     * @param colour, the colour that was chosen, null if no colour was chosen
+     * @param flag, a flag indicating whether a colour was chosen or not
      *
-     */
+     **********************************************************************************************/
     public abstract void handlePress(Colour colour, int flag);
 
 
-    /*
+    /**********************************************************************************************
      * Find which colour, if any was chosen, relay to the
      * drawer implemented press handler
      *
-     * @param Point loc, location of a press, this must be passed from the drawer fragment
-     */
+     * @param loc, location of a press, this must be passed from the drawer fragment
+     **********************************************************************************************/
 
     @Override
     public void handlePress(Point loc) {

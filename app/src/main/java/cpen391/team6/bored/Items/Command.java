@@ -17,6 +17,17 @@ public enum Command {
     CLEAR,
     TERMINATE;
 
+    /***********************************************************************************************
+     * Construct the string representation of a command, any command data sent to the NIOS II will
+     * be in a format dictated by this function
+     *
+     * @param cmd The command that we want to issue, this will be selected from the list of commands
+     *            above
+     *
+     * @param params A variable size array containing all the additional parameters that we need
+     *               to issue the command ie pixel co-ordinates or indices
+     * @return
+     **********************************************************************************************/
     public static String createCommand(Command cmd, Object ... params){
 
         String command = null;

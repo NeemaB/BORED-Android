@@ -64,6 +64,11 @@ public class DrawerFragment extends PApplet {
         super.onStart();
     }
 
+    /***********************************************************************************************
+     * Initialize our drawer parameters, setup the draw space and provide implementations for the
+     * press handlers provided by the pop up menu classes
+     *
+     **********************************************************************************************/
     @Override
     public void setup() {
 
@@ -83,7 +88,6 @@ public class DrawerFragment extends PApplet {
         mPenWidth = PenWidthMenu.PenWidth.SMALL;
         mPenColour = ColourMenu.Colour.BLACK;
         mState = DrawerState.DRAWING;
-
 
         /* Create the color menu and implement the press handler */
         mColourMenu = new ColourMenu(this, mColourMenuX, mColourMenuY,
@@ -146,6 +150,7 @@ public class DrawerFragment extends PApplet {
     @Override
     public void mouseDragged() {
 
+        /* Perform a different action depending on what state we are in */
         switch (mState) {
 
             case DRAWING:
@@ -161,16 +166,13 @@ public class DrawerFragment extends PApplet {
 
                     if(BoredApplication.isConnectedToBluetooth){
 
-                    /* Map the current and last point on the android draw space to a point
-                     * on the device
-                     */
-//                        Point lastLoc = ImageUtil.mapPointToDevice(new Point(mLastLocX, mLastLocY),
-//                                this.width, this.height);
+                       /* Map the current point on the android draw space to a point
+                        * on the device
+                        */
 
                         Point currentLoc = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
                                 this.width, this.height);
 
-                        //Log.d(LOG_TAG, "lastLoc on the device will be:" + lastLoc.locX + " " + lastLoc.locY);
                         Log.d(LOG_TAG, "currentLoc on the device will be:" + currentLoc.locX + " " + currentLoc.locY);
 
                         /* Create our parameter list out of the new points */
@@ -178,6 +180,7 @@ public class DrawerFragment extends PApplet {
                         params[0] = currentLoc.locX;
                         params[1] = currentLoc.locY;
 
+                        /* Specify a new point that the NIOS II can draw to */
                         BluetoothActivity.writeToBTDevice(
                                 Command.createCommand(
                                         Command.POINT,
@@ -185,7 +188,7 @@ public class DrawerFragment extends PApplet {
                     }
                 }
 
-        /* Save the last mouse location */
+                /* Save the current mouse position for future line drawing */
                 mLastLocX = mouseX;
                 mLastLocY = mouseY;
                 break;
@@ -213,6 +216,7 @@ public class DrawerFragment extends PApplet {
     @Override
     public void mousePressed() {
 
+        /* Perform a different action depending on what state we are in */
         switch (mState) {
 
 
@@ -223,7 +227,6 @@ public class DrawerFragment extends PApplet {
                     /* Map the current and last point on the android draw space to a point
                      * on the device
                      */
-
                     Point startPoint = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
                             this.width, this.height);
 
@@ -234,6 +237,7 @@ public class DrawerFragment extends PApplet {
                     params[0] = startPoint.locX;
                     params[1] = startPoint.locY;
 
+                    /* Indicate to the NIOS II that we are starting to draw */
                     BluetoothActivity.writeToBTDevice(
                             Command.createCommand(
                                     Command.START_DRAWING,
@@ -277,6 +281,7 @@ public class DrawerFragment extends PApplet {
                     params[0] = fillPoint.locX;
                     params[1] = fillPoint.locY;
 
+                    /* Tell NIOS II to fill in around the point specified in the parameter list */
                     BluetoothActivity.writeToBTDevice(
                             Command.createCommand(
                                     Command.FILL,
@@ -284,6 +289,7 @@ public class DrawerFragment extends PApplet {
 
                 }
 
+                /* Set the DrawerState back to DRAWING */
                 mState = DrawerState.DRAWING;
                 break;
         }
@@ -294,30 +300,33 @@ public class DrawerFragment extends PApplet {
     @Override
     public void mouseReleased() {
 
-        /* InValidate last location since we don't want to draw a line
-         * as soon as the user presses the screen again
-         */
-
         if(BoredApplication.isConnectedToBluetooth){
 
+            /* Tell NIOS II to stop drawing now */
             BluetoothActivity.writeToBTDevice(
                     Command.createCommand(
                             Command.STOP_DRAWING));
 
         }
 
+        /* InValidate last location since we don't want to draw a line
+         * as soon as the user presses the screen again
+         */
+
         mValid = false;
 
     }
 
-    /*
+    /*********************************************************************************************
      * Initializes the NIOS II screen so that it has the same parameters as
+     * the current drawer, we need to send the pen colour and pen size
      *
-     *
-     */
+     *********************************************************************************************/
     public void initRemoteScreen(){
 
         String cmd;
+
+        /* Set the pen colour on NIOS II */
         cmd = Command.createCommand(
                 Command.CHANGE_COLOUR,
                 mPenColour.getIndex());
@@ -325,6 +334,7 @@ public class DrawerFragment extends PApplet {
         BluetoothActivity.writeToBTDevice(cmd);
         Log.d(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
 
+        /* Set the pen size on the NIOS II */
         cmd = Command.createCommand(
                 Command.CHANGE_PEN_WIDTH,
                 mPenWidth.getSize());
@@ -334,6 +344,12 @@ public class DrawerFragment extends PApplet {
 
     }
 
+    /***********************************************************************************************
+     * Notify the user that the drawing space will be cleared, then clear it if the user confirms.
+     * This function will also clear the drawing space on the NIOS II if there is an active
+     * bluetooth session
+     *
+     **********************************************************************************************/
     public void clearScreen() {
 
         switch (mState) {
@@ -385,7 +401,15 @@ public class DrawerFragment extends PApplet {
 
     }
 
-    
+    /**********************************************************************************************
+     * Clear the last sequence of drawn lines from the draw space. A sequence is considered to be
+     * every line drawn between when the user first touches the screen and when the user lets go
+     * of the screen.
+     *
+     * Note: This function will also undo the sequence of lines drawn on the NIOS II if there is an
+     * active bluetooth session
+     *
+     **********************************************************************************************/
     public void undo(){
 
         //TODO: Implement this on the android device, currently it just sends commands to NIOS
@@ -400,6 +424,13 @@ public class DrawerFragment extends PApplet {
         
     }
 
+    /**********************************************************************************************
+     * Redraw the last sequence of drawn lines that was cleared with Undo
+     *
+     * Note: This function will also clear the drawing space on the NIOS II if there is an active
+     * bluetooth session
+     *
+     **********************************************************************************************/
     public void redo(){
 
         //TODO: Implement this on the android device, currently it just sends commands to NIOS
@@ -415,6 +446,11 @@ public class DrawerFragment extends PApplet {
     }
 
 
+    /**********************************************************************************************
+     * This function will toggle the colour menu state, if it is currently visible it will be hidden
+     * and deactivated, otherwise it will be shown and active
+     *
+     **********************************************************************************************/
     public void toggleColourMenu() {
 
         switch (mState) {
@@ -434,9 +470,9 @@ public class DrawerFragment extends PApplet {
 
     }
 
-    /*
+    /**********************************************************************************************
      * Change our current state and draw the colour menu
-     */
+     **********************************************************************************************/
     private void activateColourMenu() {
 
         mColourMenu.drawSelf();
@@ -444,9 +480,9 @@ public class DrawerFragment extends PApplet {
 
     }
 
-    /*
+    /***********************************************************************************************
      * Change our current state and hide the colour menu
-     */
+     **********************************************************************************************/
     private void deactivateColourMenu() {
 
         mColourMenu.hideSelf();
@@ -454,6 +490,9 @@ public class DrawerFragment extends PApplet {
 
     }
 
+    /**********************************************************************************************
+     * Toggles the fill feature
+     **********************************************************************************************/
     public void toggleFillActive(){
 
         if(mState == DrawerState.FILL_ACTIVE){
@@ -464,6 +503,9 @@ public class DrawerFragment extends PApplet {
 
     }
 
+    /***********************************************************************************************
+     * Toggles the state of the pen width menu
+     **********************************************************************************************/
     public void togglePenWidthMenu() {
 
         switch (mState) {
@@ -495,30 +537,30 @@ public class DrawerFragment extends PApplet {
         mState = DrawerState.DRAWING;
     }
 
-    /*
+    /**********************************************************************************************
      * Fill function that is compatible with our own
      * enumerated type for colour
-     */
+     **********************************************************************************************/
     public void fill(ColourMenu.Colour colour) {
         fill(colour.getColourR(),
                 colour.getColourG(),
                 colour.getColourB());
     }
 
-    /*
+    /**********************************************************************************************
      * Stroke function that is compatible with our own
      * enumerated type for colour
-     */
+     **********************************************************************************************/
     public void stroke(ColourMenu.Colour colour) {
         stroke(colour.getColourR(),
                 colour.getColourG(),
                 colour.getColourB());
     }
 
-    /*
+    /**********************************************************************************************
      * Background function that is compatible with our own
      * enumerated type for colour
-     */
+     **********************************************************************************************/
     public void background(ColourMenu.Colour colour) {
         background(colour.getColourR(),
                 colour.getColourG(),
@@ -534,6 +576,19 @@ public class DrawerFragment extends PApplet {
         return mPenColour;
     }
 
+    /***********************************************************************************************
+     * Function to save the screen state using a byte array
+     *
+     * @return a byte array with the following format
+     *
+     *  byte[i + 0] = value of R colour
+     *  byte[i + 1] = value of G colour
+     *  byte[i + 2] = value of B colour
+     *
+     *  The pixel location can be determined by the index
+     *  y = i / mWidth
+     *  x = i % mWidth
+     **********************************************************************************************/
     public byte[] saveScreen(){
 
         loadPixels();

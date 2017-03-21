@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 import cpen391.team6.bored.R;
 
@@ -17,7 +18,12 @@ import cpen391.team6.bored.R;
  */
 public class UI_Util {
 
-    // Set title divider color and text color
+    /**********************************************************************************************
+     * Set title divider color and text color of a dialog
+     *
+     * @param dialog The dialog that we want to style
+     * @param context A valid context that will allow us to access the devices resources
+     **********************************************************************************************/
     public static void setDialogStyle(Dialog dialog, Context context) {
         int titleDividerId = context.getResources().getIdentifier("titleDivider", "id", "android");
         View titleDivider = dialog.findViewById(titleDividerId);
@@ -27,7 +33,13 @@ public class UI_Util {
 
     }
 
-    /* Style the overflow menu icon */
+    /**********************************************************************************************
+     *  Set the colour of the overflow menu to the desired color
+     *
+     *  @param activity An activity that is currently alive
+     *  @param color An integer representation of a color
+     *
+     **********************************************************************************************/
     public static void setOverflowButtonColor(final Activity activity, final int color) {
         final String overflowDescription = activity.getString(R.string.abc_action_menu_overflow_description);
         final ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();

@@ -22,6 +22,11 @@ public abstract class PopUpMenu {
     protected int mHeight;
     protected DrawerFragment mDrawer;
 
+    /**********************************************************************************************
+     * Function to save the state of the screen below where the pop up menu will be displayed
+     * (so we can restore it later)
+     *
+     **********************************************************************************************/
     protected void saveScreenState(){
 
         mScreenState = new int [mWidth * mHeight];
@@ -40,6 +45,11 @@ public abstract class PopUpMenu {
         }
     }
 
+    /***********************************************************************************************
+     * Function to restore the state of the screen so that what was visible before the pop up menu
+     * was drawn will be shown again. Should be invoked whenever the pop up menu is deactivated
+     *
+     **********************************************************************************************/
     protected void restoreScreenState(){
 
         int cursor = mLocX;

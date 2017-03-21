@@ -8,6 +8,16 @@ import cpen391.team6.bored.Items.Point;
  */
 public class ImageUtil {
 
+    /***********************************************************************************************
+     * Performs a simple map of a point on one screen with resolution A X B to a point on another
+     * screen with resolution C X D
+     *
+     * Hardcoded to work with the current resolution of the LCD display on the NIOS II
+     *
+     * @param point A point on the screen we want to map from
+     * @param drawSpaceWidth The width of the screen that we want to map from
+     * @param drawSpaceHeight The height of the screen that we want to map from
+     **********************************************************************************************/
     public static Point mapPointToDevice(Point point, int drawSpaceWidth, int drawSpaceHeight){
 
         int x = point.locX;
