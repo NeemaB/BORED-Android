@@ -70,10 +70,18 @@ public abstract class ColourMenu extends PopUpMenu {
             return colour.B;
         }
 
-        public int convertColourToIndex (ColourRGB colour){
+        public static Colour convertRGBToColour (int R, int G, int B){
 
-            //TODO: Implement this
-            return -1;
+            EnumSet <Colour> colours = EnumSet.allOf(Colour.class);
+            for(Colour colour : colours){
+                if(colour.getColourR() == R
+                        && colour.getColourG() == G
+                        && colour.getColourB() == B){
+                    return colour;
+                }
+            }
+            return null;
+
         }
     }
 
