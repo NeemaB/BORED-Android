@@ -18,6 +18,8 @@ import cpen391.team6.bored.Items.ColourMenu;
 import cpen391.team6.bored.Items.Command;
 import cpen391.team6.bored.Items.PenWidthMenu;
 import cpen391.team6.bored.Items.Point;
+import cpen391.team6.bored.Items.PointList;
+import cpen391.team6.bored.Items.UndoList;
 import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.ImageUtil;
 import cpen391.team6.bored.Utility.UI_Util;
@@ -46,6 +48,8 @@ public class DrawerFragment extends PApplet {
     private ColourMenu mColourMenu;
     private PenWidthMenu mPenWidthMenu;
     private DrawerState mState;
+
+    private UndoList mUndoListHead; // Implements an undo list so that we can undo and redo
 
     private PenWidthMenu.PenWidth mPenWidth;
     private ColourMenu.Colour mPenColour;
@@ -138,6 +142,7 @@ public class DrawerFragment extends PApplet {
 
             }
         };
+
     }
 
     @Override
@@ -161,7 +166,24 @@ public class DrawerFragment extends PApplet {
                 /* We can draw lines now */
                 if (!mValid) {
                     mValid = true;
+
+                    if(mUndoListHead == null){
+                        UndoList tmpUndoList = new UndoList(new Point(mouseX, mouseY), this.mPenColour, this.mPenWidth);
+                        mUndoListHead = new UndoList(new Point(mouseX, mouseY), this.mPenColour, this.mPenWidth);
+                        tmpUndoList.setNext(mUndoListHead);
+                        mUndoListHead.setPrev(tmpUndoList);
+
+                    }else{
+                        mUndoListHead.setNext(new UndoList(new Point(mouseX, mouseY), this.mPenColour, this.mPenWidth));
+                        mUndoListHead.getNext().setPrev(mUndoListHead);
+                        mUndoListHead = mUndoListHead.getNext();
+                    }
+
                 } else {
+
+                    mUndoListHead.getPointList().setNext(new PointList(new Point(mouseX, mouseY)));
+                    mUndoListHead.setPointList(mUndoListHead.getPointList().getNext());
+
                     line(mLastLocX, mLastLocY, mouseX, mouseY);
 
                     if(BoredApplication.isConnectedToBluetooth){
@@ -376,6 +398,10 @@ public class DrawerFragment extends PApplet {
                 .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+
+                        mUndoListHead = null;
+                        mValid = false;
+
                         background(255);
                         if(BoredApplication.isConnectedToBluetooth){
                             String cmd;
@@ -414,13 +440,35 @@ public class DrawerFragment extends PApplet {
 
         //TODO: Implement this on the android device, currently it just sends commands to NIOS
 
+        if(mUndoListHead != null){
+
+            strokeWeight(mUndoListHead.getPenWidth().dp + 1);
+            stroke(255);
+
+            PointList head = mUndoListHead.getPointListHead();
+
+            while(head.getNext() != null){
+                line(head.getPoint().locX,
+                        head.getPoint().locY,
+                        head.getNext().getPoint().locX,
+                        head.getNext().getPoint().locY);
+
+                head = head.getNext();
+            }
+
+            if(mUndoListHead.getPrev() != null){
+                mUndoListHead = mUndoListHead.getPrev();
+            }
+        }
+
         if(BoredApplication.isConnectedToBluetooth){
             String cmd;
             cmd = Command.createCommand(Command.UNDO);
             BluetoothActivity.writeToBTDevice(cmd);
             Log.d(LOG_TAG, "Sent undo command to device:" + cmd);
-            
+
         }
+
         
     }
 
@@ -434,6 +482,27 @@ public class DrawerFragment extends PApplet {
     public void redo(){
 
         //TODO: Implement this on the android device, currently it just sends commands to NIOS
+
+        if(mUndoListHead != null){
+
+            if(mUndoListHead.getNext() != null) {
+                mUndoListHead = mUndoListHead.getNext();
+                PointList head = mUndoListHead.getPointListHead();
+
+                stroke(mUndoListHead.getColour());
+                strokeWeight(mUndoListHead.getPenWidth());
+
+                while (head.getNext() != null){
+                    line(head.getPoint().locX,
+                            head.getPoint().locY,
+                            head.getNext().getPoint().locX,
+                            head.getNext().getPoint().locY);
+
+                    head = head.getNext();
+                }
+            }
+        }
+
 
         if(BoredApplication.isConnectedToBluetooth){
             String cmd;
