@@ -1,34 +1,50 @@
 package cpen391.team6.bored.Adapters;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Toast;
-
+import com.bumptech.glide.Glide;
+import com.google.firebase.storage.StorageReference;
+import cpen391.team6.bored.R;
+import cpen391.team6.bored.Utility.FirebaseImageLoader;
 import java.util.List;
+
 /**
  * Created by andytertzakian on 2017-03-16.
  */
 
+public class NoteImageAdapter extends ArrayAdapter {
+    private Context context;
+    private LayoutInflater inflater;
 
-//TODO
-public class NoteImageAdapter {
+    private String[] imageUrls;
 
-    private List<Drawable> mImageList;
+    public NoteImageAdapter(Context context, String[] imageUrls) {
+        super(context, R.layout.view_notes_fragment_layout, imageUrls);
 
-    public void addPhoto(Drawable drawable) {
+        this.context = context;
+        this.imageUrls = imageUrls;
+
+        inflater = LayoutInflater.from(context);
     }
-1
-    //constructor for setting the image list
-    public NoteImageAdapter(List<Drawable> mImageList) {
-        this.mImageList = mImageList;
-    }
 
-    //Get the number of items in the list
-    public int getItemCount() {
-        return mImageList.size();
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (null == convertView) {
+            convertView = inflater.inflate(R.layout.view_notes_fragment_layout, parent, false);
+        }
+
+        Glide
+                .with(context)
+                .load(imageUrls[position])
+                .into((ImageView) convertView);
+
+        return convertView;
     }
 }

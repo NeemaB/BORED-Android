@@ -92,35 +92,4 @@ public class PhotoManager {
             });
         }
     }
-
-    public void setEventPhotos(String eventId, final NoteImageAdapter adapter) {
-        setSinglePhoto(eventId, adapter, 0);
-    }
-
-    public void setSinglePhoto(final String eventId, final NoteImageAdapter adapter, final int i) {
-        final String key = eventId + String.valueOf(i);
-        if (photos.containsKey(key)) {
-            adapter.addPhoto((Drawable) photos.get(key));
-            setSinglePhoto(eventId, adapter, i + 1);
-            return;
-        }
-
-        StorageReference eventPhotosRef = storageRef.child(eventId + "/photos/" + i + ".jpg");
-
-        eventPhotosRef.getBytes(MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                Bitmap downloaded = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                Drawable photo = new BitmapDrawable(downloaded);
-                adapter.addPhoto(photo);
-                photos.put(key, photo);
-                setSinglePhoto(eventId, adapter, i + 1);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                //do nothing when no photos left
-            }
-        });
-    }
 }
