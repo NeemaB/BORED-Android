@@ -1,6 +1,8 @@
 package cpen391.team6.bored;
 
 import android.app.Application;
+import android.content.Context;
+import android.support.multidex.MultiDex;
 
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.EntypoModule;
@@ -20,10 +22,13 @@ public class BoredApplication extends Application {
     public static int boredScreenHeight = 478;
 
     @Override
+    protected void attachBaseContext(Context context) {
+        super.attachBaseContext(context);
+        MultiDex.install(this);
+    }
+    @Override
     public void onCreate() {
         super.onCreate();
-
-
 
         /* Make use of the following icon bitmap libraries */
         Iconify.
