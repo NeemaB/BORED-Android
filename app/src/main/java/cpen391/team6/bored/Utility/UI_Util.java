@@ -1,12 +1,16 @@
 package cpen391.team6.bored.Utility;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.os.Build;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -21,7 +25,7 @@ public class UI_Util {
     /**********************************************************************************************
      * Set title divider color and text color of a dialog
      *
-     * @param dialog The dialog that we want to style
+     * @param dialog  The dialog that we want to style
      * @param context A valid context that will allow us to access the devices resources
      **********************************************************************************************/
     public static void setDialogStyle(Dialog dialog, Context context) {
@@ -34,11 +38,10 @@ public class UI_Util {
     }
 
     /**********************************************************************************************
-     *  Set the colour of the overflow menu to the desired color
+     * Set the colour of the overflow menu to the desired color
      *
-     *  @param activity An activity that is currently alive
-     *  @param color An integer representation of a color
-     *
+     * @param activity An activity that is currently alive
+     * @param color    An integer representation of a color
      **********************************************************************************************/
     public static void setOverflowButtonColor(final Activity activity, final int color) {
         final String overflowDescription = activity.getString(R.string.abc_action_menu_overflow_description);
@@ -58,5 +61,28 @@ public class UI_Util {
             }
         };
         viewTreeObserver.addOnGlobalLayoutListener(listener);
+    }
+
+
+    /**
+     * Utility method to set the color of the status bar to the app's
+     * primary color theme
+     *
+     * @param window
+     * @param color
+     */
+    @TargetApi(21)
+    public static void setStatusBarColor(Window window, int color) {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+
+            // clear FLAG_TRANSLUCENT_STATUS flag:
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            // finally change the color
+            window.setStatusBarColor(color);
+        }
+
     }
 }

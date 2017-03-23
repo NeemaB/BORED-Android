@@ -41,6 +41,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.util.Observer;
 
 import cpen391.team6.bored.Activities.BluetoothActivity;
 import cpen391.team6.bored.BoredApplication;
@@ -142,7 +143,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     mDrawer = new DrawerFragment();
                     mDrawer.setArguments(arguments);
 
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
 
                     /* Replace the current fragment that is being displayed, provide it with a tag so we can
                     * locate it in the future
@@ -337,5 +338,22 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         }
 
     }
+
+    public void updateColourIcon(int iconColorId, int backgroundColorId){
+        mColourPallette.setTextColor(getResources().getColor(iconColorId));
+        mColourPallette.setBackgroundColor(getResources().getColor(backgroundColorId));
+    }
+
+    public void updatePenWidthIcon(int iconColorId, int backgroundColorId){
+        mPenWidth.setTextColor(getResources().getColor(iconColorId));
+        mPenWidth.setBackgroundColor(getResources().getColor(backgroundColorId));
+    }
+
+    public void updateFillIcon(int iconColorId, int backgroundColorId){
+        mFill.setTextColor(getResources().getColor(iconColorId));
+        mFill.setBackgroundColor(getResources().getColor(backgroundColorId));
+    }
+
+
 
 }

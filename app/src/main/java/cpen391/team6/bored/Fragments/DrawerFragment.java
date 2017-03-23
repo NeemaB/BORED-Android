@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.app.AlertDialog;
 import android.util.Log;
@@ -12,7 +14,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.Observable;
 import java.util.Stack;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 import cpen391.team6.bored.Activities.BluetoothActivity;
 import cpen391.team6.bored.BoredApplication;
@@ -33,6 +38,8 @@ import processing.core.PApplet;
 public class DrawerFragment extends PApplet {
 
     public static String LOG_TAG = "Drawer_Fragment";
+
+    private android.os.Handler mHandler;
 
     private int mColourMenuX;
     private int mColourMenuY;
@@ -141,6 +148,53 @@ public class DrawerFragment extends PApplet {
                 }
                 deactivatePenWidthMenu();
 
+            }
+        };
+
+        mHandler = new android.os.Handler(Looper.getMainLooper()) {
+
+            @Override
+            public void handleMessage(Message message) {
+                String request = (String) message.getData().get("request");
+
+                switch (request) {
+
+                    case "activate_colour":
+                        ((CreateNoteFragment) getParentFragment())
+                                .updateColourIcon(R.color.colorPrimary,
+                                        R.color.colorSecondary);
+
+                        break;
+                    case "deactivate_colour":
+                        ((CreateNoteFragment) getParentFragment())
+                                .updateColourIcon(R.color.colorSecondary,
+                                        R.color.colorPrimary);
+                        break;
+
+                    case "activate_penWidth":
+                        ((CreateNoteFragment) getParentFragment())
+                                .updatePenWidthIcon(R.color.colorPrimary,
+                                        R.color.colorSecondary);
+                        break;
+
+                    case "deactivate_penWidth":
+                        ((CreateNoteFragment) getParentFragment())
+                                .updatePenWidthIcon(R.color.colorSecondary,
+                                        R.color.colorPrimary);
+                        break;
+
+                    case "activate_fill":
+                        ((CreateNoteFragment) getParentFragment())
+                                .updateFillIcon(R.color.colorPrimary,
+                                        R.color.colorSecondary);
+                        break;
+
+                    case "deactivate_fill":
+                        ((CreateNoteFragment) getParentFragment())
+                                .updateFillIcon(R.color.colorSecondary,
+                                        R.color.colorPrimary);
+
+                }
             }
         };
 
@@ -313,9 +367,6 @@ public class DrawerFragment extends PApplet {
                                     params));
 
                 }
-
-                /* Set the DrawerState back to DRAWING */
-                mState = DrawerState.DRAWING;
                 break;
         }
 
@@ -395,7 +446,7 @@ public class DrawerFragment extends PApplet {
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
 
                         pointStack.push(new Point(nextPoint.locX + 1, nextPoint.locY));
-                    }else{
+                    } else {
                         set(nextPoint.locX + 1, nextPoint.locY,
                                 color(fillColour.getColourR(),
                                         fillColour.getColourG(),
@@ -405,7 +456,7 @@ public class DrawerFragment extends PApplet {
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
 
                         pointStack.push(new Point(nextPoint.locX, nextPoint.locY + 1));
-                    }else{
+                    } else {
                         set(nextPoint.locX, nextPoint.locY + 1,
                                 color(fillColour.getColourR(),
                                         fillColour.getColourG(),
@@ -414,7 +465,7 @@ public class DrawerFragment extends PApplet {
                     pixelColour = pixelDataToColour(get(nextPoint.locX - 1, nextPoint.locY));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
                         pointStack.push(new Point(nextPoint.locX - 1, nextPoint.locY));
-                    }else{
+                    } else {
                         set(nextPoint.locX - 1, nextPoint.locY,
                                 color(fillColour.getColourR(),
                                         fillColour.getColourG(),
@@ -423,7 +474,7 @@ public class DrawerFragment extends PApplet {
                     pixelColour = pixelDataToColour(get(nextPoint.locX, nextPoint.locY - 1));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
                         pointStack.push(new Point(nextPoint.locX, nextPoint.locY - 1));
-                    }else{
+                    } else {
                         set(nextPoint.locX, nextPoint.locY - 1,
                                 color(fillColour.getColourR(),
                                         fillColour.getColourG(),
@@ -510,33 +561,35 @@ public class DrawerFragment extends PApplet {
 
         //TODO: Implement this on the android device, currently it just sends commands to NIOS
 
-        if (mUndoListHead != null) {
+        if (mState == DrawerState.DRAWING) {
+            if (mUndoListHead != null) {
 
-            strokeWeight(mUndoListHead.getPenWidth().dp + 1);
-            stroke(255);
+                strokeWeight(mUndoListHead.getPenWidth().dp + 1);
+                stroke(255);
 
-            PointList head = mUndoListHead.getPointListHead();
+                PointList head = mUndoListHead.getPointListHead();
 
-            while (head.getNext() != null) {
-                line(head.getPoint().locX,
-                        head.getPoint().locY,
-                        head.getNext().getPoint().locX,
-                        head.getNext().getPoint().locY);
+                while (head.getNext() != null) {
+                    line(head.getPoint().locX,
+                            head.getPoint().locY,
+                            head.getNext().getPoint().locX,
+                            head.getNext().getPoint().locY);
 
-                head = head.getNext();
+                    head = head.getNext();
+                }
+
+                if (mUndoListHead.getPrev() != null) {
+                    mUndoListHead = mUndoListHead.getPrev();
+                }
             }
 
-            if (mUndoListHead.getPrev() != null) {
-                mUndoListHead = mUndoListHead.getPrev();
+            if (BoredApplication.isConnectedToBluetooth) {
+                String cmd;
+                cmd = Command.createCommand(Command.UNDO);
+                BluetoothActivity.writeToBTDevice(cmd);
+                Log.d(LOG_TAG, "Sent undo command to device:" + cmd);
+
             }
-        }
-
-        if (BoredApplication.isConnectedToBluetooth) {
-            String cmd;
-            cmd = Command.createCommand(Command.UNDO);
-            BluetoothActivity.writeToBTDevice(cmd);
-            Log.d(LOG_TAG, "Sent undo command to device:" + cmd);
-
         }
 
 
@@ -552,35 +605,37 @@ public class DrawerFragment extends PApplet {
 
         //TODO: Implement this on the android device, currently it just sends commands to NIOS
 
-        if (mUndoListHead != null) {
+        if (mState == DrawerState.DRAWING) {
+            if (mUndoListHead != null) {
 
-            if (mUndoListHead.getNext() != null) {
-                mUndoListHead = mUndoListHead.getNext();
-                PointList head = mUndoListHead.getPointListHead();
+                if (mUndoListHead.getNext() != null) {
+                    mUndoListHead = mUndoListHead.getNext();
+                    PointList head = mUndoListHead.getPointListHead();
 
-                stroke(mUndoListHead.getColour());
-                strokeWeight(mUndoListHead.getPenWidth());
+                    stroke(mUndoListHead.getColour());
+                    strokeWeight(mUndoListHead.getPenWidth());
 
-                while (head.getNext() != null) {
-                    line(head.getPoint().locX,
-                            head.getPoint().locY,
-                            head.getNext().getPoint().locX,
-                            head.getNext().getPoint().locY);
+                    while (head.getNext() != null) {
+                        line(head.getPoint().locX,
+                                head.getPoint().locY,
+                                head.getNext().getPoint().locX,
+                                head.getNext().getPoint().locY);
 
-                    head = head.getNext();
+                        head = head.getNext();
+                    }
                 }
             }
+
+
+            if (BoredApplication.isConnectedToBluetooth) {
+                String cmd;
+                cmd = Command.createCommand(Command.REDO);
+                BluetoothActivity.writeToBTDevice(cmd);
+                Log.d(LOG_TAG, "Sent redo command to device:" + cmd);
+
+            }
+
         }
-
-
-        if (BoredApplication.isConnectedToBluetooth) {
-            String cmd;
-            cmd = Command.createCommand(Command.REDO);
-            BluetoothActivity.writeToBTDevice(cmd);
-            Log.d(LOG_TAG, "Sent redo command to device:" + cmd);
-
-        }
-
     }
 
 
@@ -600,6 +655,9 @@ public class DrawerFragment extends PApplet {
             case WIDTH_MENU_ACTIVE:
                 deactivatePenWidthMenu();
                 break;
+            case FILL_ACTIVE:
+                deactivateFill();
+                break;
 
             //TODO: when other menu items have been implemented, make sure to deactivate active menu items
         }
@@ -608,34 +666,24 @@ public class DrawerFragment extends PApplet {
     }
 
     /**********************************************************************************************
-     * Change our current state and draw the colour menu
-     **********************************************************************************************/
-    private void activateColourMenu() {
-
-        mColourMenu.drawSelf();
-        mState = DrawerState.COLOUR_MENU_ACTIVE;
-
-    }
-
-    /***********************************************************************************************
-     * Change our current state and hide the colour menu
-     **********************************************************************************************/
-    private void deactivateColourMenu() {
-
-        mColourMenu.hideSelf();
-        mState = DrawerState.DRAWING;
-
-    }
-
-    /**********************************************************************************************
      * Toggles the fill feature
      **********************************************************************************************/
     public void toggleFillActive() {
 
-        if (mState == DrawerState.FILL_ACTIVE) {
-            mState = DrawerState.DRAWING;
-        } else {
-            mState = DrawerState.FILL_ACTIVE;
+        switch (mState) {
+
+            case DRAWING:
+                activateFill();
+                break;
+            case COLOUR_MENU_ACTIVE:
+                deactivateColourMenu();
+                break;
+            case WIDTH_MENU_ACTIVE:
+                deactivatePenWidthMenu();
+                break;
+            case FILL_ACTIVE:
+                deactivateFill();
+                break;
         }
 
     }
@@ -656,22 +704,67 @@ public class DrawerFragment extends PApplet {
             case COLOUR_MENU_ACTIVE:
                 deactivateColourMenu();
                 break;
+            case FILL_ACTIVE:
+                deactivateFill();
+                break;
 
             //TODO: when other menu items have been implemented, make sure to deactivate active menu items
         }
 
     }
 
+    /**********************************************************************************************
+     * Change our current state and draw the colour menu
+     **********************************************************************************************/
+    private void activateColourMenu() {
+
+        mColourMenu.drawSelf();
+        mState = DrawerState.COLOUR_MENU_ACTIVE;
+        sendMessageToUI("activate_colour");
+
+
+    }
+
+    /***********************************************************************************************
+     * Change our current state and hide the colour menu
+     **********************************************************************************************/
+    private void deactivateColourMenu() {
+
+        mColourMenu.hideSelf();
+        mState = DrawerState.DRAWING;
+        sendMessageToUI("deactivate_colour");
+
+
+    }
+
+
     private void activatePenWidthMenu() {
 
         mPenWidthMenu.drawSelf();
         mState = DrawerState.WIDTH_MENU_ACTIVE;
+        sendMessageToUI("activate_penWidth");
+
     }
 
     private void deactivatePenWidthMenu() {
 
         mPenWidthMenu.hideSelf();
         mState = DrawerState.DRAWING;
+        sendMessageToUI("deactivate_penWidth");
+
+    }
+
+    private void activateFill() {
+
+        mState = DrawerState.FILL_ACTIVE;
+        sendMessageToUI("activate_fill");
+    }
+
+    private void deactivateFill() {
+
+        mState = DrawerState.DRAWING;
+        sendMessageToUI("deactivate_fill");
+
     }
 
     /**********************************************************************************************
@@ -780,6 +873,15 @@ public class DrawerFragment extends PApplet {
         } else {
             PApplet.main(appletArgs);
         }
+    }
+
+    private void sendMessageToUI(String msg) {
+
+        Message message = mHandler.obtainMessage();
+        Bundle bundle = new Bundle();
+        bundle.putString("request", msg);
+        message.setData(bundle);
+        message.sendToTarget();
     }
 
 

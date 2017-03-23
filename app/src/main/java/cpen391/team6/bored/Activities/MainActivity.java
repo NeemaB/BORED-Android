@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        UI_Util.setStatusBarColor(getWindow(), R.color.colorPrimary);
+
         mDrawerTitles = getResources().getStringArray(R.array.drawer_list_array);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mTitle = getString(R.string.app_name);
@@ -97,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void setTitle(CharSequence title) {
         mTitle = title;
-        getSupportActionBar().setTitle(Html.fromHtml("<font color='#FFFF00'>" + mTitle + "</font>"));
+        getSupportActionBar().setTitle(Html.fromHtml("<font color='#FFFFFF'>" + mTitle + "</font>"));
     }
 
     @Override
