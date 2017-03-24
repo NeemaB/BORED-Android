@@ -13,6 +13,7 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import java.util.Observable;
 import java.util.Stack;
@@ -39,8 +40,10 @@ public class DrawerFragment extends PApplet {
 
     public static String LOG_TAG = "Drawer_Fragment";
 
-    private android.os.Handler mHandler;
+    private static int BLUETOOTH_CMD = 0;
+    private static int UI_CMD = 1;
 
+    private android.os.Handler mHandler;
     private int mColourMenuX;
     private int mColourMenuY;
     private int mColourMenuWidth;
@@ -155,45 +158,54 @@ public class DrawerFragment extends PApplet {
 
             @Override
             public void handleMessage(Message message) {
-                String request = (String) message.getData().get("request");
 
-                switch (request) {
+                int requestType = (int) message.getData().get("requestType");
 
-                    case "activate_colour":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updateColourIcon(R.color.colorPrimary,
-                                        R.color.colorSecondary);
+                if(requestType == BLUETOOTH_CMD){
+                    String msg = (String) message.getData().get("toast_message");
 
-                        break;
-                    case "deactivate_colour":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updateColourIcon(R.color.colorSecondary,
-                                        R.color.colorPrimary);
-                        break;
+                    Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
 
-                    case "activate_penWidth":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updatePenWidthIcon(R.color.colorPrimary,
-                                        R.color.colorSecondary);
-                        break;
+                }else if(requestType == UI_CMD) {
+                    String request = (String) message.getData().get("request");
+                    switch (request) {
 
-                    case "deactivate_penWidth":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updatePenWidthIcon(R.color.colorSecondary,
-                                        R.color.colorPrimary);
-                        break;
+                        case "activate_colour":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateColourIcon(R.color.colorPrimary,
+                                            R.color.colorSecondary);
 
-                    case "activate_fill":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updateFillIcon(R.color.colorPrimary,
-                                        R.color.colorSecondary);
-                        break;
+                            break;
+                        case "deactivate_colour":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateColourIcon(R.color.colorSecondary,
+                                            R.color.colorPrimary);
+                            break;
 
-                    case "deactivate_fill":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updateFillIcon(R.color.colorSecondary,
-                                        R.color.colorPrimary);
+                        case "activate_penWidth":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updatePenWidthIcon(R.color.colorPrimary,
+                                            R.color.colorSecondary);
+                            break;
 
+                        case "deactivate_penWidth":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updatePenWidthIcon(R.color.colorSecondary,
+                                            R.color.colorPrimary);
+                            break;
+
+                        case "activate_fill":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateFillIcon(R.color.colorPrimary,
+                                            R.color.colorSecondary);
+                            break;
+
+                        case "deactivate_fill":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateFillIcon(R.color.colorSecondary,
+                                            R.color.colorPrimary);
+
+                    }
                 }
             }
         };
@@ -202,6 +214,8 @@ public class DrawerFragment extends PApplet {
 
     @Override
     public void draw() {
+
+
 
         /* Drawing is done through user events so this loop is empty */
 
@@ -409,6 +423,11 @@ public class DrawerFragment extends PApplet {
         BluetoothActivity.writeToBTDevice(cmd);
         Log.d(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
 
+        /* Add delay so that NIOS can process subsequent commands */
+        try {
+            Thread.sleep(80);
+        }catch(InterruptedException e){}
+
         /* Set the pen size on the NIOS II */
         cmd = Command.createCommand(
                 Command.CHANGE_PEN_WIDTH,
@@ -416,6 +435,28 @@ public class DrawerFragment extends PApplet {
 
         BluetoothActivity.writeToBTDevice(cmd);
         Log.d(LOG_TAG, "Sent change pen width command to bluetooth:" + cmd);
+
+        /* Add delay so that NIOS can process subsequent commands */
+        try {
+            Thread.sleep(80);
+        }catch(InterruptedException e){}
+
+        /* Clear the screen on the NIOS II */
+        cmd = Command.createCommand(Command.CLEAR);
+
+        BluetoothActivity.writeToBTDevice(cmd);
+        Log.d(LOG_TAG, "Sent clear command to bluetooth:" + cmd);
+
+//        if(BoredApplication.isConnectedToBluetooth){
+//            String cmdString = BluetoothActivity.readFromBTDevice();
+//            if(cmdString.equals("A")){
+//                sendMessageToUI("Able to draw on NIOS", BLUETOOTH_CMD);
+//            }else if(cmdString.equals("B")){
+//                sendMessageToUI("Unable to draw on NIOS", BLUETOOTH_CMD);
+//            }else{
+//                /*do nothing */
+//            }
+//        }
 
     }
 
@@ -720,7 +761,7 @@ public class DrawerFragment extends PApplet {
 
         mColourMenu.drawSelf();
         mState = DrawerState.COLOUR_MENU_ACTIVE;
-        sendMessageToUI("activate_colour");
+        sendMessageToUI("activate_colour", UI_CMD);
 
 
     }
@@ -732,7 +773,7 @@ public class DrawerFragment extends PApplet {
 
         mColourMenu.hideSelf();
         mState = DrawerState.DRAWING;
-        sendMessageToUI("deactivate_colour");
+        sendMessageToUI("deactivate_colour", UI_CMD);
 
 
     }
@@ -742,7 +783,7 @@ public class DrawerFragment extends PApplet {
 
         mPenWidthMenu.drawSelf();
         mState = DrawerState.WIDTH_MENU_ACTIVE;
-        sendMessageToUI("activate_penWidth");
+        sendMessageToUI("activate_penWidth", UI_CMD);
 
     }
 
@@ -750,20 +791,20 @@ public class DrawerFragment extends PApplet {
 
         mPenWidthMenu.hideSelf();
         mState = DrawerState.DRAWING;
-        sendMessageToUI("deactivate_penWidth");
+        sendMessageToUI("deactivate_penWidth", UI_CMD);
 
     }
 
     private void activateFill() {
 
         mState = DrawerState.FILL_ACTIVE;
-        sendMessageToUI("activate_fill");
+        sendMessageToUI("activate_fill", UI_CMD);
     }
 
     private void deactivateFill() {
 
         mState = DrawerState.DRAWING;
-        sendMessageToUI("deactivate_fill");
+        sendMessageToUI("deactivate_fill", UI_CMD);
 
     }
 
@@ -875,13 +916,24 @@ public class DrawerFragment extends PApplet {
         }
     }
 
-    private void sendMessageToUI(String msg) {
+    private void sendMessageToUI(String msg, int requestType) {
 
-        Message message = mHandler.obtainMessage();
-        Bundle bundle = new Bundle();
-        bundle.putString("request", msg);
-        message.setData(bundle);
-        message.sendToTarget();
+        if(requestType == UI_CMD) {
+            Message message = mHandler.obtainMessage();
+            Bundle bundle = new Bundle();
+            bundle.putString("request", msg);
+            bundle.putInt("requestType", requestType);
+            message.setData(bundle);
+            message.sendToTarget();
+
+        }else if(requestType == BLUETOOTH_CMD){
+            Message message = mHandler.obtainMessage();
+            Bundle bundle = new Bundle();
+            bundle.putString("toast_message", msg);
+            bundle.putInt("requestType", requestType);
+            message.setData(bundle);
+            message.sendToTarget();
+        }
     }
 
 

@@ -29,5 +29,9 @@
     <string name="open_bluetooth_stream">Stream To Bluetooth</string>
     <string name="close_bluetooth_stream">Close Bluetooth Stream</string>
 
+    <!-- Create Note Fragment Strings -->
+    <string name="save_draw_space">Save</string>
+    <string name="load_draw_space">Load</string>
+
 
 </resources>

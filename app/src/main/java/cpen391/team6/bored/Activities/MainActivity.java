@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle mDrawerToggle;
     private ListView mDrawerList;
     private CharSequence mTitle;
+    private Menu mMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,13 +56,13 @@ public class MainActivity extends AppCompatActivity {
             /** Called when a drawer has settled in a completely closed state. */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                //invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
             /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+                //invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
 
@@ -119,10 +120,20 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.create_note_fragment_menu, menu);
 
+        /* Assign the menu */
+        this.mMenu = menu;
+
         UI_Util.setOverflowButtonColor(this, getResources().getColor(R.color.colorSecondary));
 
+        /* Hide all the options menu items, these will only be accessible when the create note
+         * fragment is visible
+         */
         menu.getItem(0).setVisible(false);
         menu.getItem(0).setEnabled(false);
+        menu.getItem(1).setVisible(false);
+        menu.getItem(1).setEnabled(false);
+        menu.getItem(2).setVisible(false);
+        menu.getItem(2).setEnabled(false);
 
         return true;
     }
@@ -132,8 +143,16 @@ public class MainActivity extends AppCompatActivity {
 
         if(menu != null) {
             //Hides MenuItem action_edit
+
+            /* Hide all the options menu items, these will only be accessible when the create note
+             * fragment is visible
+             */
             menu.getItem(0).setVisible(false);
             menu.getItem(0).setEnabled(false);
+            menu.getItem(1).setVisible(false);
+            menu.getItem(1).setEnabled(false);
+            menu.getItem(2).setVisible(false);
+            menu.getItem(2).setEnabled(false);
         }
 
         return super.onPrepareOptionsMenu(menu);
@@ -164,6 +183,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void updateMenu(int menuIconId, int drawableId){
+        MenuItem item = mMenu.findItem(menuIconId);
+        item.setIcon(drawableId);
     }
 
     @Override
@@ -252,6 +276,14 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout.closeDrawer(mDrawerList);
 
 
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        /* This does nothing, we only want to call the corresponding function in our fragment
+         * in other words the fragment handles the activity result not MainActivity
+         */
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

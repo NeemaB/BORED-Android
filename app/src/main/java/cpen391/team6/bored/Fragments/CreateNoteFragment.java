@@ -1,5 +1,6 @@
 package cpen391.team6.bored.Fragments;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -44,6 +45,7 @@ import java.nio.ShortBuffer;
 import java.util.Observer;
 
 import cpen391.team6.bored.Activities.BluetoothActivity;
+import cpen391.team6.bored.Activities.MainActivity;
 import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Items.ColourMenu;
 import cpen391.team6.bored.Items.Command;
@@ -59,7 +61,10 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     private DrawerFragment mDrawer;
     private FrameLayout mDrawFrame;
 
-    private static int INIT_REMOTE_SCREEN = 0;
+    private Thread mListener;
+
+    private static int CONNECT_BLUETOOTH = 0;
+    private static int DISCONNECT_BLUETOOTH = 1;
 
     private int mDrawFrameWidth;
     private int mDrawFrameHeight;
@@ -167,6 +172,52 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == Activity.RESULT_OK){
+            if(requestCode == CONNECT_BLUETOOTH){
+                mDrawer.initRemoteScreen();
+                //BoredApplication.isConnectedToBluetooth = true ;
+                ((MainActivity) getActivity()).updateMenu(
+                        R.id.stream_to_device,
+                        R.mipmap.bluetooth_connected);
+
+                mListener = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        BoredApplication.isConnectedLock.lock();
+
+                        while(BoredApplication.isConnectedToBluetooth){
+
+                            String cmdString = BluetoothActivity.readFromBTDevice();
+                            BoredApplication.isConnectedLock.unlock();
+                            if(cmdString.equals("A")){
+                                Toast.makeText(getActivity(), "Able To Draw On NIOS", Toast.LENGTH_SHORT).show();
+                            }else if(cmdString.equals("B")){
+                                Toast.makeText(getActivity(), "Unable To Draw On NIOS", Toast.LENGTH_SHORT).show();
+                            }else{
+                                                /*do nothing */
+                            }
+
+                            BoredApplication.isConnectedLock.lock();
+                        }
+
+                    }
+                });
+
+                mListener.start();
+
+
+            }else if(requestCode == DISCONNECT_BLUETOOTH){
+                //BoredApplication.isConnectedToBluetooth = false ;
+                ((MainActivity) getActivity()).updateMenu(
+                        R.id.stream_to_device,
+                        R.mipmap.bluetooth);
+            }
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
@@ -182,12 +233,15 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     Log.i(LOG_TAG, "Sent terminate connection command to bluetooth:" + cmd);
 
                     intent.putExtra("bluetooth_request", BluetoothActivity.CLOSE_CONNECTION);
-                    startActivity(intent);
+
+                    if(mListener != null)
+                        mListener.interrupt();
+                    startActivityForResult(intent, DISCONNECT_BLUETOOTH);
 
                     /* Open the connection so we can stream data to the bluetooth chip */
                 } else {
                     intent.putExtra("bluetooth_request", BluetoothActivity.OPEN_CONNECTION);
-                    startActivityForResult(intent, INIT_REMOTE_SCREEN);
+                    startActivityForResult(intent, CONNECT_BLUETOOTH);
                 }
 
 
@@ -202,14 +256,18 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
         menu.getItem(0).setVisible(true);
         menu.getItem(0).setEnabled(true);
+        menu.getItem(1).setVisible(true);
+        menu.getItem(1).setEnabled(true);
+        menu.getItem(2).setVisible(true);
+        menu.getItem(2).setEnabled(true);
 
         /* Depending on whether we are connected to the device
-         * change the title of this option
+         * change the bluetooth icon
          */
         if (BoredApplication.isConnectedToBluetooth) {
-            menu.getItem(0).setTitle(R.string.close_bluetooth_stream);
+            menu.findItem(R.id.stream_to_device).setIcon(R.mipmap.bluetooth_connected);
         } else {
-            menu.getItem(0).setTitle(R.string.open_bluetooth_stream);
+            menu.findItem(R.id.stream_to_device).setIcon(R.mipmap.bluetooth);
         }
 
     }

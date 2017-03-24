@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.locks.Lock;
 
 import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.R;
@@ -63,17 +64,18 @@ public class BluetoothActivity extends Activity {
     private int create_or_close;
     private AlertDialog mConnectionDialog;
     private Handler mHandler;
+
     // get the context for the application. We use this with things like "toast" popups
 
-    public static void writeToBTDevice(String message){
+    public synchronized static void writeToBTDevice(String message) {
         String s = new String("\r\n");
         byte[] msgBuffer = message.getBytes();
         byte[] newline = s.getBytes();
 
         System.out.println("Sending:" + msgBuffer.toString());
         try {
-            mmOutStream.write(msgBuffer) ;
-            mmOutStream.write(newline) ;
+            mmOutStream.write(msgBuffer);
+            mmOutStream.write(newline);
         } catch (IOException e) {
 
         }
@@ -83,31 +85,32 @@ public class BluetoothActivity extends Activity {
 //        }catch(InterruptedException e){}
     }
 
-    public static void writeToBTDevice(byte [] bytes){
+    public synchronized static void writeToBTDevice(byte[] bytes) {
         String s = new String("\r\n");
-        byte [] newline = s.getBytes();
+        byte[] newline = s.getBytes();
 
-       // System.out.println("Sending:" + msgBuffer.toString());
+        // System.out.println("Sending:" + msgBuffer.toString());
         try {
-            mmOutStream.write(bytes) ;
-            mmOutStream.write(newline) ;
+            mmOutStream.write(bytes);
+            mmOutStream.write(newline);
         } catch (IOException e) {
 
         }
 
 
     }
-    public static String readFromBTDevice(){
 
-        byte c ;
+    public static String readFromBTDevice() {
+
+        byte c;
         String s = new String("");
 
         try { // Read from the InputStream using polling and timeout
-            for(int i = 0; i < 200; i ++) { // try to read for 2 seconds max
-                SystemClock.sleep (10);
-                if( mmInStream.available () > 0) {
-                    if((c = (byte) mmInStream.read ()) != '\r') // '\r' terminator
-                        s += (char)c; // build up string 1 byte by byte
+            for (int i = 0; i < 200; i++) { // try to read for 2 seconds max
+                SystemClock.sleep(10);
+                if (mmInStream.available() > 0) {
+                    if ((c = (byte) mmInStream.read()) != '\r') // '\r' terminator
+                        s += (char) c; // build up string 1 byte by byte
                     else
                         return s;
                 }
@@ -118,7 +121,7 @@ public class BluetoothActivity extends Activity {
         return s;
     }
 
-    protected void onCreate(Bundle savedInstanceState){
+    protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.dialog_progress_bar);
@@ -137,7 +140,7 @@ public class BluetoothActivity extends Activity {
 
         create_or_close = CLOSE_CONNECTION;
         Bundle extras = getIntent().getExtras();
-        if(extras != null){
+        if (extras != null) {
             create_or_close = extras.getInt("bluetooth_request");
         }
         // This call returns a handle to the onex    bluetooth device within your Android device
@@ -163,12 +166,12 @@ public class BluetoothActivity extends Activity {
     }
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
 
-        Thread thread = new Thread(new Runnable(){
+        Thread thread = new Thread(new Runnable() {
             @Override
-            public void run(){
+            public void run() {
 
 
                 // If the bluetooth device is not enabled, let’s turn it on
@@ -177,16 +180,16 @@ public class BluetoothActivity extends Activity {
                     // create a new intent that will ask the bluetooth adaptor to “enable” itself.
                     // A dialog box will appear asking if you want turn on the bluetooth device
 
-                    Intent enableBtIntent = new Intent ( BluetoothAdapter.ACTION_REQUEST_ENABLE );
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 
                     // REQUEST_ENABLE_BT below is a constant (defined as '1 - but could be anything)
                     // When the “activity” is run and finishes, Android will run your onActivityResult()
                     // function (see next page) where you can determine if it was successful or not
 
-                    startActivityForResult (enableBtIntent, REQUEST_ENABLE_BT);
+                    startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
                 }
 
-                Set< BluetoothDevice > thePairedDevices = mBluetoothAdapter.getBondedDevices();
+                Set<BluetoothDevice> thePairedDevices = mBluetoothAdapter.getBondedDevices();
                 // If there are devices that have already been paired
                 // get an iterator for the set of devices and iterate 1 device at a time
 
@@ -206,7 +209,7 @@ public class BluetoothActivity extends Activity {
                                 if (create_or_close == OPEN_CONNECTION) {
                                     connect();
 
-                                    writeToBTDevice("something");
+                                    //writeToBTDevice("something");
                                     try {
                                         Thread.sleep(1000);
                                     } catch (InterruptedException e) {
@@ -214,7 +217,7 @@ public class BluetoothActivity extends Activity {
 
                                     System.out.println("Bluetooth output: " + readFromBTDevice());
                                     mConnectionDialog.dismiss();
-                                    sendMessageToUI("Sent Sample Message To Bluetooth Chip");
+                                    //sendMessageToUI("Sent Sample Message To Bluetooth Chip");
 
                                     //Toast toast = Toast.makeText(getApplicationContext(), "Connected to bluetooth device and sent sample message!", Toast.LENGTH_SHORT);
                                     //toast.show();
@@ -224,6 +227,7 @@ public class BluetoothActivity extends Activity {
 
                                 } else if (create_or_close == CLOSE_CONNECTION) {
                                     closeConnection();
+                                    setResult(RESULT_OK);
                                     sendMessageToUI("Closed Bluetooth Connection");
                                     //Toast.makeText(getApplicationContext(), "Closed Bluetooth Connection", Toast.LENGTH_SHORT).show();
                                 }
@@ -231,7 +235,7 @@ public class BluetoothActivity extends Activity {
 
                         }
                     }
-                    if(!deviceFound) {
+                    if (!deviceFound) {
                         sendMessageToUI("Could Not Find Bluetooth Device In Paired Devices!");
                         //Toast toast = Toast.makeText(getApplicationContext(), "Could not find bluetooth device in paired devices", Toast.LENGTH_SHORT);
                         //toast.show();
@@ -251,12 +255,12 @@ public class BluetoothActivity extends Activity {
     }
 
 
-    private boolean connect() throws IOException{
+    private boolean connect() throws IOException {
 
         // Cancel discovery because it will slow down the connection
         mBluetoothAdapter.cancelDiscovery();
 
-            // Attempt connection to the device through the socket.
+        // Attempt connection to the device through the socket.
         mmSocket.connect();
         sendMessageToUI("Connection Made");
         //Toast.makeText(getApplicationContext(), "Connection Made", Toast.LENGTH_LONG).show();
@@ -264,7 +268,8 @@ public class BluetoothActivity extends Activity {
 
         //create the input/output stream and record fact we have made a connection
         GetInputOutputStreamsForSocket(); // see page 26
-        BoredApplication.isConnectedToBluetooth = true ;
+        BoredApplication.isConnectedToBluetooth = true;
+
         return true;
     }
 
@@ -273,29 +278,28 @@ public class BluetoothActivity extends Activity {
         try {
             mmInStream = mmSocket.getInputStream();
             mmOutStream = mmSocket.getOutputStream();
-        } catch (IOException e) { }
+        } catch (IOException e) {
+        }
     }
 
 
-    private void CreateSerialBluetoothDeviceSocket(BluetoothDevice device)
-    {
+    private void CreateSerialBluetoothDeviceSocket(BluetoothDevice device) {
         mmSocket = null;
 
         // universal UUID for a serial profile RFCOMM blue tooth device
         // this is just one of those “things” that you have to do and just works
-        UUID MY_UUID = UUID.fromString ("00001101-0000-1000-8000-00805F9B34FB");
+        UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
         // Get a Bluetooth Socket to connect with the given BluetoothDevice
         try {
             // MY_UUID is the app's UUID string, also used by the server code
-            mmSocket = device.createRfcommSocketToServiceRecord (MY_UUID);
-        }
-        catch (IOException e) {
+            mmSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
+        } catch (IOException e) {
             sendMessageToUI("Socket Creation Failed!");
             //Toast.makeText(getApplicationContext(), "Socket Creation Failed", Toast.LENGTH_LONG).show();
         }
     }
 
-    private void sendMessageToUI(String msg){
+    private void sendMessageToUI(String msg) {
 
         Message message = mHandler.obtainMessage();
         Bundle bundle = new Bundle();
@@ -306,23 +310,31 @@ public class BluetoothActivity extends Activity {
 
 
     private void closeConnection() {
+
+        BoredApplication.isConnectedLock.lock();
+
         try {
             mmInStream.close();
             mmInStream = null;
-        } catch (IOException e) {}
+        } catch (IOException e) {
+        }
         try {
             mmOutStream.close();
             mmOutStream = null;
-        } catch (IOException e) {}
+        } catch (IOException e) {
+        }
         try {
             mmSocket.close();
             mmSocket = null;
-        } catch (IOException e) {}
+        } catch (IOException e) {
+        }
 
-        BoredApplication.isConnectedToBluetooth = false ;
+        BoredApplication.isConnectedToBluetooth = false;
+
+        BoredApplication.isConnectedLock.unlock();
     }
 
-    private void discover(){
+    private void discover() {
 
         // Before starting discovery make sure discovery is cancelled
         if (mBluetoothAdapter.isDiscovering())
@@ -330,7 +342,7 @@ public class BluetoothActivity extends Activity {
         // now start scanning for new devices. The broadcast receiver
         // we wrote earlier will be called each time we discover a new device
         // don't make this call if you only want to show paired devices
-        mBluetoothAdapter.startDiscovery() ;
+        mBluetoothAdapter.startDiscovery();
     }
 
     /* this call back function is run when an activity that returns a result ends.
@@ -339,25 +351,26 @@ public class BluetoothActivity extends Activity {
     * by the activity. In most cases this is RESULT_OK. If not end the activity
     */
 
-    private void killActivity(){
+    private void killActivity() {
         finish();
     }
+
     public void onDestroy() {
         super.onDestroy();
         //unregisterReceiver ( mReceiver ); // make sure we unregister
         // our broadcast receiver at end
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if( requestCode == REQUEST_ENABLE_BT) // was it the “enable bluetooth” activity?
-            if( resultCode != RESULT_OK ) { // if so did it work OK?
+        if (requestCode == REQUEST_ENABLE_BT) // was it the “enable bluetooth” activity?
+            if (resultCode != RESULT_OK) { // if so did it work OK?
                 sendMessageToUI("Bluetooth Failed To Start!");
                 //Toast toast = Toast.makeText(getApplicationContext(), "BlueTooth Failed to Start ",
                 //        Toast.LENGTH_LONG);
                 //toast.show();
                 finish();
-                return ;
+                return;
             }
     }
 
