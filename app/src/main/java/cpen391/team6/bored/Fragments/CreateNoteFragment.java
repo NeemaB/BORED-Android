@@ -185,6 +185,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 mListener = new Thread(new Runnable() {
                     @Override
                     public void run() {
+
                         BoredApplication.isConnectedLock.lock();
 
                         while(BoredApplication.isConnectedToBluetooth){

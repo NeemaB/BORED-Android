@@ -15,7 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.util.HashSet;
 import java.util.Observable;
+import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -40,8 +42,12 @@ public class DrawerFragment extends PApplet {
 
     public static String LOG_TAG = "Drawer_Fragment";
 
+    /* Command flags */
     private static int BLUETOOTH_CMD = 0;
     private static int UI_CMD = 1;
+
+    /* Set of active threads spawned by this fragment */
+    private Set<Thread> mActiveThreads;
 
     private android.os.Handler mHandler;
     private int mColourMenuX;
@@ -80,6 +86,15 @@ public class DrawerFragment extends PApplet {
         super.onStart();
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        for(Thread thread : mActiveThreads){
+            thread.interrupt();
+        }
+
+    }
+
     /***********************************************************************************************
      * Initialize our drawer parameters, setup the draw space and provide implementations for the
      * press handlers provided by the pop up menu classes
@@ -103,6 +118,8 @@ public class DrawerFragment extends PApplet {
         mPenWidth = PenWidthMenu.PenWidth.SMALL;
         mPenColour = ColourMenu.Colour.BLACK;
         mState = DrawerState.DRAWING;
+
+        mActiveThreads = new HashSet<>();
 
         /* Create the color menu and implement the press handler */
         mColourMenu = new ColourMenu(this, mColourMenuX, mColourMenuY,
@@ -161,11 +178,14 @@ public class DrawerFragment extends PApplet {
 
                 int requestType = (int) message.getData().get("requestType");
 
+                /* command to display a toast in response to a bluetooth event */
                 if(requestType == BLUETOOTH_CMD){
                     String msg = (String) message.getData().get("toast_message");
 
                     Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
 
+
+                /* Commands to update the UI of the parent fragment */
                 }else if(requestType == UI_CMD) {
                     String request = (String) message.getData().get("request");
                     switch (request) {
@@ -447,42 +467,36 @@ public class DrawerFragment extends PApplet {
         BluetoothActivity.writeToBTDevice(cmd);
         Log.d(LOG_TAG, "Sent clear command to bluetooth:" + cmd);
 
-//        if(BoredApplication.isConnectedToBluetooth){
-//            String cmdString = BluetoothActivity.readFromBTDevice();
-//            if(cmdString.equals("A")){
-//                sendMessageToUI("Able to draw on NIOS", BLUETOOTH_CMD);
-//            }else if(cmdString.equals("B")){
-//                sendMessageToUI("Unable to draw on NIOS", BLUETOOTH_CMD);
-//            }else{
-//                /*do nothing */
-//            }
-//        }
-
     }
 
     public void fill(final int x, final int y, final ColourMenu.Colour colourToFill, final ColourMenu.Colour fillColour) {
 
-        Thread thread = new Thread(new Runnable() {
+        /* Create a new worker thread to perform the algorithm off of the main UI thread */
+        final Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+
+                /* Stack of points to examine */
                 Stack<Point> pointStack = new Stack<>();
                 Point nextPoint;
                 pointStack.push(new Point(x, y));
                 ColourMenu.Colour pixelColour;
 
                 do {
-                    nextPoint = pointStack.pop();
+                    /* The UI thread has requested us to stop so do so */
+                    if(Thread.interrupted()){
+                        return;
+                    }
 
+                    /* Pixels on the stack should be filled in with the desired color */
+                    nextPoint = pointStack.pop();
                     set(nextPoint.locX, nextPoint.locY,
                             color(fillColour.getColourR(),
                                     fillColour.getColourG(),
                                     fillColour.getColourB()));
 
-                    pixels[nextPoint.locY * width + nextPoint.locX] = color(fillColour.getColourR(),
-                            fillColour.getColourG(),
-                            fillColour.getColourB());
 
-                    //updatePixels();
+                    /* Check the point to the right to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX + 1, nextPoint.locY));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
 
@@ -493,6 +507,7 @@ public class DrawerFragment extends PApplet {
                                         fillColour.getColourG(),
                                         fillColour.getColourB()));
                     }
+                    /* Check the point below to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX, nextPoint.locY + 1));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
 
@@ -503,6 +518,7 @@ public class DrawerFragment extends PApplet {
                                         fillColour.getColourG(),
                                         fillColour.getColourB()));
                     }
+                    /* Check the point to the left to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX - 1, nextPoint.locY));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
                         pointStack.push(new Point(nextPoint.locX - 1, nextPoint.locY));
@@ -512,6 +528,7 @@ public class DrawerFragment extends PApplet {
                                         fillColour.getColourG(),
                                         fillColour.getColourB()));
                     }
+                    /* Check the point above to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX, nextPoint.locY - 1));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
                         pointStack.push(new Point(nextPoint.locX, nextPoint.locY - 1));
@@ -521,10 +538,12 @@ public class DrawerFragment extends PApplet {
                                         fillColour.getColourG(),
                                         fillColour.getColourB()));
                     }
-
+                /* Break out of loop when we have filled in all the points */
                 } while (!pointStack.isEmpty());
             }
         });
+        /* Add this thread to our set of active threads so that we can destroy it prematurely if needed */
+        mActiveThreads.add(thread);
         thread.start();
 
 
