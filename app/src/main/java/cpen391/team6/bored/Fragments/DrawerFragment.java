@@ -82,6 +82,11 @@ public class DrawerFragment extends PApplet {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
     }
@@ -89,8 +94,11 @@ public class DrawerFragment extends PApplet {
     @Override
     public void onStop() {
         super.onStop();
-        for(Thread thread : mActiveThreads){
-            thread.interrupt();
+
+        if(mActiveThreads != null) {
+            for (Thread thread : mActiveThreads) {
+                thread.interrupt();
+            }
         }
 
     }
@@ -273,6 +281,7 @@ public class DrawerFragment extends PApplet {
                     mUndoListHead.getPointList().setNext(new PointList(new Point(mouseX, mouseY)));
                     mUndoListHead.setPointList(mUndoListHead.getPointList().getNext());
 
+                    Log.d(LOG_TAG, "Draw line in draw space");
                     line(mLastLocX, mLastLocY, mouseX, mouseY);
 
                     if (BoredApplication.isConnectedToBluetooth) {

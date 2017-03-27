@@ -88,7 +88,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.create_note_fragment_layout, container, false);
 
@@ -127,15 +127,28 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                      * doesn't provide the full width of the layout
                      */
 
-                    mDrawFrameWidth = mDrawFrame.getWidth() + 100;
-                    mDrawFrameHeight = mDrawFrame.getHeight();
-
-                    System.out.println("Draw Frame Width:" + mDrawFrame.getWidth());
-                    System.out.println("Draw Frame Height:" + mDrawFrame.getHeight());
-
-                    //pass width and height of screen as arguments to launch animation
                     Bundle arguments = new Bundle();
 
+                    if(savedInstanceState == null) {
+
+                        mDrawFrameWidth = mDrawFrame.getWidth() + 100;
+                        mDrawFrameHeight = mDrawFrame.getHeight();
+
+                    }else{
+                        if(savedInstanceState.getInt("draw_frame_width") != 0
+                                && savedInstanceState.getInt("draw_frame_height") != 0){
+                            mDrawFrameWidth = savedInstanceState.getInt("draw_frame_width");
+                            mDrawFrameHeight = savedInstanceState.getInt("draw_frame_height");
+                        }else{
+                            mDrawFrameWidth = mDrawFrame.getWidth() + 100;
+                            mDrawFrameHeight = mDrawFrame.getHeight();
+                        }
+                    }
+
+                    System.out.println("Draw Frame Width:" + mDrawFrameWidth);
+                    System.out.println("Draw Frame Height:" + mDrawFrameHeight);
+
+                    //pass width and height of screen as arguments to launch animation
                     arguments.putDouble("width", mDrawFrameWidth);
                     arguments.putDouble("height", mDrawFrameHeight);
 
@@ -153,7 +166,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     /* Replace the current fragment that is being displayed, provide it with a tag so we can
                     * locate it in the future
                     */
-                    transaction.add(R.id.drawing_space, mDrawer, "draw_space");
+                    transaction.replace(R.id.drawing_space, mDrawer, "draw_space");
 
                     /* This call is necessary so we don't create a new fragment by default, not sure why */
                     transaction.addToBackStack(null);
@@ -271,6 +284,15 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
             menu.findItem(R.id.stream_to_device).setIcon(R.mipmap.bluetooth);
         }
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState){
+
+        if(mDrawFrameWidth != 0 && mDrawFrameHeight != 0) {
+            savedInstanceState.putInt("draw_frame_width", mDrawFrameWidth);
+            savedInstanceState.putInt("draw_frame_height", mDrawFrameHeight);
+        }
     }
 
     @Override
