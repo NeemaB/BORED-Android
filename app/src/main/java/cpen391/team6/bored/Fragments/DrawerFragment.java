@@ -233,6 +233,35 @@ public class DrawerFragment extends PApplet {
                                     .updateFillIcon(R.color.colorSecondary,
                                             R.color.colorPrimary);
 
+                            break;
+
+                        case "highlight_undo_icon":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateUndoIcon(R.color.colorPrimary,
+                                            R.color.white);
+
+                            break;
+
+                        case "restore_undo_icon":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateUndoIcon(R.color.white,
+                                            R.color.colorPrimary);
+
+                            break;
+
+                        case "highlight_redo_icon":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateRedoIcon(R.color.colorPrimary,
+                                            R.color.white);
+
+                            break;
+
+                        case "restore_redo_icon":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateRedoIcon(R.color.white,
+                                            R.color.colorPrimary);
+
+                            break;
                     }
                 }
             }
@@ -631,6 +660,9 @@ public class DrawerFragment extends PApplet {
         //TODO: Implement this on the android device, currently it just sends commands to NIOS
 
         if (mState == DrawerState.DRAWING) {
+
+            sendMessageToUI("highlight_undo_icon", UI_CMD);
+
             if (mUndoListHead != null) {
 
                 strokeWeight(mUndoListHead.getPenWidth().dp + 1);
@@ -659,6 +691,20 @@ public class DrawerFragment extends PApplet {
                 Log.d(LOG_TAG, "Sent undo command to device:" + cmd);
 
             }
+
+            /* Poll for about 80 milliseconds then inform the UI thread that
+             * it should update the undo icon in the parent fragment
+             */
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    int start_time = millis();
+                    while(millis() - start_time < 80){};
+                    sendMessageToUI("restore_undo_icon", UI_CMD);
+                }
+            });
+
+            thread.start();
         }
 
 
@@ -675,6 +721,9 @@ public class DrawerFragment extends PApplet {
         //TODO: Implement this on the android device, currently it just sends commands to NIOS
 
         if (mState == DrawerState.DRAWING) {
+
+            sendMessageToUI("highlight_redo_icon", UI_CMD);
+
             if (mUndoListHead != null) {
 
                 if (mUndoListHead.getNext() != null) {
@@ -703,6 +752,20 @@ public class DrawerFragment extends PApplet {
                 Log.d(LOG_TAG, "Sent redo command to device:" + cmd);
 
             }
+
+            /* Poll for about 80 milliseconds then inform the UI thread that
+             * it should update the redo icon in the parent fragment
+             */
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    int start_time = millis();
+                    while(millis() - start_time < 80){};
+                    sendMessageToUI("restore_redo_icon", UI_CMD);
+                }
+            });
+
+            thread.start();
 
         }
     }

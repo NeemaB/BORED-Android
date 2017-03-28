@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -334,6 +335,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
             case R.id.undo:
                 mDrawer.undo();
+
                 break;
 
             case R.id.redo:
@@ -431,6 +433,16 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 // do something with byte[]
         }
 
+    }
+
+    public void updateRedoIcon(int iconColorId, int backgroundColorId){
+        mRedo.setTextColor(getResources().getColor(iconColorId));
+        mRedo.setBackgroundColor(getResources().getColor(backgroundColorId));
+    }
+
+    public void updateUndoIcon(int iconColorId, int backgroundColorId){
+        mUndo.setTextColor(getResources().getColor(iconColorId));
+        mUndo.setBackgroundColor(getResources().getColor(backgroundColorId));
     }
 
     public void updateColourIcon(int iconColorId, int backgroundColorId){
