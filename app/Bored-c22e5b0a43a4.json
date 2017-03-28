@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "boredpupil-ceed0",
+  "private_key_id": "c22e5b0a43a4b4a9d679b1ba98e117c6d83c07ce",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDJw+VyLVK8VPSh\n14Cy/VLHGcU0ovFiUutU4Ch2+XlIz9u0UGrIM2fLbJ0PXx6/qYXhOpdqgukdeE80\ndemb69LwzkiWLh/o9M5pLvPH/Tzy5uY2oZD8VifpREGKkDnfQaQ1X9o5Ay2Lhh+M\no0LoOb9n9SAM8y8XnvNwPNtH+d73LMvunN5Cu/RJuR5T5ny3KTtSRvKfuEG+RGjY\nCpsgXZ3PWXmyXWIbFg7MWSysC1X4uJVcUia2XqINwJ2KHnjfQxr4EYTV92DdFehy\ncrOqRBietB9y0gg7nR8QvAzFXnsQiB1y/TgGMMbZKH9sNmpwtGZI6rP9SNdkjgfB\n0McCLleTAgMBAAECggEASUM1rGjisvoSPjYXSGcNyLgF0KAeEDrVsuMWLmVV8edv\n+qB8tadc2BPfT/aVHrk6oNb6pjVU2luWPxFVu0U9Oi1dVBL5iUhjLvRaltLQb88B\n5vJxx/6szVn4hozqRrP6IVtlzO/neNNB33pk0Bgv9VqfwbQH9IbGFIo0gYUsvglE\nAoFEQi8B1/t138DmCkJwsPAe3NmTw5Y2ecUs1okV5/B2dnCItmIcC9mg6ZkKFW27\n6k6KOAv/SGdgNMZ/gCCu1QQHK1YUbjCNmopmgtu5gLTnZ5xtN88Y4l0xmvCjvMuO\n2GV3dGUfVGdDGd9zE10fbe87GeR+Etbk5voYoHDw8QKBgQDprxWUjG+MiSHbFpri\nQ+0gz7nXBEaEleVntlfQpLZyci2P8FVIcTMaeccfmgpbMPZuFODXQs0m1kmbmX0C\npdwrS3VW6iQx482sX586nIUrU5ip+ku8QtwcGpMpre3VDc8gVDYsLigC8HG86Aan\n9DJwmLoOu450Nlbl+64eQ5O/OQKBgQDdCH1DrBYqNTYcnfzTw+a7Nu1IkFOvp7Ly\nHTdZ3TyOZhBsSBq4Wcl0QMflS/z1rReWSXMMJSzGe9Kc/QxY0RrIf4P2PxNmAc1q\nrLmfJM7E4gso6exCexyjSesCZRjQz4jUoP7hT0FSPOsiKUdGyTqpAc0gRO1u0RYv\nGqXHG44BKwKBgCr9zBGVOJx5SiI9aWdBKeoEbWMyZSrVTOwkrsky1GH/wYQeqgH2\n2XkAeHLG6yrVujCMZMUVhBqmB8q5lTccfoH0kvTXhKstBtS0jt3Al/tdmNOEudQ7\n1LTS6sobNosgzD9dXs4H+9J2m+YuJbNWiMUQRAKb3NxiduA+ykzFD/R5AoGBAMP8\nCQX+ClE2iVpqg4lJhMavd0oGHw37RmIDodaeolkpCprYfEjF5CieYCBidlNoPSfW\nzJoSRFdh52enwFDoaDUrS9kGKK8kHf3eVWBVBLnyLC8E66Yu/z+SBT1EYvKTciIG\n9rjUy3id52eM7lRHjSnaHQXl2BmQb3koyaF4PzutAoGBAOMkjSJXO9rd63dQNJsC\nqT4n+uTwvCflCThrQxrsgo/us+j0lhh8IytwdHpx6HjjIaOJb35R6Ieq/1yU/9rL\nu3e3YxY9vnNhffX3ZFaaaH2e0K+so9UlBPgynzb41y1hSmk2AzOErfbiV4c03aCQ\n58v+eF3kJ+HzRZFvoZag7nUS\n-----END PRIVATE KEY-----\n",
+  "client_email": "bored-633@boredpupil-ceed0.iam.gserviceaccount.com",
+  "client_id": "114638864264842308931",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bored-633%40boredpupil-ceed0.iam.gserviceaccount.com"
+}
