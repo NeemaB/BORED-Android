@@ -1,6 +1,8 @@
 package cpen391.team6.bored.Fragments;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,10 +16,12 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -50,6 +54,7 @@ import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Items.ColourMenu;
 import cpen391.team6.bored.Items.Command;
 import cpen391.team6.bored.R;
+import cpen391.team6.bored.Utility.UI_Util;
 import processing.core.PApplet;
 
 /**
@@ -92,6 +97,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
         View view = inflater.inflate(R.layout.create_note_fragment_layout, container, false);
 
+        //((MainActivity) getActivity()).updateDrawerList();
         /* Find our view in the view hierarchy */
         mDrawFrame = (FrameLayout) view.findViewById(R.id.drawing_space);
         mColourPallette = (IconTextView) view.findViewById(R.id.colour_pallette);
@@ -258,6 +264,46 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     startActivityForResult(intent, CONNECT_BLUETOOTH);
                 }
 
+                break;
+
+            case R.id.save_draw_space:
+
+                View titleDialogView = getActivity()
+                        .getLayoutInflater()
+                        .inflate(R.layout.dialog_note_title_selection, null);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(
+                        new ContextThemeWrapper(getActivity(), R.style.DialogTheme));
+
+                builder.setTitle(getString(R.string.save_note))
+                        .setView(titleDialogView)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                dialog.dismiss();
+                            }
+                        })
+                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                AlertDialog titleDialog = builder.create();
+                titleDialog.setCanceledOnTouchOutside(true);
+                titleDialog.show();
+
+                UI_Util.setDialogStyle(titleDialog, getActivity());
+
+                break;
+
+            case R.id.load_draw_space:
+
+                break;
+
+
 
 
         }
@@ -321,6 +367,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
             case R.id.undo:
                 mDrawer.undo();
+
                 break;
 
             case R.id.redo:
@@ -418,6 +465,16 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 // do something with byte[]
         }
 
+    }
+
+    public void updateRedoIcon(int iconColorId, int backgroundColorId){
+        mRedo.setTextColor(getResources().getColor(iconColorId));
+        mRedo.setBackgroundColor(getResources().getColor(backgroundColorId));
+    }
+
+    public void updateUndoIcon(int iconColorId, int backgroundColorId){
+        mUndo.setTextColor(getResources().getColor(iconColorId));
+        mUndo.setBackgroundColor(getResources().getColor(backgroundColorId));
     }
 
     public void updateColourIcon(int iconColorId, int backgroundColorId){

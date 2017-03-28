@@ -1,6 +1,6 @@
 package cpen391.team6.bored.Activities;
 
-import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -8,25 +8,30 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Fragments.CreateNoteFragment;
-import cpen391.team6.bored.Fragments.ViewNotesFragment;
+import cpen391.team6.bored.Fragments.CourseNotesFragment;
 import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.UI_Util;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static String LOG_TAG = "MainActivity";
 
     private Fragment mCurrentFragment;
     private String[] mDrawerTitles;
@@ -36,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
     private ListView mDrawerList;
     private CharSequence mTitle;
     private Menu mMenu;
+
+    private static int COURSE_NOTES_POSITION = 0;
+    private static int CREATE_NOTE_POSITION = 1;
+    private static int SETTINGS_POSITION = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,16 +93,38 @@ public class MainActivity extends AppCompatActivity {
          * get weird UI bugs where the view notes fragment UI is placed on top of the
          * Create Notes fragment UI
          */
-        if(savedInstanceState == null) {
-            ViewNotesFragment fragment = new ViewNotesFragment();
+        if (savedInstanceState == null) {
+            CourseNotesFragment fragment = new CourseNotesFragment();
             FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
             fragmentTransaction.add(R.id.content_frame,
                     fragment,
-                    getString(R.string.view_notes_fragment_tag));
+                    getString(R.string.course_notes_fragment_tag));
 
             fragmentTransaction.commit();
             mCurrentFragment = fragment;
+
+            mDrawerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    mDrawerLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    mCurrentPosition = 0;
+                    updateDrawerList();
+                }
+            });
+         /* Retrieve the previously selected position in the drawer and assign it to the newly created instance
+          * of this activity, then update the drawer list UI
+          */
+        } else {
+            mCurrentPosition = savedInstanceState.getInt("current_position");
+            mDrawerLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    mDrawerLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    updateDrawerList();
+                }
+            });
         }
+
 
     }
 
@@ -117,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu){
+    public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.create_note_fragment_menu, menu);
 
         /* Assign the menu */
@@ -139,9 +170,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu){
+    public boolean onPrepareOptionsMenu(Menu menu) {
 
-        if(menu != null) {
+        if (menu != null) {
             //Hides MenuItem action_edit
 
             /* Hide all the options menu items, these will only be accessible when the create note
@@ -185,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void updateMenu(int menuIconId, int drawableId){
+    public void updateMenu(int menuIconId, int drawableId) {
         MenuItem item = mMenu.findItem(menuIconId);
         item.setIcon(drawableId);
     }
@@ -196,86 +227,85 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private void selectItem(int position) {
+    private void selectItem(final int position) {
 
         /* Create a new fragment and specify the view to show depending on which option is chosen */
-        Fragment fragment = null;
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
 
         switch (position) {
 
             case 0:
 
-                /* First check to see if a fragment exists before we create a new one */
-                fragment = getFragmentManager()
-                        .findFragmentByTag(getString(R.string.view_notes_fragment_tag));
-
-                if (fragment == null)
-                    fragment = new ViewNotesFragment();
-
-                /* Replace the current fragment that is being displayed, provide it with a tag so we can
-                 * locate it in the future
-                 */
-
-                transaction.replace(R.id.content_frame,
-                        fragment,
-                        getString(R.string.view_notes_fragment_tag));
-
-                /* Ensure that the fragment is displayed in portrait mode */
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
-                /* Actually make the transition */
-                transaction.commit();
-
-                mCurrentFragment = fragment;
-
-
-                /* Allow swipe activation of drawer
+                /* If we are on the create note page, inform the user that their unsaved changes will be lost,
+                *  if the user selects yes then we will transition to the new fragment, otherwise we will stay where
+                *  we are
                 */
-                unLockDrawer();
+                if (mCurrentPosition == CREATE_NOTE_POSITION) {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            new ContextThemeWrapper(this, R.style.DialogTheme));
+
+                    builder.setTitle(getString(R.string.leave_fragment_title))
+                            .setMessage(R.string.leave_fragment_message)
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    loadCourseNotesFragment();
+                                    mCurrentPosition = position;
+                                    updateDrawerList();
+                                    // Highlight the selected item, update the title, and close the drawer
+                                    mDrawerList.setItemChecked(position, true);
+                                    //setTitle(mDrawerTitles[position]);
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+
+                    AlertDialog confirmationDialog = builder.create();
+                    confirmationDialog.setCanceledOnTouchOutside(true);
+                    confirmationDialog.show();
+
+                    UI_Util.setDialogStyle(confirmationDialog, this);
+
+                    mDrawerLayout.closeDrawer(mDrawerList);
+                    return;
+
+                }
+
+                loadCourseNotesFragment();
+
 
                 break;
 
 
             case 1:
-            /* First check to see if a fragment exists before we create a new one */
-                fragment = getFragmentManager()
-                        .findFragmentByTag(getString(R.string.create_note_fragment_tag));
 
-                if (fragment == null)
-                    fragment = new CreateNoteFragment();
-
-                /* Replace the current fragment that is being displayed, provide it with a tag so we can
-                 * locate it in the future
-                 */
-
-                transaction.replace(R.id.content_frame,
-                        fragment,
-                        getString(R.string.create_note_fragment_tag));
-
-
-                /* Actually make the transition */
-                transaction.commit();
-
-                mCurrentFragment = fragment;
-
-                /* We don't want to interfere with the drawing space so disable gesture activation of the
-                * drawer layout
-                */
-                lockDrawer();
-
-                /* Ensure that the fragment is displayed in landscape mode */
-                setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                loadCreateNoteFragment();
 
                 break;
         }
 
+        mCurrentPosition = position;
+        updateDrawerList();
         // Highlight the selected item, update the title, and close the drawer
         mDrawerList.setItemChecked(position, true);
         //setTitle(mDrawerTitles[position]);
         mDrawerLayout.closeDrawer(mDrawerList);
 
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+
+        savedInstanceState.putInt("current_position", mCurrentPosition);
     }
 
     @Override
@@ -287,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
         //setTitle(mCurrentFragment.getTag());
     }
@@ -300,6 +330,97 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
     }
 
+    public void updateDrawerList() {
+
+        //ArrayAdapter<String> drawerAdapter = (ArrayAdapter<String>) mDrawerList.getAdapter();
+
+        for (int i = 0; i < mDrawerList.getCount(); i++) {
+            TextView view = (TextView) mDrawerList.getChildAt(i);
+            view.setBackgroundColor(getResources().getColor(R.color.white));
+            view.setTextColor(getResources().getColor(R.color.colorPrimary));
+        }
+        Log.d(LOG_TAG, "First visible position in drawer list " + mDrawerList.getFirstVisiblePosition());
+        TextView view = (TextView) mDrawerList.getChildAt(mCurrentPosition);
+
+        view.setBackgroundColor(getResources()
+                .getColor(R.color.colorPrimary));
+
+        view.setTextColor(getResources().getColor(R.color.white));
+
+    }
+
+    private void loadCourseNotesFragment() {
+
+        Fragment fragment = null;
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+        /* First check to see if a fragment exists before we create a new one */
+        fragment = getFragmentManager()
+                .findFragmentByTag(getString(R.string.course_notes_fragment_tag));
+
+        if (fragment == null)
+            fragment = new CourseNotesFragment();
+
+                /* Replace the current fragment that is being displayed, provide it with a tag so we can
+                 * locate it in the future
+                 */
+
+        transaction.replace(R.id.content_frame,
+                fragment,
+                getString(R.string.course_notes_fragment_tag));
+
+                /* Ensure that the fragment is displayed in portrait mode */
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+                /* Actually make the transition */
+        transaction.commit();
+
+        mCurrentFragment = fragment;
+
+
+                /* Allow swipe activation of drawer
+                */
+        unLockDrawer();
+    }
+
+    private void loadCreateNoteFragment() {
+
+        Fragment fragment = null;
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+        /* First check to see if a fragment exists before we create a new one */
+        fragment = getFragmentManager()
+                .findFragmentByTag(getString(R.string.create_note_fragment_tag));
+
+        if (fragment == null)
+            fragment = new CreateNoteFragment();
+
+        /* Replace the current fragment that is being displayed, provide it with a tag so we can
+         * locate it in the future
+         */
+        transaction.replace(R.id.content_frame,
+                fragment,
+                getString(R.string.create_note_fragment_tag));
+
+
+        /* Actually make the transition */
+        transaction.commit();
+
+        mCurrentFragment = fragment;
+
+        /* We don't want to interfere with the drawing space so disable gesture activation of the
+         * drawer layout
+         */
+        lockDrawer();
+
+        /* Ensure that the fragment is displayed in landscape mode */
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+    }
+
+    private void loadSettingsFragment() {
+
+    }
 
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override

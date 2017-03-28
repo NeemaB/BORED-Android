@@ -23,7 +23,6 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import cpen391.team6.bored.R;
 
 
@@ -31,7 +30,7 @@ import cpen391.team6.bored.R;
  * Created by neema on 2017-03-14.
  * Implemented by Andy Tertzakian on 2017-03-19
  */
-public class ViewNotesFragment extends Fragment {
+public class CourseNotesFragment extends Fragment {
 
     private  String mKeyPath = "/Bored-c22e5b0a43a4.json";
     private String bucketName = "boredpupil-ceed0.appspot.com";
@@ -44,7 +43,7 @@ public class ViewNotesFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
-        View view = inflater.inflate(R.layout.view_notes_fragment_layout, container, false);
+        View view = inflater.inflate(R.layout.course_notes_fragment_layout, container, false);
         Log.d("TEST", "HERE");
         try {
             Log.d("TEST", "HERE1");
