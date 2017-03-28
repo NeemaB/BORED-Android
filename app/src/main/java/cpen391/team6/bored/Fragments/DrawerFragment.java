@@ -630,6 +630,14 @@ public class DrawerFragment extends PApplet {
                             Log.d(LOG_TAG, "Sent clear screen command to bluetooth:" + cmd);
 
                         }
+                        /* If we are currently filling something, stop the corresponding thread(s)
+                         * so we don't fill the screen with a new colour after clearing it
+                         */
+                        if(mActiveThreads != null) {
+                            for (Thread thread : mActiveThreads) {
+                                thread.interrupt();
+                            }
+                        }
                         dialog.dismiss();
                     }
                 }).setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
