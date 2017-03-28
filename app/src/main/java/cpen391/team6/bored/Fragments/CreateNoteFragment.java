@@ -259,6 +259,18 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     startActivityForResult(intent, CONNECT_BLUETOOTH);
                 }
 
+                break;
+
+            case R.id.save_draw_space:
+
+
+                break;
+
+            case R.id.load_draw_space:
+
+                break;
+
+
 
 
         }

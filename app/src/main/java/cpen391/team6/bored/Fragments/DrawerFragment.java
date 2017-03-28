@@ -875,6 +875,8 @@ public class DrawerFragment extends PApplet {
         return mPenColour;
     }
 
+    public PenWidthMenu.PenWidth getPenWidth() { return mPenWidth; }
+
     /***********************************************************************************************
      * Function to save the screen state using a byte array
      *
