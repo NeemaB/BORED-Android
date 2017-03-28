@@ -92,6 +92,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
         View view = inflater.inflate(R.layout.create_note_fragment_layout, container, false);
 
+        //((MainActivity) getActivity()).updateDrawerList();
         /* Find our view in the view hierarchy */
         mDrawFrame = (FrameLayout) view.findViewById(R.id.drawing_space);
         mColourPallette = (IconTextView) view.findViewById(R.id.colour_pallette);

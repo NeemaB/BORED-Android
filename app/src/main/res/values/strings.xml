@@ -3,15 +3,15 @@
 
     <!-- Activity Drawer Strings -->
     <string-array name="drawer_list_array">
-        <item>View Notes</item>
-        <item>Create Notes</item>
+        <item>Course Notes</item>
+        <item>Create Note</item>
         <item>Settings</item>
     </string-array>
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
 
     <!-- Fragment tags -->
-    <string name="view_notes_fragment_tag">View Notes</string>
+    <string name="course_notes_fragment_tag">Course Notes</string>
     <string name="create_note_fragment_tag">Create Note</string>
 
     <!-- Draw Fragment Strings -->
