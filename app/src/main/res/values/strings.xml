@@ -32,6 +32,8 @@
     <!-- Create Note Fragment Strings -->
     <string name="save_draw_space">Save</string>
     <string name="load_draw_space">Load</string>
+    <string name="leave_fragment_title">Leave Page</string>
+    <string name="leave_fragment_message">Are you sure you want to leave this page? Any unsaved changes will be lost</string>
 
 
 </resources>
