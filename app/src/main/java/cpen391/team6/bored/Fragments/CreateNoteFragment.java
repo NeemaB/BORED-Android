@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.app.Fragment;
 
 import android.app.FragmentTransaction;
+import android.os.Looper;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
@@ -66,6 +68,8 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     private DrawerFragment mDrawer;
     private FrameLayout mDrawFrame;
 
+    private android.os.Handler mHandler;
+
     private Thread mListener;
 
     private static int CONNECT_BLUETOOTH = 0;
@@ -85,6 +89,18 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     @Override
     public void onCreate(Bundle onSavedInstanceState) {
         super.onCreate(onSavedInstanceState);
+
+        mHandler = new android.os.Handler(Looper.getMainLooper()) {
+
+            @Override
+            public void handleMessage(Message message) {
+                String toastString = message.getData().getString("toast_message");
+
+                Toast.makeText(getActivity(), toastString, Toast.LENGTH_SHORT).show();
+
+            }
+
+        };
 
         /* We may want to contribute to the action bar menu */
         setHasOptionsMenu(true);
@@ -205,21 +221,25 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     @Override
                     public void run() {
 
-                        BoredApplication.isConnectedLock.lock();
+                        //BoredApplication.isConnectedLock.lock();
 
-                        while(BoredApplication.isConnectedToBluetooth){
+                        for(;;){
+
+                            if(Thread.interrupted()){
+                                return;
+                            }
 
                             String cmdString = BluetoothActivity.readFromBTDevice();
-                            BoredApplication.isConnectedLock.unlock();
+                            //BoredApplication.isConnectedLock.unlock();
                             if(cmdString.equals("A")){
-                                Toast.makeText(getActivity(), "Able To Draw On NIOS", Toast.LENGTH_SHORT).show();
+                                sendMessageToUI("Able To Draw On NIOS");
                             }else if(cmdString.equals("B")){
-                                Toast.makeText(getActivity(), "Unable To Draw On NIOS", Toast.LENGTH_SHORT).show();
+                                sendMessageToUI("Unable To Draw On NIOS");
                             }else{
                                                 /*do nothing */
                             }
 
-                            BoredApplication.isConnectedLock.lock();
+                            //BoredApplication.isConnectedLock.lock();
                         }
 
                     }
@@ -466,6 +486,16 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         }
 
     }
+
+    private void sendMessageToUI(String msg) {
+
+        Message message = mHandler.obtainMessage();
+        Bundle bundle = new Bundle();
+        bundle.putString("toast_message", msg);
+        message.setData(bundle);
+        message.sendToTarget();
+    }
+
 
     public void updateRedoIcon(int iconColorId, int backgroundColorId){
         mRedo.setTextColor(getResources().getColor(iconColorId));
