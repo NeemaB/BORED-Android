@@ -9,41 +9,71 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Toast;
-import com.bumptech.glide.Glide;
-import com.google.firebase.storage.StorageReference;
+
+
+import cpen391.team6.bored.Data.ExternalNote;
+import cpen391.team6.bored.Data.LocalNote;
+import cpen391.team6.bored.Data.Note;
 import cpen391.team6.bored.R;
-import cpen391.team6.bored.Utility.FirebaseImageLoader;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by andytertzakian on 2017-03-16.
  */
 
-public class NoteImageAdapter extends ArrayAdapter {
+public class NoteImageAdapter extends ArrayAdapter <Note> {
     private Context context;
-    private LayoutInflater inflater;
 
+    private ArrayList<Note> notes;
     private String[] imageUrls;
 
-    public NoteImageAdapter(Context context, String[] imageUrls) {
-        super(context, R.layout.course_notes_fragment_layout, imageUrls);
+    private static class ViewHolder{
+        ImageView mNoteImage;
+    }
+
+    public NoteImageAdapter(Context context, int resourceId, ArrayList<Note> notes) {
+        super(context, resourceId, notes);
 
         this.context = context;
-        this.imageUrls = imageUrls;
-
-        inflater = LayoutInflater.from(context);
+        this.notes = notes;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (null == convertView) {
-            convertView = inflater.inflate(R.layout.course_notes_fragment_layout, parent, false);
+
+        Note note = getItem(position);
+        ViewHolder viewHolder;
+
+        if (convertView == null) {
+            viewHolder = new ViewHolder();
+
+            convertView = LayoutInflater.from(getContext())
+                    .inflate(R.layout.note_list_item, parent, false);
+
+            viewHolder.mNoteImage = (ImageView) convertView.findViewById(R.id.img);
+            convertView.setTag(viewHolder);
         }
 
-        Glide
-                .with(context)
-                .load(imageUrls[position])
-                .into((ImageView) convertView);
+        if(note instanceof LocalNote){
+            LocalNote localNote = (LocalNote) note;
+
+            //TODO: Do something with the local note here to fetch the image and populate the image view
+
+
+        }else if(note instanceof ExternalNote){
+            ExternalNote externalNote = (ExternalNote) note;
+
+            //TODO: Do something with the external note here to fetch the image and populate the image view
+
+//        Glide
+//                .with(context)
+//                .load(imageUrls[position])
+//                .into((ImageView) convertView);
+        }
+
+
 
         return convertView;
     }

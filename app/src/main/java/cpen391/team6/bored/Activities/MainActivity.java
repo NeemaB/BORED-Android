@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import cpen391.team6.bored.Fragments.CreateNoteFragment;
 import cpen391.team6.bored.Fragments.CourseNotesFragment;
+import cpen391.team6.bored.Fragments.MyNotesFragment;
 import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.UI_Util;
 
@@ -293,6 +294,8 @@ public class MainActivity extends AppCompatActivity {
 
             case MY_NOTES_POSITION:
 
+                loadMyNotesFragment();
+
                 //TODO: Implement this
 
                 break;
@@ -391,6 +394,42 @@ public class MainActivity extends AppCompatActivity {
         unLockDrawer();
     }
 
+
+    private void loadMyNotesFragment(){
+
+        Fragment fragment = null;
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+        /* First check to see if a fragment exists before we create a new one */
+        fragment = getFragmentManager()
+                .findFragmentByTag(getString(R.string.my_notes_fragment_tag));
+
+        if (fragment == null)
+            fragment = new MyNotesFragment();
+
+                /* Replace the current fragment that is being displayed, provide it with a tag so we can
+                 * locate it in the future
+                 */
+
+        transaction.replace(R.id.content_frame,
+                fragment,
+                getString(R.string.my_notes_fragment_tag));
+
+                /* Ensure that the fragment is displayed in portrait mode */
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+                /* Actually make the transition */
+        transaction.commit();
+
+        mCurrentFragment = fragment;
+
+
+                /* Allow swipe activation of drawer
+                */
+        unLockDrawer();
+
+    }
+
     private void loadCreateNoteFragment() {
 
         Fragment fragment = null;
@@ -429,6 +468,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadSettingsFragment() {
 
     }
+
 
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override

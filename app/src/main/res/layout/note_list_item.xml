@@ -5,8 +5,9 @@
     <TableRow>
         <ImageView
             android:id="@+id/img"
-            android:layout_width="50dp"
-            android:layout_height="50dp"/>
+            android:scaleType="centerCrop"
+            android:layout_width="80dp"
+            android:layout_height="80dp"/>
 
         <TextView
             android:id="@+id/txt"

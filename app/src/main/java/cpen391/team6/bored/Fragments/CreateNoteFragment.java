@@ -27,6 +27,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -288,7 +289,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
             case R.id.save_draw_space:
 
-                View titleDialogView = getActivity()
+                final View titleDialogView = getActivity()
                         .getLayoutInflater()
                         .inflate(R.layout.dialog_note_title_selection, null);
 
@@ -301,7 +302,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
-                                dialog.dismiss();
+                                //THIS DOES NOTHING, WE PROVIDE THE ACTUAL IMPLEMENTATION AFTERWARDS
                             }
                         })
                         .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
@@ -311,11 +312,40 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                             }
                         });
 
-                AlertDialog titleDialog = builder.create();
+                final AlertDialog titleDialog = builder.create();
                 titleDialog.setCanceledOnTouchOutside(true);
                 titleDialog.show();
 
                 UI_Util.setDialogStyle(titleDialog, getActivity());
+
+                titleDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        EditText setTitleEditText = (EditText) titleDialogView.findViewById(R.id.set_note_title);
+                        Log.d(LOG_TAG, "" + setTitleEditText.getText().length());
+                        if(setTitleEditText.getText().length() == 0){
+                            titleDialogView.findViewById(R.id.title_error_message)
+                                    .setVisibility(View.VISIBLE);
+                        }else {
+
+                            File file = getActivity().getFilesDir();
+                            String path = file.getAbsolutePath();
+                            Log.i(LOG_TAG, "path to files:" + path);
+
+                            ((DrawerFragment) mDrawer).saveFrame(path + "/temp.jpg");
+
+                            //File frame = new File(path + "/frame.jpg");
+                            for (int i = 0; i < file.listFiles().length; i++) {
+                                String s = file.listFiles()[i].toString();
+                                long size = file.listFiles()[i].getTotalSpace();
+                                Log.i(LOG_TAG, "file contained in app directory: " + s);
+                                Log.i(LOG_TAG, "file contained" + size + "bytes");
+                            }
+                            titleDialog.dismiss();
+                        }
+                    }
+                });
 
                 break;
 

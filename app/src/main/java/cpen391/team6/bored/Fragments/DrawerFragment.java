@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Observable;
 import java.util.Set;
@@ -34,6 +35,7 @@ import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.ImageUtil;
 import cpen391.team6.bored.Utility.UI_Util;
 import processing.core.PApplet;
+
 
 /**
  * Created by neema on 2017-03-12.
@@ -514,6 +516,7 @@ public class DrawerFragment extends PApplet {
             @Override
             public void run() {
 
+                HashMap<Point, Boolean> checkedPoints = new HashMap<>();
                 /* Stack of points to examine */
                 Stack<Point> pointStack = new Stack<>();
                 Point nextPoint;
@@ -537,8 +540,11 @@ public class DrawerFragment extends PApplet {
                     /* Check the point to the right to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX + 1, nextPoint.locY));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
-
-                        pointStack.push(new Point(nextPoint.locX + 1, nextPoint.locY));
+                        Point checkPoint = new Point(nextPoint.locX + 1, nextPoint.locY);
+                        if(checkedPoints.get(checkPoint) == null) {
+                            checkedPoints.put(checkPoint, true);
+                            pointStack.push(checkPoint);
+                        }
                     } else {
                         set(nextPoint.locX + 1, nextPoint.locY,
                                 color(fillColour.getColourR(),
@@ -548,8 +554,12 @@ public class DrawerFragment extends PApplet {
                     /* Check the point below to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX, nextPoint.locY + 1));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
+                        Point checkPoint = new Point(nextPoint.locX, nextPoint.locY + 1);
+                        if(checkedPoints.get(checkPoint) == null) {
+                            checkedPoints.put(checkPoint, true);
+                            pointStack.push(checkPoint);
+                        }
 
-                        pointStack.push(new Point(nextPoint.locX, nextPoint.locY + 1));
                     } else {
                         set(nextPoint.locX, nextPoint.locY + 1,
                                 color(fillColour.getColourR(),
@@ -559,7 +569,12 @@ public class DrawerFragment extends PApplet {
                     /* Check the point to the left to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX - 1, nextPoint.locY));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
-                        pointStack.push(new Point(nextPoint.locX - 1, nextPoint.locY));
+                        Point checkPoint = new Point(nextPoint.locX - 1, nextPoint.locY);
+                        if(checkedPoints.get(checkPoint) == null) {
+                            checkedPoints.put(checkPoint, true);
+                            pointStack.push(checkPoint);
+                        }
+
                     } else {
                         set(nextPoint.locX - 1, nextPoint.locY,
                                 color(fillColour.getColourR(),
@@ -569,7 +584,11 @@ public class DrawerFragment extends PApplet {
                     /* Check the point above to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX, nextPoint.locY - 1));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
-                        pointStack.push(new Point(nextPoint.locX, nextPoint.locY - 1));
+                        Point checkPoint = new Point(nextPoint.locX, nextPoint.locY - 1);
+                        if(checkedPoints.get(checkPoint) == null) {
+                            checkedPoints.put(checkPoint, true);
+                            pointStack.push(checkPoint);
+                        }
                     } else {
                         set(nextPoint.locX, nextPoint.locY - 1,
                                 color(fillColour.getColourR(),
@@ -980,6 +999,7 @@ public class DrawerFragment extends PApplet {
         return pixelData;
     }
 
+
     public ColourMenu.Colour pixelDataToColour(int pixel) {
         int R = (pixel >> 16) & 255;
         int G = (pixel >> 8) & 255;
@@ -995,6 +1015,12 @@ public class DrawerFragment extends PApplet {
                 | colour.getColourB();
 
         return returnData;
+    }
+
+    @Override
+    public void saveFrame(String filename){
+
+
     }
 
     @Override

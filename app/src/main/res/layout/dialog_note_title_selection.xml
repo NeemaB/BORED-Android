@@ -5,7 +5,18 @@
     android:orientation="vertical">
 
 
+    <TextView
+        android:id="@+id/title_error_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingTop="4dp"
+        android:text="@string/title_error_message"
+        android:textColor="#FF0000"
+        android:visibility="invisible"/>
+
     <EditText
+        android:id="@+id/set_note_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
