@@ -348,15 +348,15 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < mDrawerList.getCount(); i++) {
             TextView view = (TextView) mDrawerList.getChildAt(i);
             view.setBackgroundColor(getResources().getColor(R.color.white));
-            view.setTextColor(getResources().getColor(R.color.colorPrimary));
+            view.setTextColor(getResources().getColor(R.color.dark_gray));
         }
         Log.d(LOG_TAG, "First visible position in drawer list " + mDrawerList.getFirstVisiblePosition());
         TextView view = (TextView) mDrawerList.getChildAt(mCurrentPosition);
 
         view.setBackgroundColor(getResources()
-                .getColor(R.color.colorPrimary));
+                .getColor(R.color.light_gray));
 
-        view.setTextColor(getResources().getColor(R.color.white));
+        //view.setTextColor(getResources().getColor(R.color.white));
 
     }
 
