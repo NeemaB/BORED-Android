@@ -48,6 +48,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observer;
 
 import cpen391.team6.bored.Activities.BluetoothActivity;
@@ -55,7 +57,9 @@ import cpen391.team6.bored.Activities.MainActivity;
 import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Items.ColourMenu;
 import cpen391.team6.bored.Items.Command;
+import cpen391.team6.bored.Items.Point;
 import cpen391.team6.bored.R;
+import cpen391.team6.bored.Utility.ImageUtil;
 import cpen391.team6.bored.Utility.UI_Util;
 import processing.core.PApplet;
 
@@ -232,6 +236,8 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                             String cmdString = BluetoothActivity.readFromBTDevice();
                             //BoredApplication.isConnectedLock.unlock();
                             if(cmdString.equals("A")){
+                                sendMessageToUI("Sending Screen State To NIOS");
+                                sendScreenState();
                                 sendMessageToUI("Able To Draw On NIOS");
                             }else if(cmdString.equals("B")){
                                 sendMessageToUI("Unable To Draw On NIOS");
@@ -494,6 +500,67 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         bundle.putString("toast_message", msg);
         message.setData(bundle);
         message.sendToTarget();
+    }
+
+    private void sendScreenState() {
+        int NIOSWIDTH = 681;
+        int NIOSHEIGHT = 478;
+        int width = mDrawer.width;
+        int height = mDrawer.height;
+        int lastidx = -1;
+        int thisidx = -1;
+        int count = 0;
+
+        // TODO: send a command that tells the board we are starting
+
+        // x goes from 34 to 714 on the DE1
+        for (int x = 0; x < NIOSWIDTH; x++) {
+            // y goes from 1 to 478 on the DE1
+            for (int y = 0; y < NIOSHEIGHT; y++) {
+                // get all the points in a small square that corresponds to a single pixel on the DE1
+                // figure out which colour appears the most, and use this value on the DE1
+                Map<Integer, Integer> colourCount = new HashMap<Integer, Integer>();
+                for (int i = x * mDrawer.width / NIOSWIDTH; i < (x+1) * mDrawer.width / NIOSWIDTH; i++) {
+                    for (int j = y * mDrawer.height / NIOSHEIGHT; j < (y+1) * mDrawer.height / NIOSHEIGHT; j++) {
+                        // get the colour of the pixel
+                        ColourMenu.Colour pixelColour = mDrawer.pixelDataToColour(mDrawer.get(i, j));
+
+                        // store the pixel in a map
+                        int index = pixelColour.getIndex();
+                        if (colourCount.get(index) == null) {
+                            colourCount.put(index, 0);
+                        } else {
+                            colourCount.put(index, colourCount.get(index) + 1);
+                        }
+                    }
+                }
+
+                // find the most common pixel
+                Map.Entry<Integer, Integer> maxEntry = null;
+                for (Map.Entry<Integer, Integer> entry : colourCount.entrySet()) {
+                    if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
+                        maxEntry = entry;
+                    }
+                }
+
+                thisidx = maxEntry.getKey();
+                if (lastidx == -1) {
+                    lastidx = thisidx;
+                    count = 1;
+                } else if (lastidx == thisidx) {
+                    count++;
+                } else {
+                    // TODO: send a command saying how many of which colour pixels there are
+                    /*
+                     * what happens if you send like 1000 of one pixel, then a bunch of different pixels?
+                     * will the DE1 ignore the later commands because it is still working on the 1000 pixels?
+                     * come up with a way to avoid this (maybe only send a maximum number of pixels at once)
+                     */
+                    lastidx = thisidx;
+                    count = 1;
+                }
+            }
+        }
     }
 
 
