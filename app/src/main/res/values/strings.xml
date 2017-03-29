@@ -4,6 +4,7 @@
     <!-- Activity Drawer Strings -->
     <string-array name="drawer_list_array">
         <item>Course Notes</item>
+        <item>My Notes</item>
         <item>Create Note</item>
         <item>Settings</item>
     </string-array>

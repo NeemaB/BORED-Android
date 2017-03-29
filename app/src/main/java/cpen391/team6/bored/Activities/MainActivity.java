@@ -42,9 +42,10 @@ public class MainActivity extends AppCompatActivity {
     private CharSequence mTitle;
     private Menu mMenu;
 
-    private static int COURSE_NOTES_POSITION = 0;
-    private static int CREATE_NOTE_POSITION = 1;
-    private static int SETTINGS_POSITION = 2;
+    private static final int COURSE_NOTES_POSITION = 0;
+    private static final int MY_NOTES_POSITION = 1;
+    private static final int CREATE_NOTE_POSITION = 2;
+    private static final int SETTINGS_POSITION = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -234,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch (position) {
 
-            case 0:
+            case COURSE_NOTES_POSITION:
 
                 /* If we are on the create note page, inform the user that their unsaved changes will be lost,
                 *  if the user selects yes then we will transition to the new fragment, otherwise we will stay where
@@ -284,11 +285,18 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
 
-            case 1:
+            case CREATE_NOTE_POSITION:
 
                 loadCreateNoteFragment();
 
                 break;
+
+            case MY_NOTES_POSITION:
+
+                //TODO: Implement this
+
+                break;
+
         }
 
         mCurrentPosition = position;
