@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/stream_to_device"
+        android:icon="@mipmap/bluetooth"
+        app:showAsAction="ifRoom"
         android:title="@string/open_bluetooth_stream" />
+
+    <item
+        android:id="@+id/save_draw_space"
+        android:icon="@mipmap/save_file"
+        app:showAsAction="ifRoom"
+        android:title="@string/save_draw_space" />
+
+    <item
+        android:id="@+id/load_draw_space"
+        android:icon="@mipmap/load_draw_space"
+        app:showAsAction="ifRoom"
+        android:title="@string/load_draw_space"/>
 
 </menu>

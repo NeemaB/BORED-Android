@@ -112,7 +112,7 @@ public abstract class ColourMenu extends PopUpMenu {
     public void drawSelf() {
 
         mDrawer.stroke(0);
-        mDrawer.strokeWeight(1);
+
 
         saveScreenState();
 
@@ -120,10 +120,24 @@ public abstract class ColourMenu extends PopUpMenu {
         for (Colour colour : mColourSet) {
             mDrawer.fill(colour);
 
-            mDrawer.rect(this.mLocX + colour.coloumn * mWidth / 4,
-                    this.mLocY + colour.row * mHeight / 4,
-                    mWidth / 4,
-                    mHeight / 4);
+            /* Highlight which penColour is currently selected */
+            if(mDrawer.getPenColour() == colour){
+                mDrawer.strokeWeight(10);
+                mDrawer.rect(this.mLocX + colour.coloumn * mWidth / 4 + 5,
+                        this.mLocY + colour.row * mHeight / 4 + 5,
+                        (mWidth/4) - 10,
+                        (mHeight / 4) - 10);
+            }else{
+                mDrawer.strokeWeight(1);
+                mDrawer.rect(this.mLocX + colour.coloumn * mWidth / 4,
+                        this.mLocY + colour.row * mHeight / 4,
+                        mWidth / 4,
+                        mHeight / 4);
+            }
+
+
+
+
         }
 
 

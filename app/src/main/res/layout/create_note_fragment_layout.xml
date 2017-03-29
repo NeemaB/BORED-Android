@@ -80,7 +80,7 @@
             android:layout_weight="1"
             android:textColor="@color/colorSecondary"
             android:gravity="center"
-            android:text="{md-wrap-text}"
+            android:text="{md-text-format}"
             android:textSize="30sp"/>
 
         <com.joanzapata.iconify.widget.IconTextView

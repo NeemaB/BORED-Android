@@ -52,18 +52,29 @@ public abstract class PenWidthMenu extends PopUpMenu {
     public void drawSelf() {
 
         mDrawer.stroke(0);
-        mDrawer.strokeWeight(1);
 
         saveScreenState();
 
         for (PenWidth penWidth : mPenWidthSet) {
-
             mDrawer.fill(ColourMenu.Colour.SLATE_GRAY);
-            mDrawer.rect(this.mLocX + penWidth.index * mWidth / 3,
-                    this.mLocY,
-                    mWidth / 3,
-                    mHeight);
 
+            /* Highlight which penWidth is currently selected */
+            if(mDrawer.getPenWidth() == penWidth){
+                mDrawer.strokeWeight(10);
+                mDrawer.rect(this.mLocX + penWidth.index * mWidth / 3 + 5,
+                        this.mLocY + 5,
+                        mWidth / 3 - 10,
+                        mHeight - 10);
+
+            }else {
+                mDrawer.strokeWeight(1);
+                mDrawer.rect(this.mLocX + penWidth.index * mWidth / 3,
+                        this.mLocY,
+                        mWidth / 3,
+                        mHeight);
+            }
+
+            mDrawer.strokeWeight(1);
             mDrawer.fill(mDrawer.getPenColour());
 
             mDrawer.ellipse(this.mLocX + penWidth.index * mWidth/3 + mWidth/6,

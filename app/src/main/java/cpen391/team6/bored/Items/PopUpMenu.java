@@ -16,10 +16,10 @@ public abstract class PopUpMenu {
 
     int [] mScreenState;
 
-    protected int mLocX;
-    protected int mLocY;
-    protected int mWidth;
-    protected int mHeight;
+    protected int mLocX;        //X start location of the menu, this determines where to start saving screen state
+    protected int mLocY;        //Y start location of the menu, this determines where to start saving screen state
+    protected int mWidth;       //Width of the menu, this determines how many pixels we need to save
+    protected int mHeight;      //Height of the menu, this determines how many pixels we need to save
     protected DrawerFragment mDrawer;
 
     /**********************************************************************************************
@@ -29,17 +29,27 @@ public abstract class PopUpMenu {
      **********************************************************************************************/
     protected void saveScreenState(){
 
-        mScreenState = new int [mWidth * mHeight];
+        /* Save the screen state for the menu as well as a small buffer region around the menu
+         * in both the x and y direction, this is in case we modify the stroke width
+         */
+        mScreenState = new int [(mWidth + 1) * (mHeight + 3)];
         mDrawer.loadPixels();
         int [] currState = mDrawer.pixels;
+        int cursor;
+        int row;
 
-        int cursor = mLocX;
-        int row = 1;
+        if(mLocY > 0){
+            cursor = (mLocX - 1) + mDrawer.width * (mLocY - 1);
+            row = mLocY;
+        }else {
+            cursor = mLocX - 1 + mDrawer.width * mLocY;
+            row = mLocY + 1;
+        }
 
-        for(int i = 0; i < mWidth * mHeight ; i++){
+        for(int i = 0; i < mScreenState.length ; i++){
             mScreenState[i] = currState[cursor++];
             if(cursor > row * mDrawer.width){
-                cursor = mDrawer.width * row + mLocX;
+                cursor = mDrawer.width * row + mLocX - 1;
                 row++;
             }
         }
@@ -52,18 +62,32 @@ public abstract class PopUpMenu {
      **********************************************************************************************/
     protected void restoreScreenState(){
 
-        int cursor = mLocX;
-        int row = 1;
+        mDrawer.loadPixels();
 
-        for(int i = 0; i < mWidth * mHeight; i++){
+        int cursor;
+        int row;
+
+        if(mLocY > 0){
+            cursor = (mLocX - 1) + mDrawer.width * (mLocY - 1);
+            row = mLocY;
+        }else {
+            cursor = mLocX - 1 + mDrawer.width * mLocY;
+            row = mLocY + 1;
+        }
+
+        for(int i = 0; i < mScreenState.length; i++){
             mDrawer.pixels[cursor++] = mScreenState[i];
             if(cursor > row * mDrawer.width){
-                cursor = mDrawer.width * row + mLocX;
+                cursor = mDrawer.width * row + mLocX - 1;
                 row++;
             }
         }
-
         mDrawer.updatePixels();
+
+//        mDrawer.strokeWeight(5);
+//        mDrawer.stroke(255);
+//        mDrawer.line(mLocX - 1, mLocY, mLocX - 1, mLocY + mHeight);
+//        mDrawer.line(mLocX, mLocY + mHeight, mLocX + mWidth, mLocY + mHeight);
 
     }
 

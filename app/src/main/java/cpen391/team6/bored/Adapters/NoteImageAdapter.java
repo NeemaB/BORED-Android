@@ -26,7 +26,7 @@ public class NoteImageAdapter extends ArrayAdapter {
     private String[] imageUrls;
 
     public NoteImageAdapter(Context context, String[] imageUrls) {
-        super(context, R.layout.view_notes_fragment_layout, imageUrls);
+        super(context, R.layout.course_notes_fragment_layout, imageUrls);
 
         this.context = context;
         this.imageUrls = imageUrls;
@@ -37,7 +37,7 @@ public class NoteImageAdapter extends ArrayAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         if (null == convertView) {
-            convertView = inflater.inflate(R.layout.view_notes_fragment_layout, parent, false);
+            convertView = inflater.inflate(R.layout.course_notes_fragment_layout, parent, false);
         }
 
         Glide

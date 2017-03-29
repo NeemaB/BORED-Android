@@ -1,5 +1,8 @@
 package cpen391.team6.bored.Fragments;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,10 +16,12 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -44,10 +49,12 @@ import java.nio.ShortBuffer;
 import java.util.Observer;
 
 import cpen391.team6.bored.Activities.BluetoothActivity;
+import cpen391.team6.bored.Activities.MainActivity;
 import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Items.ColourMenu;
 import cpen391.team6.bored.Items.Command;
 import cpen391.team6.bored.R;
+import cpen391.team6.bored.Utility.UI_Util;
 import processing.core.PApplet;
 
 /**
@@ -59,7 +66,10 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     private DrawerFragment mDrawer;
     private FrameLayout mDrawFrame;
 
-    private static int INIT_REMOTE_SCREEN = 0;
+    private Thread mListener;
+
+    private static int CONNECT_BLUETOOTH = 0;
+    private static int DISCONNECT_BLUETOOTH = 1;
 
     private int mDrawFrameWidth;
     private int mDrawFrameHeight;
@@ -83,10 +93,11 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, final Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.create_note_fragment_layout, container, false);
 
+        //((MainActivity) getActivity()).updateDrawerList();
         /* Find our view in the view hierarchy */
         mDrawFrame = (FrameLayout) view.findViewById(R.id.drawing_space);
         mColourPallette = (IconTextView) view.findViewById(R.id.colour_pallette);
@@ -122,15 +133,28 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                      * doesn't provide the full width of the layout
                      */
 
-                    mDrawFrameWidth = mDrawFrame.getWidth() + 100;
-                    mDrawFrameHeight = mDrawFrame.getHeight();
-
-                    System.out.println("Draw Frame Width:" + mDrawFrame.getWidth());
-                    System.out.println("Draw Frame Height:" + mDrawFrame.getHeight());
-
-                    //pass width and height of screen as arguments to launch animation
                     Bundle arguments = new Bundle();
 
+                    if(savedInstanceState == null) {
+
+                        mDrawFrameWidth = mDrawFrame.getWidth() + 100;
+                        mDrawFrameHeight = mDrawFrame.getHeight();
+
+                    }else{
+                        if(savedInstanceState.getInt("draw_frame_width") != 0
+                                && savedInstanceState.getInt("draw_frame_height") != 0){
+                            mDrawFrameWidth = savedInstanceState.getInt("draw_frame_width");
+                            mDrawFrameHeight = savedInstanceState.getInt("draw_frame_height");
+                        }else{
+                            mDrawFrameWidth = mDrawFrame.getWidth() + 100;
+                            mDrawFrameHeight = mDrawFrame.getHeight();
+                        }
+                    }
+
+                    System.out.println("Draw Frame Width:" + mDrawFrameWidth);
+                    System.out.println("Draw Frame Height:" + mDrawFrameHeight);
+
+                    //pass width and height of screen as arguments to launch animation
                     arguments.putDouble("width", mDrawFrameWidth);
                     arguments.putDouble("height", mDrawFrameHeight);
 
@@ -148,7 +172,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     /* Replace the current fragment that is being displayed, provide it with a tag so we can
                     * locate it in the future
                     */
-                    transaction.add(R.id.drawing_space, mDrawer, "draw_space");
+                    transaction.replace(R.id.drawing_space, mDrawer, "draw_space");
 
                     /* This call is necessary so we don't create a new fragment by default, not sure why */
                     transaction.addToBackStack(null);
@@ -167,6 +191,53 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == Activity.RESULT_OK){
+            if(requestCode == CONNECT_BLUETOOTH){
+                mDrawer.initRemoteScreen();
+                //BoredApplication.isConnectedToBluetooth = true ;
+                ((MainActivity) getActivity()).updateMenu(
+                        R.id.stream_to_device,
+                        R.mipmap.bluetooth_connected);
+
+                mListener = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        BoredApplication.isConnectedLock.lock();
+
+                        while(BoredApplication.isConnectedToBluetooth){
+
+                            String cmdString = BluetoothActivity.readFromBTDevice();
+                            BoredApplication.isConnectedLock.unlock();
+                            if(cmdString.equals("A")){
+                                Toast.makeText(getActivity(), "Able To Draw On NIOS", Toast.LENGTH_SHORT).show();
+                            }else if(cmdString.equals("B")){
+                                Toast.makeText(getActivity(), "Unable To Draw On NIOS", Toast.LENGTH_SHORT).show();
+                            }else{
+                                                /*do nothing */
+                            }
+
+                            BoredApplication.isConnectedLock.lock();
+                        }
+
+                    }
+                });
+
+                mListener.start();
+
+
+            }else if(requestCode == DISCONNECT_BLUETOOTH){
+                //BoredApplication.isConnectedToBluetooth = false ;
+                ((MainActivity) getActivity()).updateMenu(
+                        R.id.stream_to_device,
+                        R.mipmap.bluetooth);
+            }
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
@@ -182,13 +253,56 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     Log.i(LOG_TAG, "Sent terminate connection command to bluetooth:" + cmd);
 
                     intent.putExtra("bluetooth_request", BluetoothActivity.CLOSE_CONNECTION);
-                    startActivity(intent);
+
+                    if(mListener != null)
+                        mListener.interrupt();
+                    startActivityForResult(intent, DISCONNECT_BLUETOOTH);
 
                     /* Open the connection so we can stream data to the bluetooth chip */
                 } else {
                     intent.putExtra("bluetooth_request", BluetoothActivity.OPEN_CONNECTION);
-                    startActivityForResult(intent, INIT_REMOTE_SCREEN);
+                    startActivityForResult(intent, CONNECT_BLUETOOTH);
                 }
+
+                break;
+
+            case R.id.save_draw_space:
+
+                View titleDialogView = getActivity()
+                        .getLayoutInflater()
+                        .inflate(R.layout.dialog_note_title_selection, null);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(
+                        new ContextThemeWrapper(getActivity(), R.style.DialogTheme));
+
+                builder.setTitle(getString(R.string.save_note))
+                        .setView(titleDialogView)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+
+                                dialog.dismiss();
+                            }
+                        })
+                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                AlertDialog titleDialog = builder.create();
+                titleDialog.setCanceledOnTouchOutside(true);
+                titleDialog.show();
+
+                UI_Util.setDialogStyle(titleDialog, getActivity());
+
+                break;
+
+            case R.id.load_draw_space:
+
+                break;
+
 
 
 
@@ -202,16 +316,29 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
         menu.getItem(0).setVisible(true);
         menu.getItem(0).setEnabled(true);
+        menu.getItem(1).setVisible(true);
+        menu.getItem(1).setEnabled(true);
+        menu.getItem(2).setVisible(true);
+        menu.getItem(2).setEnabled(true);
 
         /* Depending on whether we are connected to the device
-         * change the title of this option
+         * change the bluetooth icon
          */
         if (BoredApplication.isConnectedToBluetooth) {
-            menu.getItem(0).setTitle(R.string.close_bluetooth_stream);
+            menu.findItem(R.id.stream_to_device).setIcon(R.mipmap.bluetooth_connected);
         } else {
-            menu.getItem(0).setTitle(R.string.open_bluetooth_stream);
+            menu.findItem(R.id.stream_to_device).setIcon(R.mipmap.bluetooth);
         }
 
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState){
+
+        if(mDrawFrameWidth != 0 && mDrawFrameHeight != 0) {
+            savedInstanceState.putInt("draw_frame_width", mDrawFrameWidth);
+            savedInstanceState.putInt("draw_frame_height", mDrawFrameHeight);
+        }
     }
 
     @Override
@@ -240,6 +367,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
             case R.id.undo:
                 mDrawer.undo();
+
                 break;
 
             case R.id.redo:
@@ -337,6 +465,16 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 // do something with byte[]
         }
 
+    }
+
+    public void updateRedoIcon(int iconColorId, int backgroundColorId){
+        mRedo.setTextColor(getResources().getColor(iconColorId));
+        mRedo.setBackgroundColor(getResources().getColor(backgroundColorId));
+    }
+
+    public void updateUndoIcon(int iconColorId, int backgroundColorId){
+        mUndo.setTextColor(getResources().getColor(iconColorId));
+        mUndo.setBackgroundColor(getResources().getColor(backgroundColorId));
     }
 
     public void updateColourIcon(int iconColorId, int backgroundColorId){
