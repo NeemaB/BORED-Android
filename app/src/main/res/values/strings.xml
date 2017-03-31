@@ -39,6 +39,7 @@
     <string name="save_note">Save Note</string>
 
     <!-- Settings Fragment -->
+    <string name="settings_title">Settings</string>
     <string name="class_code_title">Class Code</string>
     <string name="class_code_summary">Change your current class code.</string>
     <string name="class_code_message">Enter new class code:</string>

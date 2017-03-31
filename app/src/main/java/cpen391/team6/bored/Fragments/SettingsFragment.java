@@ -27,5 +27,6 @@ public class SettingsFragment extends PreferenceFragment {
         return sharedPref.getString("classCodePref", "");
     }
 
+
 }
 
