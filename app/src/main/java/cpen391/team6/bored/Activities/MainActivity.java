@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import cpen391.team6.bored.Fragments.CreateNoteFragment;
 import cpen391.team6.bored.Fragments.CourseNotesFragment;
+import cpen391.team6.bored.Fragments.SettingsFragment;
 import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.UI_Util;
 
@@ -289,6 +290,10 @@ public class MainActivity extends AppCompatActivity {
                 loadCreateNoteFragment();
 
                 break;
+
+            case 2:
+
+                loadSettingsFragment();
         }
 
         mCurrentPosition = position;
@@ -419,7 +424,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadSettingsFragment() {
+        Fragment fragment = null;
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
+        /* First check to see if a fragment exists before we create a new one */
+        fragment = getFragmentManager()
+                .findFragmentByTag(getString(R.string.settings_fragment_tag));
+
+        if (fragment == null)
+            fragment = new SettingsFragment();
+
+        /* Replace the current fragment that is being displayed, provide it with a tag so we can
+         * locate it in the future
+         */
+        transaction.replace(R.id.content_frame,
+                fragment,
+                getString(R.string.settings_fragment_tag));
+
+
+        /* Actually make the transition */
+        transaction.commit();
+
+        mCurrentFragment = fragment;
+
+        /* Allow swipe activation of drawer
+                */
+        unLockDrawer();
+
+        /* Ensure that the fragment is displayed in landscape mode */
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
     }
 
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
