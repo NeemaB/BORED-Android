@@ -311,8 +311,6 @@ public class BluetoothActivity extends Activity {
 
     private void closeConnection() {
 
-        BoredApplication.isConnectedLock.lock();
-
         try {
             mmInStream.close();
             mmInStream = null;
@@ -331,7 +329,6 @@ public class BluetoothActivity extends Activity {
 
         BoredApplication.isConnectedToBluetooth = false;
 
-        BoredApplication.isConnectedLock.unlock();
     }
 
     private void discover() {

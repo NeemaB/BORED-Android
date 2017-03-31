@@ -2,6 +2,7 @@ package cpen391.team6.bored.Fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,6 +15,7 @@ import android.os.Bundle;
 import android.app.Fragment;
 
 import android.app.FragmentTransaction;
+import android.os.Environment;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -31,14 +33,18 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.codekrypt.greendao.db.LocalNote;
+import com.codekrypt.greendao.db.LocalNoteDao;
 import com.joanzapata.iconify.widget.IconTextView;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.BufferUnderflowException;
@@ -49,6 +55,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Observer;
 
 import cpen391.team6.bored.Activities.BluetoothActivity;
@@ -59,6 +67,8 @@ import cpen391.team6.bored.Items.Command;
 import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.UI_Util;
 import processing.core.PApplet;
+
+
 
 /**
  * Created by neema on 2017-03-12.
@@ -261,6 +271,8 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
+        ((MainActivity) getActivity()).closeDrawer();
+
         switch (item.getItemId()) {
 
             case R.id.stream_to_device:
@@ -329,19 +341,12 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                                     .setVisibility(View.VISIBLE);
                         }else {
 
-                            File file = getActivity().getFilesDir();
-                            String path = file.getAbsolutePath();
-                            Log.i(LOG_TAG, "path to files:" + path);
+                            EditText setTopicEditText = (EditText) titleDialogView.findViewById(R.id.set_note_topic);
 
-                            ((DrawerFragment) mDrawer).saveFrame(path + "/temp.jpg");
+                            String noteTitle = setTitleEditText.getText().toString();
+                            String noteTopic = setTopicEditText.getText().toString();
 
-                            //File frame = new File(path + "/frame.jpg");
-                            for (int i = 0; i < file.listFiles().length; i++) {
-                                String s = file.listFiles()[i].toString();
-                                long size = file.listFiles()[i].getTotalSpace();
-                                Log.i(LOG_TAG, "file contained in app directory: " + s);
-                                Log.i(LOG_TAG, "file contained" + size + "bytes");
-                            }
+                            saveNote(noteTitle, noteTopic);
                             titleDialog.dismiss();
                         }
                     }
@@ -426,97 +431,73 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
             case R.id.fill:
                 mDrawer.toggleFillActive();
-
-//                final byte[] pixelData = mDrawer.saveScreen();
-//
-//                int sendSize = 20;
-//                final byte [] sendData = new byte[sendSize];
-//                for (int i = 0; i < sendSize; i++){
-//                    sendData[i] = pixelData[i];
-//                }
-////                for(int i = 0; i < 30; i++) {
-////                    int data = pixelData[i] & 255;
-////                    System.out.println(data);
-////                }
-//
-//                if(BoredApplication.isConnectedToBluetooth) {
-//                    Toast.makeText(getActivity(), "Sending frame to bluetooth...", Toast.LENGTH_SHORT).show();
-//                    Thread thread = new Thread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            BluetoothActivity.writeToBTDevice(sendData);
-//                        }
-//                    });
-//                    thread.start();
-//                }else{
-//                    Toast.makeText(getActivity(), "Failed to send frame, not connected", Toast.LENGTH_SHORT).show();
-//                }
-
-
-//                Bitmap bitmap = BitmapFactory.decodeByteArray(pixelData, 0, pixelData.length, new BitmapFactory.Options());
-//                if(bitmap == null){
-//                    Log.e(LOG_TAG, "Failed to Decode Byte Array");
-//                }else{
-//                    Log.i(LOG_TAG, "Success, Bitmap Decoded From Byte Array");
-//                }
-
-
-
-//                File file = getActivity().getFilesDir();
-//
-//                String path = file.getAbsolutePath();
-//
-//                Log.i(LOG_TAG, "path to files:" + path);
-//
-//                mDrawer.saveFrame(path + "/frame.jpg");
-//
-//                File frame = new File(path + "/frame.jpg");
-//                for (int i = 0; i < file.listFiles().length; i++) {
-//                    String s = file.listFiles()[i].toString();
-//                    long size = file.listFiles()[i].getTotalSpace();
-//                    Log.i(LOG_TAG, "file contained in app directory: " + s);
-//                    Log.i(LOG_TAG, "file contained" + size + "bytes");
-//                }
-//                FileInputStream inputStream = null;
-//                try {
-//                    inputStream = new FileInputStream(frame);
-//                } catch (FileNotFoundException e) {
-//                }
-//
-//                //final BitmapFactory.Options options = new BitmapFactory.Options();
-//                //options.inJustDecodeBounds = true;
-//                BitmapFactory.Options o = new BitmapFactory.Options();
-//                o.inPreferredConfig = Bitmap.Config.ARGB_8888;
-//
-//                Rect rect = new Rect(50, 50, 50, 50);
-//                Bitmap frameBitmap = null;
-//                try {
-//                    frameBitmap = BitmapRegionDecoder.newInstance(inputStream, true).decodeRegion(rect, o);
-//                } catch (IOException e) {
-//                }
-//
-
-//                int size = frameBitmap.getRowBytes() * frameBitmap.getHeight();
-//                ByteBuffer b = ByteBuffer.allocate(size);
-//
-//                frameBitmap.copyPixelsToBuffer(b);
-
-//                byte[] bytes = new byte[size];
-//
-//                try {
-//                    b.get(bytes, 0, bytes.length);
-//                } catch (BufferUnderflowException e) {
-//                    // always happens
-//                }
-//
-//                //BluetoothActivity.writeToBTDevice(bytes.toString());
-//                System.out.println("bitmap file:" + bytes.toString());
-
-                // do something with byte[]
         }
 
     }
 
+
+    private void saveNote(String title, String topic){
+
+        /* Clear any visible popup menus */
+        mDrawer.clearMenus();
+
+                            /* Load the RGB values so we can generate our jpeg file */
+        mDrawer.loadPixels();
+        Bitmap bmp = Bitmap.createBitmap(mDrawer.pixels,
+                mDrawer.width,
+                mDrawer.height,
+                Bitmap.Config.ARGB_8888);
+
+
+        /* Create a jpeg file using the RGB array */
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] byteArray = stream.toByteArray();
+
+        FileOutputStream outputStream;
+        File file = getActivity().getFilesDir();
+        String path = file.getAbsolutePath();
+
+        String filename = (title + ".jpg").replaceAll("\\W+", "_");
+
+        //TODO: Check for duplicates filnames here, inform user that existing note will be overwritten
+        try{
+            outputStream = new FileOutputStream(path + "/" + filename);
+            outputStream.write(byteArray);
+            outputStream.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+        Log.i(LOG_TAG, "path to files:" + path);
+
+        for (int i = 0; i < file.listFiles().length; i++) {
+            String s = file.listFiles()[i].toString();
+            long size = file.listFiles()[i].getTotalSpace();
+            Log.i(LOG_TAG, "file contained in app directory: " + s);
+            Log.i(LOG_TAG, "file contained" + size + "bytes");
+        }
+
+        /* Get the database manager */
+        LocalNoteDao localNoteDao = BoredApplication.getDaoSession().getLocalNoteDao();
+        LocalNote localNote = new LocalNote();
+
+        Calendar calendar = Calendar.getInstance();
+
+        Date noteDate = new Date();
+
+        /* Set the date of the note to the current time */
+        noteDate.setTime(calendar.getTimeInMillis());
+
+        /* Set the fields in our note, then add it to our database */
+        localNote.setDate(noteDate);
+        localNote.setTitle(title);
+        localNote.setTopic(topic);
+        localNote.setFilePath(path + "/" + filename);
+        localNoteDao.insert(localNote);
+
+    }
     private void sendMessageToUI(String msg) {
 
         Message message = mHandler.obtainMessage();

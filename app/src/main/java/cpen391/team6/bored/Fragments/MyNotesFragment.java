@@ -9,15 +9,31 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ListView;
+
+import com.codekrypt.greendao.db.LocalNote;
+import com.codekrypt.greendao.db.LocalNoteDao;
+
+import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
+import cpen391.team6.bored.Adapters.LocalNoteAdapter;
+import cpen391.team6.bored.Adapters.NoteImageAdapter;
+import cpen391.team6.bored.BoredApplication;
+import cpen391.team6.bored.Data.Note;
 import cpen391.team6.bored.R;
 
 /**
  * Created by neema on 2017-03-28.
  */
 public class MyNotesFragment extends Fragment {
+
+    private ListView mNotesListView;
+    private List<LocalNote> mNotesList;
+    private LocalNoteAdapter mAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -28,16 +44,19 @@ public class MyNotesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.my_notes_fragment_layout, container, false);
-        ImageView tempImageView;
-        tempImageView = (ImageView) view.findViewById(R.id.temp_image);
-
-        File file = getActivity().getFilesDir();
-        String path = file.getAbsolutePath();
-
-        Bitmap bm = BitmapFactory.decodeFile(path + "/temp.jpg");
 
 
-        tempImageView.setImageBitmap(bm);
+        mNotesListView = (ListView) view.findViewById(R.id.my_notes_list);
+
+        LocalNoteDao localNoteDao = BoredApplication.getDaoSession().getLocalNoteDao();
+        QueryBuilder<LocalNote> qb = localNoteDao.queryBuilder();
+        mNotesList = qb.list();
+
+        mAdapter = new LocalNoteAdapter(getActivity(), R.layout.note_list_item, mNotesList);
+
+
+        mNotesListView.setAdapter(mAdapter);
+
 
         return view;
 

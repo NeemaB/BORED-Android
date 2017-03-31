@@ -10,34 +10,34 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-
 import com.codekrypt.greendao.db.LocalNote;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import cpen391.team6.bored.Data.ExternalNote;
 import cpen391.team6.bored.Data.Note;
 import cpen391.team6.bored.R;
 
-import java.util.ArrayList;
-
 /**
- * Created by andytertzakian on 2017-03-16.
+ * Created by neema on 2017-03-30.
  */
+public class LocalNoteAdapter extends ArrayAdapter<LocalNote> {
 
-public class NoteImageAdapter extends ArrayAdapter <Note> {
     private Context context;
 
-    private ArrayList<? extends Note> notes;
+    private List<? extends Note> notes;
     private String[] imageUrls;
 
-    private static class ViewHolder{
+    private static class ViewHolder {
         ImageView mNoteImage;
         TextView mNoteTitle;
         TextView mNoteTopic;
         TextView mNoteDate;
     }
 
-    public NoteImageAdapter(Context context, int resourceId, ArrayList<? extends Note> notes) {
-        super(context, resourceId, (ArrayList<Note>) notes);
+    public LocalNoteAdapter(Context context, int resourceId, List<LocalNote> notes) {
+        super(context, resourceId, notes);
 
         this.context = context;
         this.notes = notes;
@@ -63,37 +63,24 @@ public class NoteImageAdapter extends ArrayAdapter <Note> {
             convertView.setTag(viewHolder);
         }
 
-        if(note instanceof LocalNote){
-            LocalNote localNote = (LocalNote) note;
 
-            String date = localNote.getDate().toString();
-            String title = localNote.getTitle();
-            String topic = localNote.getTopic();
+        LocalNote localNote = (LocalNote) note;
 
-            if(topic.length() == 0)
-                viewHolder.mNoteTopic.setVisibility(View.GONE);
+        String date = localNote.getDate().toString();
+        String title = localNote.getTitle();
+        String topic = localNote.getTopic();
 
-            viewHolder.mNoteTitle.setText(title);
-            viewHolder.mNoteTopic.setText(topic);
-            viewHolder.mNoteDate.setText(date);
+        if (topic.length() == 0)
+            viewHolder.mNoteTopic.setVisibility(View.GONE);
 
-            Bitmap bm = BitmapFactory.decodeFile(localNote.getFilePath());
-            viewHolder.mNoteImage.setImageBitmap(bm);
+        viewHolder.mNoteTitle.setText(title);
+        viewHolder.mNoteTopic.setText(topic);
+        viewHolder.mNoteDate.setText(date);
 
-            //TODO: Do something with the local note here to fetch the image and populate the image view
+        Bitmap bm = BitmapFactory.decodeFile(localNote.getFilePath());
+        viewHolder.mNoteImage.setImageBitmap(bm);
 
-
-        }else if(note instanceof ExternalNote){
-            ExternalNote externalNote = (ExternalNote) note;
-
-            //TODO: Do something with the external note here to fetch the image and populate the image view
-
-//        Glide
-//                .with(context)
-//                .load(imageUrls[position])
-//                .into((ImageView) convertView);
-        }
-
+        //TODO: Do something with the local note here to fetch the image and populate the image view
 
 
         return convertView;

@@ -4,10 +4,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ListView
+        android:id="@+id/my_notes_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/temp_image"
+    </ListView>
+
+    <TextView
+        android:id="@+id/no_local_notes_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:scaleType="centerCrop"/>
+        android:layout_gravity="center"
+        android:gravity="center"/>
+
+    <!--<ImageView-->
+        <!--android:id="@+id/temp_image"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:scaleType="centerCrop"/>-->
 </LinearLayout>
