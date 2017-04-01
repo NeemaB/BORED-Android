@@ -278,6 +278,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     public boolean onOptionsItemSelected(MenuItem item) {
 
         ((MainActivity) getActivity()).closeDrawer();
+        mDrawer.clearMenus();
 
         switch (item.getItemId()) {
 
@@ -307,6 +308,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
             case R.id.save_draw_space:
 
+                /* Create view to place inside of the dialog window */
                 final View titleDialogView = getActivity()
                         .getLayoutInflater()
                         .inflate(R.layout.dialog_note_title_selection, null);
@@ -340,6 +342,9 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     @Override
                     public void onClick(View v) {
 
+                        boolean err;
+
+                        /* If the user has not entered a title, display error message */
                         EditText setTitleEditText = (EditText) titleDialogView.findViewById(R.id.set_note_title);
                         Log.d(LOG_TAG, "" + setTitleEditText.getText().length());
                         if(setTitleEditText.getText().length() == 0){
@@ -352,7 +357,15 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                             String noteTitle = setTitleEditText.getText().toString();
                             String noteTopic = setTopicEditText.getText().toString();
 
-                            saveNote(noteTitle, noteTopic);
+                            /* Persist note to local storage */
+                            err = saveNote(noteTitle, noteTopic);
+
+                            /* Inform the user that note was saved successfully */
+                            if(err){
+                                Toast.makeText(getActivity(), "Failed to save note!", Toast.LENGTH_SHORT).show();
+                            }else {
+                                Toast.makeText(getActivity(), "Saved note successfully!", Toast.LENGTH_SHORT).show();
+                            }
                             titleDialog.dismiss();
                         }
                     }
@@ -433,18 +446,36 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
 
-    private void saveNote(String title, String topic){
+    private boolean saveNote(String title, String topic){
 
         /* Clear any visible popup menus */
         mDrawer.clearMenus();
 
-                            /* Load the RGB values so we can generate our jpeg file */
+        /* Get the database manager */
+        LocalNoteDao localNoteDao = BoredApplication.getDaoSession().getLocalNoteDao();
+        LocalNote localNote = new LocalNote();
+
+        Calendar calendar = Calendar.getInstance();
+
+        /* Set the date of the note to the current time */
+        Date noteDate = calendar.getTime();
+
+        /* Set the fields in our note, then add it to our database */
+        localNote.setDate(noteDate);
+        localNote.setTitle(title);
+        localNote.setTopic(topic);
+
+        /* Load the RGB values so we can generate our jpeg file */
         mDrawer.loadPixels();
         Bitmap bmp = Bitmap.createBitmap(mDrawer.pixels,
                 mDrawer.width,
                 mDrawer.height,
                 Bitmap.Config.ARGB_8888);
 
+        /* Indicate that operation failed */
+        if(bmp == null){
+            return false;
+        }
 
         /* Create a jpeg file using the RGB array */
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -476,23 +507,13 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
             Log.i(LOG_TAG, "file contained" + size + "bytes");
         }
 
-        /* Get the database manager */
-        LocalNoteDao localNoteDao = BoredApplication.getDaoSession().getLocalNoteDao();
-        LocalNote localNote = new LocalNote();
-
-        Calendar calendar = Calendar.getInstance();
-
-        Date noteDate = new Date();
-
-        /* Set the date of the note to the current time */
-        noteDate.setTime(calendar.getTimeInMillis());
-
-        /* Set the fields in our note, then add it to our database */
-        localNote.setDate(noteDate);
-        localNote.setTitle(title);
-        localNote.setTopic(topic);
         localNote.setFilePath(path + "/" + filename);
-        localNoteDao.insert(localNote);
+
+        /* If rowId = -1, indicate that save operation failed */
+        if(localNoteDao.insert(localNote) == -1)
+            return false;
+
+        return true;
 
     }
     private void sendMessageToUI(String msg) {
