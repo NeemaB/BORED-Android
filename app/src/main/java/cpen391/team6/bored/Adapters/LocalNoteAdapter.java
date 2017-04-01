@@ -80,7 +80,7 @@ public class LocalNoteAdapter extends ArrayAdapter<LocalNote> {
         Bitmap bm = BitmapFactory.decodeFile(localNote.getFilePath());
         viewHolder.mNoteImage.setImageBitmap(bm);
 
-        //TODO: Do something with the local note here to fetch the image and populate the image view
+        //TODO: Do something with the local note here to fetch the imag  e and populate the image view
 
 
         return convertView;

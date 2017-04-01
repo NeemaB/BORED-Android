@@ -35,6 +35,7 @@ import android.widget.Toast;
 
 import com.codekrypt.greendao.db.LocalNote;
 import com.codekrypt.greendao.db.LocalNoteDao;
+import com.codekrypt.greendao.db.ScreenInfo;
 import com.joanzapata.iconify.widget.IconTextView;
 
 import java.io.BufferedInputStream;
@@ -162,21 +163,26 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
                     Bundle arguments = new Bundle();
 
-                    if(savedInstanceState == null) {
+                    /* To fix bug where screen size is determined incorrectly upon re-creating this fragment,
+                     * persist the screen dimensions the first time we create the fragment so we can retrieve it later
+                     * (screen size) isn't going to change dynamically of course
+                     */
+
+                    if(ScreenInfo.getInfo() == null){
 
                         mDrawFrameWidth = mDrawFrame.getWidth() + 100;
                         mDrawFrameHeight = mDrawFrame.getHeight();
 
+                        ScreenInfo.saveInfo(mDrawFrameWidth, mDrawFrameHeight);
+
                     }else{
-                        if(savedInstanceState.getInt("draw_frame_width") != 0
-                                && savedInstanceState.getInt("draw_frame_height") != 0){
-                            mDrawFrameWidth = savedInstanceState.getInt("draw_frame_width");
-                            mDrawFrameHeight = savedInstanceState.getInt("draw_frame_height");
-                        }else{
-                            mDrawFrameWidth = mDrawFrame.getWidth() + 100;
-                            mDrawFrameHeight = mDrawFrame.getHeight();
-                        }
+
+                        ScreenInfo screenInfo = ScreenInfo.getInfo();
+
+                        mDrawFrameWidth = screenInfo.getWidth();
+                        mDrawFrameHeight = screenInfo.getHeight();
                     }
+
 
                     System.out.println("Draw Frame Width:" + mDrawFrameWidth);
                     System.out.println("Draw Frame Height:" + mDrawFrameHeight);
@@ -385,15 +391,6 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
             menu.findItem(R.id.stream_to_device).setIcon(R.mipmap.bluetooth);
         }
 
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState){
-
-        if(mDrawFrameWidth != 0 && mDrawFrameHeight != 0) {
-            savedInstanceState.putInt("draw_frame_width", mDrawFrameWidth);
-            savedInstanceState.putInt("draw_frame_height", mDrawFrameHeight);
-        }
     }
 
     @Override
