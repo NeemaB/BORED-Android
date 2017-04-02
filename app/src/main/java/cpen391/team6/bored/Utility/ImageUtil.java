@@ -10,6 +10,7 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,6 +21,31 @@ import java.io.InputStream;
 public class ImageUtil {
 
     private static Context imgContext;
+
+    public enum SupportedImageFormats
+    {
+        png, jpg, webp
+    }
+
+    public static Bitmap.CompressFormat getCompressFormat(SupportedImageFormats format)
+    {
+        if( format != null )
+        {
+            switch( format )
+            {
+                case png:
+                {
+                    return Bitmap.CompressFormat.PNG;
+                }
+                default:
+                {
+                    return Bitmap.CompressFormat.JPEG;
+                }
+            }
+        }
+
+        return null;
+    }
 
     /***********************************************************************************************
      * Performs a simple map of a point on one screen with resolution A X B to a point on another
@@ -175,6 +201,4 @@ public class ImageUtil {
             return 0;
         }
     }
-
-
 }

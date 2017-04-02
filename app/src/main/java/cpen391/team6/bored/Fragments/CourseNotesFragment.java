@@ -1,39 +1,33 @@
 package cpen391.team6.bored.Fragments;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.auth.Credentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
-import com.google.cloud.Page;
-import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.BucketInfo;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.http.javanet.NetHttpTransport;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import cpen391.team6.bored.R;
 
+import cpen391.team6.bored.R;
+import cpen391.team6.bored.Utility.CloudImageCRUD;
+import cpen391.team6.bored.Utility.CloudStorage;
+import cpen391.team6.bored.Utility.CredentialBuilder;
 
 /**
  * Created by neema on 2017-03-14.
  * Implemented by Andy Tertzakian on 2017-03-19
  */
-public class CourseNotesFragment extends Fragment {
+public class CourseNotesFragment extends Fragment{
 
-    private  String mKeyPath = "/Bored-c22e5b0a43a4.json";
-    private String bucketName = "boredpupil-ceed0.appspot.com";
+    public static final String APP_CLOUD_BUCKET_NAME = "boredpupil-ceed0.appspot.com";
+    public static final String APP_CLOUD_ACCOUNT_ID = "bored-633@boredpupil-ceed0.iam.gserviceaccount.com";
+    public static String IMAGE_FULL_PATH = "any/path/for/the/image.webp"; // See Object Full Path explanation.
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -44,34 +38,36 @@ public class CourseNotesFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
         View view = inflater.inflate(R.layout.course_notes_fragment_layout, container, false);
-        Log.d("TEST", "HERE");
-        try {
-            Log.d("TEST", "HERE1");
 
-            File file = new File(mKeyPath);
+        Thread thread = new Thread(new Runnable(){
+            @Override
+            public void run(){
+                try {
 
-            Log.d("TEST", Long.toString(file.length()));
+                    Context context = getActivity().getApplicationContext();
+                    Credential credential = CredentialBuilder
+                            .setup(context, R.raw.key, APP_CLOUD_ACCOUNT_ID)
+                            .transporter(new NetHttpTransport())
+                            .scope(CredentialBuilder.CredentialScope.DEVSTORAGE_READ_WRITE)
+                            .build();
 
-            Storage storage = StorageOptions.newBuilder()
-                    .setCredentials(ServiceAccountCredentials.fromStream(new FileInputStream(file.getPath())))
-                    .build()
-                    .getService();
+                    CloudStorage cloudStorage = CloudStorage.build(APP_CLOUD_BUCKET_NAME, credential);
 
-            Log.d("TEST", "HERE2");
-            Bucket bucket = storage.create(BucketInfo.of(bucketName));
-            Page<Blob> blobs = bucket.list();
-            Iterator<Blob> blobIterator = blobs.iterateAll();
-            while (blobIterator.hasNext()) {
-                Blob blob = blobIterator.next();
-                blob.getAcl();
+                    List<String> names = CloudImageCRUD.listBucketContents(cloudStorage, APP_CLOUD_BUCKET_NAME);
+
+                    for(String name : names){
+                        Log.d("TEST", name);
+                    }
+
+                }catch(Exception e){
+                    Log.d("TEST", e.getMessage());
+                }
             }
 
-        } catch (Exception e){
-            Log.d("TEST", e.toString());
-        }
+        });
+
+        thread.start();
 
         return view;
     }
-
-
 }
