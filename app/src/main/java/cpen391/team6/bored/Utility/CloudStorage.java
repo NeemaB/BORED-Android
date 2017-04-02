@@ -1,262 +1,138 @@
 package cpen391.team6.bored.Utility;
 
-/**
- * Created by andytertzakian on 2017-03-30.
- */
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLConnection;
-import java.security.PrivateKey;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.InputStreamContent;
-import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.http.apache.ApacheHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.storage.Storage;
-import com.google.api.services.storage.StorageScopes;
-import com.google.api.services.storage.model.Bucket;
-import com.google.api.services.storage.model.StorageObject;
+
+/**
+ * Created by andytertzakian on 2017-03-30.
+ */
 
 /**
  * Simple wrapper around the Google Cloud Storage API
  */
 public class CloudStorage {
 
-    private static Properties properties;
+    private static volatile CloudStorage singleton = null;
+
+    private static String bucketName;
     private static Storage storage;
 
-    private static final String PROJECT_ID_PROPERTY = " boredpupil-ceed0";
-    private static final String APPLICATION_NAME_PROPERTY = "Bored";
-    private static final String ACCOUNT_ID_PROPERTY = "ceed0.iam.gserviceaccount.com";
-    private static final String PRIVATE_KEY = "4e5871a85d417a144cb3413750ca62f49edb78ca";
 
     /**
-     * Uploads a file to a bucket. Filename and content type will be based on
-     * the original file.
+     * A private constructor used only by the build() function in this class.
+     * All parameters are mandatory.
+     * <p/>
+     * A Credential can be build with the CredentialBuilder class.
      *
      * @param bucketName
-     *            Bucket where file will be uploaded
-     * @param filePath
-     *            Absolute path of the file to upload
-     * @throws Exception
+     * @param credential
      */
-    public static void uploadFile(String bucketName, String filePath)
-            throws Exception {
-
-        Storage storage = getStorage();
-
-        StorageObject object = new StorageObject();
-        object.setBucket(bucketName);
-
-        File file = new File(filePath);
-
-        InputStream stream = new FileInputStream(file);
-        try {
-            String contentType = URLConnection
-                    .guessContentTypeFromStream(stream);
-            InputStreamContent content = new InputStreamContent(contentType,
-                    stream);
-
-            Storage.Objects.Insert insert = storage.objects().insert(
-                    bucketName, null, content);
-            insert.setName(file.getName());
-
-            insert.execute();
-        } finally {
-            stream.close();
-        }
-    }
-
-    public static void downloadFile(String bucketName, String fileName, String destinationDirectory) throws Exception {
-
-        File directory = new File(destinationDirectory);
-        if(!directory.isDirectory()) {
-            throw new Exception("Provided destinationDirectory path is not a directory");
-        }
-        File file = new File(directory.getAbsolutePath() + "/" + fileName);
-
-        Storage storage = getStorage();
-
-        Storage.Objects.Get get = storage.objects().get(bucketName, fileName);
-        FileOutputStream stream = new FileOutputStream(file);
-        try {
-            get.executeAndDownloadTo(stream);
-        } finally {
-            stream.close();
-        }
-    }
-
-    /**
-     * Deletes a file within a bucket
-     *
-     * @param bucketName
-     *            Name of bucket that contains the file
-     * @param fileName
-     *            The file to delete
-     * @throws Exception
-     */
-    public static void deleteFile(String bucketName, String fileName)
-            throws Exception {
-
-        Storage storage = getStorage();
-
-        storage.objects().delete(bucketName, fileName).execute();
-    }
-
-    /**
-     * Creates a bucket
-     *
-     * @param bucketName
-     *            Name of bucket to create
-     * @throws Exception
-     */
-    public static void createBucket(String bucketName) throws Exception {
-
-        Storage storage = getStorage();
-
-        Bucket bucket = new Bucket();
-        bucket.setName(bucketName);
-
-        storage.buckets().insert(
-                getProperties().getProperty(PROJECT_ID_PROPERTY), bucket).execute();
-    }
-
-    /**
-     * Deletes a bucket
-     *
-     * @param bucketName
-     *            Name of bucket to delete
-     * @throws Exception
-     */
-    public static void deleteBucket(String bucketName) throws Exception {
-
-        Storage storage = getStorage();
-
-        storage.buckets().delete(bucketName).execute();
-    }
-
-    /**
-     * Lists the objects in a bucket
-     *
-     * @param bucketName bucket name to list
-     * @return Array of object names
-     * @throws Exception
-     */
-    public static List<String> listBucket(String bucketName) throws Exception {
-
-        Storage storage = getStorage();
-
-        List<String> list = new ArrayList<String>();
-
-        List<StorageObject> objects = storage.objects().list(bucketName).execute().getItems();
-        if(objects != null) {
-            for(StorageObject o : objects) {
-                list.add(o.getName());
-            }
+    private CloudStorage(String bucketName, Credential credential)
+    {
+        if( credential == null )
+        {
+            throw new IllegalArgumentException("Given Credential was null! Error!");
         }
 
-        return list;
+        if( bucketName == null || bucketName.length() < 1 )
+        {
+            throw new IllegalArgumentException("Given Bucket name is invalid! Error!");
+        }
+
+        this.bucketName = bucketName;
+        setupStorage(bucketName, credential);
     }
 
+
     /**
-     * List the buckets with the project
-     * (Project is configured in properties)
+     * This function class the private class constructor and passes the given parameters.
+     * The constructor also takes care of calling the necessary functions to setup the instance.
+     * <p/>
+     * The function, which initiates the singleton, is synchronized, so thread-safe.
+     * <p/>
+     * NOTE: If the bucketName is the same as last initiated singleton bucketName, the singleton
+     * will be reused. If not, the singleton will be recreated.
      *
+     * @param bucketName The name of the referencing 'Bucket' in the cloud storage.
+     * @param credential
      * @return
-     * @throws Exception
      */
-    public static List<String> listBuckets() throws Exception {
+    public static synchronized CloudStorage build(String bucketName, Credential credential)
+    {
+        if( bucketName == null || bucketName.length() < 1 )
+        {
+            throw new IllegalArgumentException("Given Bucket name is invalid! Error!");
+        }
 
-        Storage storage = getStorage();
-
-        List<String> list = new ArrayList<String>();
-
-        List<Bucket> buckets = storage.buckets().list(getProperties().getProperty(PROJECT_ID_PROPERTY)).execute().getItems();
-        if(buckets != null) {
-            for(Bucket b : buckets) {
-                list.add(b.getName());
+        if( singleton != null )
+        {
+            // If the singleton object is referencing a different bucket, re-create singleton.
+            if( !singleton.getBucketName().equals(bucketName) )
+            {
+                singleton = new CloudStorage(bucketName, credential);
             }
         }
-
-        return list;
-    }
-
-    private static Properties getProperties() throws Exception {
-
-        if (properties == null) {
-            properties = new Properties();
-            InputStream stream = CloudStorage.class
-                    .getResourceAsStream("/cloudstorage.properties");
-            try {
-                properties.load(stream);
-            } catch (IOException e) {
-                throw new RuntimeException(
-                        "cloudstorage.properties must be present in classpath",
-                        e);
-            } finally {
-                stream.close();
-            }
-        }
-        return properties;
-    }
-
-    private static Storage getStorage() throws Exception {
-
-        if (storage == null) {
-
-            HttpTransport httpTransport = new NetHttpTransport();
-            JsonFactory jsonFactory = new JacksonFactory();
-
-            List<String> scopes = new ArrayList<String>();
-            scopes.add(StorageScopes.DEVSTORAGE_FULL_CONTROL);
-
-            PrivateKey privateKey = new PrivateKey() {
-                @Override
-                public String getAlgorithm() {
-                    return null;
-                }
-
-                @Override
-                public String getFormat() {
-                    return null;
-                }
-
-                @Override
-                public byte[] getEncoded() {
-                    return new byte[0];
-                }
-            };
-
-
-            File privateKeyFile = new File();
-
-            Credential credential = new GoogleCredential.Builder()
-                    .setTransport(httpTransport)
-                    .setJsonFactory(jsonFactory)
-                    .setServiceAccountId(ACCOUNT_ID_PROPERTY)
-                    .setServiceAccountPrivateKeyFromP12File(new File(PRIVATE_KEY))
-//                    .setServiceAccountPrivateKeyFromP12File(
-//                            new File(getProperties().getProperty(
-//                                    PRIVATE_KEY_PATH_PROPERTY)))
-                    .setServiceAccountScopes(scopes)
-                    .build();
-
-            storage = new Storage.Builder(httpTransport, jsonFactory,
-                    credential).setApplicationName(
-                    getProperties().getProperty(APPLICATION_NAME_PROPERTY))
-                    .build();
+        else
+        {
+            singleton = new CloudStorage(bucketName, credential);
         }
 
+        return singleton;
+    }
+
+
+    /**
+     * Here the actual GoogleStorage instance is built with the given parameters provided.
+     * Necessary information, like HttpTransport and JsonFactory, are check in the credential. If
+     * not present in credential, stock options are used.
+     *
+     * @param bucketName
+     * @param credential
+     * @return
+     */
+    private static void setupStorage(String bucketName, Credential credential)
+    {
+        HttpTransport httpTransport;
+        JsonFactory jsonFactory;
+
+        if( credential.getTransport() != null )
+        {
+            httpTransport = credential.getTransport();
+        }
+        else
+        {
+            httpTransport = new ApacheHttpTransport();
+        }
+
+
+        if( credential.getJsonFactory() != null )
+        {
+            jsonFactory = credential.getJsonFactory();
+        }
+        else
+        {
+            jsonFactory = new JacksonFactory();
+        }
+
+        storage = new Storage
+                .Builder(httpTransport, jsonFactory, credential)
+                .setApplicationName(bucketName)
+                .build();
+    }
+
+
+    public String getBucketName()
+    {
+        return bucketName;
+    }
+
+    public Storage getStorage()
+    {
         return storage;
     }
+
 }
