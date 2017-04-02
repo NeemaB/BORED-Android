@@ -49,10 +49,16 @@ dependencies {
     compile 'com.firebaseui:firebase-ui-storage:1.0.1'
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.android.support:multidex:1.0.1'
+//    compile 'com.android.volley:volley:1.0.0'
     testCompile 'junit:junit:4.12'
     compile ('com.google.cloud:google-cloud-storage:0.9.4-beta') {
         exclude group: 'com.google.api-client', module: 'google-api-client-appengine'
     }
+    compile ('com.google.cloud:google-cloud-datastore:0.9.4-beta'){
+        exclude group: 'com.google.api-client', module: 'google-api-client-appengine'
+    }
+
+    compile 'com.google.api-client:google-api-client:1.22.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
