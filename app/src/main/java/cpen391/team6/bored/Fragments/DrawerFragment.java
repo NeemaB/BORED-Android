@@ -532,44 +532,19 @@ public class DrawerFragment extends PApplet {
             Thread.sleep(100);
         }catch(InterruptedException e){}
 
-        // x goes from 34 to 714 on the DE1
-        for (int x = 0; x < NIOSWIDTH; x++) {
-            // y goes from 1 to 478 on the DE1
-            for (int y = 0; y < NIOSHEIGHT; y++) {
-                // get all the points in a small square that corresponds to a single pixel on the DE1
-                // figure out which colour appears the most, and use this value on the DE1
-                Map<Integer, Integer> colourCount = new HashMap<Integer, Integer>();
-                for (int i = x * width / NIOSWIDTH; i < (x+1) * width / NIOSWIDTH; i++) {
-                    for (int j = y * height / NIOSHEIGHT; j < (y+1) * height / NIOSHEIGHT; j++) {
-                        // get the colour of the pixel
-                        int pixelValue = get(i, j);
-                        ColourMenu.Colour pixelColour = pixelDataToColour(pixelValue);
+        // y goes from 1 to 478 on the DE1
+        for (int y = 0; y < NIOSHEIGHT; y++) {
+            // x goes from 34 to 714 on the DE1
+            for (int x = 0; x < NIOSWIDTH; x++) {
+                // get the colour of the pixel in the upper-left corner
+                int pixelValue = get(x * width / NIOSWIDTH, y * height / NIOSHEIGHT);
+                ColourMenu.Colour pixelColour = pixelDataToColour(pixelValue);
 
-                        if (pixelColour == null) {
-                            continue;
-                        }
-                        // store the pixel in a map
-                        int index = pixelColour.getIndex();
-                        if (colourCount.get(index) == null) {
-                            colourCount.put(index, 0);
-                        } else {
-                            colourCount.put(index, colourCount.get(index) + 1);
-                        }
-                    }
-                }
-
-                // find the most common pixel
-                Map.Entry<Integer, Integer> maxEntry = null;
-                for (Map.Entry<Integer, Integer> entry : colourCount.entrySet()) {
-                    if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
-                        maxEntry = entry;
-                    }
-                }
-
-                if (maxEntry == null) {
+                if (pixelColour == null) {
+                    // set to white if we don't know what the colour is
                     thisidx = 15;
                 } else {
-                    thisidx = maxEntry.getKey();
+                    thisidx = pixelColour.getIndex();
                 }
 
                 if (lastidx == -1) {
@@ -578,28 +553,24 @@ public class DrawerFragment extends PApplet {
                 } else if (lastidx == thisidx) {
                     count++;
                 } else {
-                    // TODO: send a command saying how many of which colour pixels there are
                     String cmd = Command.createCommand(Command.TRANSFER, count, lastidx);
                     Log.d("SCREEN_STATE", "cmd: " + cmd);
                     BluetoothActivity.writeToBTDevice(cmd);
 
                     try {
-                        Thread.sleep(2000); // TODO: fix this line
+                        // sleep for at least 80 ms, but sleep for longer if we are sending a large amount of data
+                        Thread.sleep(Math.max(count/100, 80));
                     }catch(InterruptedException e){}
-                    /*
-                     * what happens if you send like 1000 of one pixel, then a bunch of different pixels?
-                     * will the DE1 ignore the later commands because it is still working on the 1000 pixels?
-                     * come up with a way to avoid this (maybe only send a maximum number of pixels at once)
-                     * or maybe delay for an amount of time corresponding to the size of count
-                     */
+
                     lastidx = thisidx;
                     count = 1;
                 }
             }
         }
 
+        // send the final sequence of data
         String cmd = Command.createCommand(Command.TRANSFER, count, lastidx);
-        Log.d("SCREEN_STATE", "cmd: " + cmd);
+        Log.d("SCREEN_STATE", "cmd: " + cmd + "\n" + count + " " + lastidx);
         BluetoothActivity.writeToBTDevice(cmd);
 
         Log.d("SCREEN_STATE", "Ending sendScreenState");
