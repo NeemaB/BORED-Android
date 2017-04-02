@@ -15,7 +15,9 @@ public enum Command {
     REDO,
     UNDO,
     CLEAR,
-    TERMINATE;
+    TERMINATE,
+    START_TRANSFER,
+    TRANSFER;
 
     /***********************************************************************************************
      * Construct the string representation of a command, any command data sent to the NIOS II will
@@ -128,6 +130,17 @@ public enum Command {
 
             case TERMINATE:
                 command = "Z";
+                break;
+
+            case START_TRANSFER:
+                command = "V";
+                break;
+
+            case TRANSFER:
+                command = String.valueOf(params[0].toString().length());
+                command += params[0].toString();
+                if ((Integer)params[1] < 10) command += "0";
+                command += params[1].toString();
                 break;
         }
 

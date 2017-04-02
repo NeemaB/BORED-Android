@@ -237,7 +237,10 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                             //BoredApplication.isConnectedLock.unlock();
                             if(cmdString.equals("A")){
                                 sendMessageToUI("Sending Screen State To NIOS");
-                                sendScreenState();
+                                DrawerFragment.DrawerState temp = mDrawer.mState;
+                                mDrawer.mState = DrawerFragment.DrawerState.SENDING;
+                                mDrawer.mousePressed();
+                                mDrawer.mState = temp;
                                 sendMessageToUI("Able To Draw On NIOS");
                             }else if(cmdString.equals("B")){
                                 sendMessageToUI("Unable To Draw On NIOS");
@@ -501,68 +504,6 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         message.setData(bundle);
         message.sendToTarget();
     }
-
-    private void sendScreenState() {
-        int NIOSWIDTH = 681;
-        int NIOSHEIGHT = 478;
-        int width = mDrawer.width;
-        int height = mDrawer.height;
-        int lastidx = -1;
-        int thisidx = -1;
-        int count = 0;
-
-        // TODO: send a command that tells the board we are starting
-
-        // x goes from 34 to 714 on the DE1
-        for (int x = 0; x < NIOSWIDTH; x++) {
-            // y goes from 1 to 478 on the DE1
-            for (int y = 0; y < NIOSHEIGHT; y++) {
-                // get all the points in a small square that corresponds to a single pixel on the DE1
-                // figure out which colour appears the most, and use this value on the DE1
-                Map<Integer, Integer> colourCount = new HashMap<Integer, Integer>();
-                for (int i = x * mDrawer.width / NIOSWIDTH; i < (x+1) * mDrawer.width / NIOSWIDTH; i++) {
-                    for (int j = y * mDrawer.height / NIOSHEIGHT; j < (y+1) * mDrawer.height / NIOSHEIGHT; j++) {
-                        // get the colour of the pixel
-                        ColourMenu.Colour pixelColour = mDrawer.pixelDataToColour(mDrawer.get(i, j));
-
-                        // store the pixel in a map
-                        int index = pixelColour.getIndex();
-                        if (colourCount.get(index) == null) {
-                            colourCount.put(index, 0);
-                        } else {
-                            colourCount.put(index, colourCount.get(index) + 1);
-                        }
-                    }
-                }
-
-                // find the most common pixel
-                Map.Entry<Integer, Integer> maxEntry = null;
-                for (Map.Entry<Integer, Integer> entry : colourCount.entrySet()) {
-                    if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
-                        maxEntry = entry;
-                    }
-                }
-
-                thisidx = maxEntry.getKey();
-                if (lastidx == -1) {
-                    lastidx = thisidx;
-                    count = 1;
-                } else if (lastidx == thisidx) {
-                    count++;
-                } else {
-                    // TODO: send a command saying how many of which colour pixels there are
-                    /*
-                     * what happens if you send like 1000 of one pixel, then a bunch of different pixels?
-                     * will the DE1 ignore the later commands because it is still working on the 1000 pixels?
-                     * come up with a way to avoid this (maybe only send a maximum number of pixels at once)
-                     */
-                    lastidx = thisidx;
-                    count = 1;
-                }
-            }
-        }
-    }
-
 
     public void updateRedoIcon(int iconColorId, int backgroundColorId){
         mRedo.setTextColor(getResources().getColor(iconColorId));
