@@ -228,7 +228,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == Activity.RESULT_OK){
             if(requestCode == CONNECT_BLUETOOTH){
-                mDrawer.initRemoteScreen();
+                //mDrawer.initRemoteScreen();
                 //BoredApplication.isConnectedToBluetooth = true ;
                 ((MainActivity) getActivity()).updateMenu(
                         R.id.stream_to_device,
@@ -250,6 +250,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                             //BoredApplication.isConnectedLock.unlock();
                             if(cmdString.equals("A")){
                                 sendMessageToUI("Able To Draw On NIOS");
+                                mDrawer.initRemoteScreen();
                             }else if(cmdString.equals("B")){
                                 sendMessageToUI("Unable To Draw On NIOS");
                             }else{
