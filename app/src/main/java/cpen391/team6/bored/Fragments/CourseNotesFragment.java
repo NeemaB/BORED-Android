@@ -11,6 +11,18 @@ import android.view.ViewGroup;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.cloud.Page;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.BucketInfo;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
+
+import java.io.File;
+import java.io.FileInputStream;
+
 import java.util.List;
 import java.util.Map;
 
@@ -63,6 +75,7 @@ public class CourseNotesFragment extends Fragment{
                     Log.d("TEST", e.getMessage());
                 }
             }
+
 
         });
 

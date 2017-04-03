@@ -108,7 +108,7 @@ public class BluetoothActivity extends Activity {
         try { // Read from the InputStream using polling and timeout
             for (int i = 0; i < 200; i++) { // try to read for 2 seconds max
                 SystemClock.sleep(10);
-                if (mmInStream.available() > 0) {
+                if (mmInStream != null && mmInStream.available() > 0) {
                     if ((c = (byte) mmInStream.read()) != '\r') // '\r' terminator
                         s += (char) c; // build up string 1 byte by byte
                     else
@@ -311,8 +311,6 @@ public class BluetoothActivity extends Activity {
 
     private void closeConnection() {
 
-        BoredApplication.isConnectedLock.lock();
-
         try {
             mmInStream.close();
             mmInStream = null;
@@ -331,7 +329,6 @@ public class BluetoothActivity extends Activity {
 
         BoredApplication.isConnectedToBluetooth = false;
 
-        BoredApplication.isConnectedLock.unlock();
     }
 
     private void discover() {

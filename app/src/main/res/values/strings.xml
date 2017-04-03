@@ -4,6 +4,7 @@
     <!-- Activity Drawer Strings -->
     <string-array name="drawer_list_array">
         <item>Course Notes</item>
+        <item>My Notes</item>
         <item>Create Note</item>
         <item>Settings</item>
     </string-array>
@@ -14,6 +15,8 @@
     <string name="course_notes_fragment_tag">Course Notes</string>
     <string name="create_note_fragment_tag">Create Note</string>
     <string name="settings_fragment_tag">Settings</string>
+    <string name="my_notes_fragment_tag">My Notes</string>
+
 
     <!-- Draw Fragment Strings -->
     <string name="clear_confirmation_title">Clear</string>
@@ -36,7 +39,20 @@
     <string name="leave_fragment_title">Leave Page</string>
     <string name="leave_fragment_message">Are you sure you want to leave this page? Any unsaved changes will be lost</string>
     <string name="select_title_hint">Give your note a title... </string>
+    <string name="select_topic_hint">Give your note a topic...</string>
     <string name="save_note">Save Note</string>
+    <string name="title_error_message">Your note needs a title</string>
+
+    <!-- Popup Menu Strings -->
+    <string name="popup_menu_delete">Delete</string>
+    <string name="popup_menu_load_note">Load Note</string>
+
+    <!-- Bluetooth Status Strings -->
+    <string name="bluetooth_status">Bluetooth Status:</string>
+    <string name="not_connected">Not Connected</string>
+    <string name="connected_awaiting_permission">Connected, awaiting permission to stream to NIOS</string>
+    <string name="connected_initializing_remote_screen">Initializing NIOS screen</string>
+    <string name="connected_can_draw_on_NIOS">Connected, streaming screen to NIOS</string>
 
     <!-- Settings Fragment -->
     <string name="settings_title">Settings</string>
