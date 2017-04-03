@@ -44,9 +44,10 @@ dependencies {
     compile 'com.joanzapata.iconify:android-iconify-fontawesome:2.2.2'
     compile 'com.joanzapata.iconify:android-iconify-material:2.2.1'
     compile 'com.joanzapata.iconify:android-iconify-entypo:2.2.1'
+    compile 'org.greenrobot:greendao:3.2.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.firebase:firebase-database:10.0.1'
     compile 'com.google.firebase:firebase-storage:10.0.1'
-    compile 'com.google.firebase:firebase-auth:10.0.1'
     compile 'com.firebaseui:firebase-ui-storage:1.0.1'
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.android.support:multidex:1.0.1'
@@ -55,7 +56,9 @@ dependencies {
         exclude group: 'com.google.api-client', module: 'google-api-client-appengine'
     }
 
-    compile 'com.google.api-client:google-api-client:1.22.0'
+    compile ('com.google.api-client:google-api-client:1.22.0') {
+        exclude group: 'com.google.guava'
+    }
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -14,5 +14,16 @@ public class Point {
     }
 
 
-
+    @Override
+    public boolean equals(Object o) {
+        if(o instanceof Point) {
+            if (this.locX == ((Point) o).locX
+                    && this.locY == ((Point) o).locY) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
 }

@@ -27,6 +27,8 @@ import android.widget.TextView;
 import cpen391.team6.bored.Fragments.CreateNoteFragment;
 import cpen391.team6.bored.Fragments.CourseNotesFragment;
 import cpen391.team6.bored.Fragments.SettingsFragment;
+import cpen391.team6.bored.Fragments.MyNotesFragment;
+
 import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.UI_Util;
 
@@ -43,9 +45,10 @@ public class MainActivity extends AppCompatActivity {
     private CharSequence mTitle;
     private Menu mMenu;
 
-    private static int COURSE_NOTES_POSITION = 0;
-    private static int CREATE_NOTE_POSITION = 1;
-    private static int SETTINGS_POSITION = 2;
+    public static final int COURSE_NOTES_POSITION = 0;
+    public static final int MY_NOTES_POSITION = 1;
+    public static final int CREATE_NOTE_POSITION = 2;
+    public static final int SETTINGS_POSITION = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -235,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch (position) {
 
-            case 0:
+            case COURSE_NOTES_POSITION:
 
                 /* If we are on the create note page, inform the user that their unsaved changes will be lost,
                 *  if the user selects yes then we will transition to the new fragment, otherwise we will stay where
@@ -285,13 +288,13 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
 
-            case 1:
+            case CREATE_NOTE_POSITION:
 
-                loadCreateNoteFragment();
+                loadCreateNoteFragment(null);
 
                 break;
 
-            case 2:
+            case SETTINGS_POSITION:
 
                 /* If we are on the create note page, inform the user that their unsaved changes will be lost,
                 *  if the user selects yes then we will transition to the new fragment, otherwise we will stay where
@@ -336,6 +339,56 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 loadSettingsFragment();
+
+            case MY_NOTES_POSITION:
+
+                /* If we are on the create note page, inform the user that their unsaved changes will be lost,
+                *  if the user selects yes then we will transition to the new fragment, otherwise we will stay where
+                *  we are
+                */
+                if (mCurrentPosition == CREATE_NOTE_POSITION) {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            new ContextThemeWrapper(this, R.style.DialogTheme));
+
+                    builder.setTitle(getString(R.string.leave_fragment_title))
+                            .setMessage(R.string.leave_fragment_message)
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    loadMyNotesFragment();
+                                    mCurrentPosition = position;
+                                    updateDrawerList();
+                                    // Highlight the selected item, update the title, and close the drawer
+                                    mDrawerList.setItemChecked(position, true);
+                                    //setTitle(mDrawerTitles[position]);
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+
+                    AlertDialog confirmationDialog = builder.create();
+                    confirmationDialog.setCanceledOnTouchOutside(true);
+                    confirmationDialog.show();
+
+                    UI_Util.setDialogStyle(confirmationDialog, this);
+
+                    mDrawerLayout.closeDrawer(mDrawerList);
+                    return;
+                }
+
+                loadMyNotesFragment();
+
+                //TODO: Implement this
+
+                break;
+
         }
 
         mCurrentPosition = position;
@@ -383,16 +436,23 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < mDrawerList.getCount(); i++) {
             TextView view = (TextView) mDrawerList.getChildAt(i);
             view.setBackgroundColor(getResources().getColor(R.color.white));
-            view.setTextColor(getResources().getColor(R.color.colorPrimary));
+            view.setTextColor(getResources().getColor(R.color.dark_gray));
         }
         Log.d(LOG_TAG, "First visible position in drawer list " + mDrawerList.getFirstVisiblePosition());
         TextView view = (TextView) mDrawerList.getChildAt(mCurrentPosition);
 
         view.setBackgroundColor(getResources()
-                .getColor(R.color.colorPrimary));
+                .getColor(R.color.light_gray));
 
-        view.setTextColor(getResources().getColor(R.color.white));
+        //view.setTextColor(getResources().getColor(R.color.white));
 
+    }
+    public void loadNote(Bundle arguments){
+        loadCreateNoteFragment(arguments);
+        mCurrentPosition = CREATE_NOTE_POSITION;
+        updateDrawerList();
+        // Highlight the selected item, update the title, and close the drawer
+        mDrawerList.setItemChecked(CREATE_NOTE_POSITION, true);
     }
 
     private void loadCourseNotesFragment() {
@@ -418,6 +478,8 @@ public class MainActivity extends AppCompatActivity {
                 /* Ensure that the fragment is displayed in portrait mode */
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
                 /* Actually make the transition */
         transaction.commit();
 
@@ -429,17 +491,69 @@ public class MainActivity extends AppCompatActivity {
         unLockDrawer();
     }
 
-    private void loadCreateNoteFragment() {
+
+    private void loadMyNotesFragment(){
 
         Fragment fragment = null;
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
         /* First check to see if a fragment exists before we create a new one */
         fragment = getFragmentManager()
-                .findFragmentByTag(getString(R.string.create_note_fragment_tag));
+                .findFragmentByTag(getString(R.string.my_notes_fragment_tag));
 
         if (fragment == null)
-            fragment = new CreateNoteFragment();
+            fragment = new MyNotesFragment();
+
+        /* Replace the current fragment that is being displayed, provide it with a tag so we can
+         * locate it in the future
+         */
+        transaction.replace(R.id.content_frame,
+                fragment,
+                getString(R.string.my_notes_fragment_tag));
+
+                /* Ensure that the fragment is displayed in portrait mode */
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
+                /* Actually make the transition */
+        transaction.commit();
+
+        mCurrentFragment = fragment;
+
+
+                /* Allow swipe activation of drawer
+                */
+        unLockDrawer();
+
+    }
+
+    private void loadCreateNoteFragment(Bundle arguments) {
+
+        Fragment fragment = null;
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+
+//        if(arguments != null) {
+//            fragment = new CreateNoteFragment();
+//
+//            /* Set the arguments for the fragment */
+//            fragment.setArguments(arguments);
+//
+//        }else {
+//        /* First check to see if a fragment exists before we create a new one */
+//            fragment = getFragmentManager()
+//                    .findFragmentByTag(getString(R.string.create_note_fragment_tag));
+//
+//            if (fragment == null)
+//                fragment = new CreateNoteFragment();
+//        }
+        fragment = new CreateNoteFragment();
+
+        if(arguments != null){
+            fragment.setArguments(arguments);
+        }
+
 
         /* Replace the current fragment that is being displayed, provide it with a tag so we can
          * locate it in the future
@@ -448,6 +562,8 @@ public class MainActivity extends AppCompatActivity {
                 fragment,
                 getString(R.string.create_note_fragment_tag));
 
+
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 
         /* Actually make the transition */
         transaction.commit();
@@ -495,6 +611,11 @@ public class MainActivity extends AppCompatActivity {
         /* Ensure that the fragment is displayed in landscape mode */
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
     }
+
+    public void closeDrawer(){
+        mDrawerLayout.closeDrawer(Gravity.LEFT);
+    }
+
 
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
