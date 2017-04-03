@@ -43,6 +43,13 @@
 
     <!-- Popup Menu Strings -->
     <string name="popup_menu_delete">Delete</string>
-    <string name="popup_menu_load_image">Load Image</string>
+    <string name="popup_menu_load_note">Load Note</string>
+
+    <!-- Bluetooth Status Strings -->
+    <string name="bluetooth_status">Bluetooth Status:</string>
+    <string name="not_connected">Not Connected</string>
+    <string name="connected_awaiting_permission">Connected, awaiting permission to stream to NIOS</string>
+    <string name="connected_initializing_remote_screen">Initializing NIOS screen</string>
+    <string name="connected_can_draw_on_NIOS">Connected, streaming screen to NIOS</string>
 
 </resources>

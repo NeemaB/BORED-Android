@@ -1,97 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/light_gray"
+    android:orientation="vertical">
 
-    <FrameLayout
-        android:id="@+id/drawing_space"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:background="@color/white"
-        android:layout_weight="7">
-
-    </FrameLayout>
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:orientation="vertical"
-        android:background="@color/colorPrimary"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1">
+        android:orientation="horizontal">
 
-        <com.joanzapata.iconify.widget.IconTextView
-            android:id="@+id/colour_pallette"
-            android:layout_width="match_parent"
-            android:paddingTop="8dp"
-            android:layout_height="0dp"
-            android:gravity="center"
-            android:textColor="@color/colorSecondary"
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="7"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/drawing_space"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+
+                android:background="@color/white">
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_margin="6dp"
+                android:background="@color/black">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:text="@string/bluetooth_status"
+                    android:textColor="@color/white"
+                    android:gravity="bottom"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/bluetooth_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="6dp"
+                    android:gravity="bottom"
+                    android:textColor="@color/red"
+                    android:textStyle="bold"
+                    android:text="@string/not_connected"
+                    android:textSize="14sp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="{entypo-colours}"
-            android:textSize="30sp"/>
+            android:background="@color/colorPrimary"
+            android:orientation="vertical">
 
-        <com.joanzapata.iconify.widget.IconTextView
-            android:id="@+id/pen_width"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:textColor="@color/colorSecondary"
-            android:gravity="center"
-            android:text="{fa-paint-brush}"
-            android:textSize="30sp"/>
+            <com.joanzapata.iconify.widget.IconTextView
+                android:id="@+id/colour_pallette"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:paddingTop="8dp"
+                android:text="{entypo-colours}"
+                android:textColor="@color/colorSecondary"
+                android:textSize="30sp" />
+
+            <com.joanzapata.iconify.widget.IconTextView
+                android:id="@+id/pen_width"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="{fa-paint-brush}"
+                android:textColor="@color/colorSecondary"
+                android:textSize="30sp" />
 
 
-        <com.joanzapata.iconify.widget.IconTextView
-            android:id="@+id/redo"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:textColor="@color/colorSecondary"
-            android:gravity="center"
-            android:text="{md-redo}"
-            android:textSize="30sp"/>
+            <com.joanzapata.iconify.widget.IconTextView
+                android:id="@+id/redo"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="{md-redo}"
+                android:textColor="@color/colorSecondary"
+                android:textSize="30sp" />
 
-        <com.joanzapata.iconify.widget.IconTextView
-            android:id="@+id/undo"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:textColor="@color/colorSecondary"
-            android:gravity="center"
-            android:text="{md-undo}"
-            android:textSize="30sp"/>
+            <com.joanzapata.iconify.widget.IconTextView
+                android:id="@+id/undo"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="{md-undo}"
+                android:textColor="@color/colorSecondary"
+                android:textSize="30sp" />
 
-        <com.joanzapata.iconify.widget.IconTextView
-            android:id="@+id/fill"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:textColor="@color/colorSecondary"
-            android:gravity="center"
-            android:text="{md-format-color-fill}"
-            android:textSize="30sp"/>
+            <com.joanzapata.iconify.widget.IconTextView
+                android:id="@+id/fill"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="{md-format-color-fill}"
+                android:textColor="@color/colorSecondary"
+                android:textSize="30sp" />
 
-        <com.joanzapata.iconify.widget.IconTextView
-            android:id="@+id/text_box"
-            android:paddingTop="8dp"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:textColor="@color/colorSecondary"
-            android:gravity="center"
-            android:text="{md-text-format}"
-            android:textSize="30sp"/>
+            <com.joanzapata.iconify.widget.IconTextView
+                android:id="@+id/text_box"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:paddingTop="8dp"
+                android:text="{md-text-format}"
+                android:textColor="@color/colorSecondary"
+                android:textSize="30sp" />
 
-        <com.joanzapata.iconify.widget.IconTextView
-            android:id="@+id/clear_screen"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:textColor="@color/colorSecondary"
-            android:gravity="center"
-            android:text="{md-delete}"
-            android:textSize="30sp"/>
+            <com.joanzapata.iconify.widget.IconTextView
+                android:id="@+id/clear_screen"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="{md-delete}"
+                android:textColor="@color/colorSecondary"
+                android:textSize="30sp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

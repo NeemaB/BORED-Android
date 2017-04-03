@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Set;
 import java.util.Stack;
@@ -35,6 +36,7 @@ import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.ImageUtil;
 import cpen391.team6.bored.Utility.UI_Util;
 import processing.core.PApplet;
+import processing.core.PImage;
 
 
 /**
@@ -45,7 +47,7 @@ public class DrawerFragment extends PApplet {
     public static String LOG_TAG = "Drawer_Fragment";
 
     /* Command flags */
-    private static int BLUETOOTH_CMD = 0;
+    private static int TOAST_CMD = 0;
     private static int UI_CMD = 1;
 
     /* Set of active threads spawned by this fragment */
@@ -67,20 +69,21 @@ public class DrawerFragment extends PApplet {
 
     private ColourMenu mColourMenu;
     private PenWidthMenu mPenWidthMenu;
-    private DrawerState mState;
+    public DrawerState mState;
 
     private UndoList mUndoListHead; // Implements an undo list so that we can undo and redo
 
     private PenWidthMenu.PenWidth mPenWidth;
     private ColourMenu.Colour mPenColour;
 
-    private enum DrawerState {
+    public enum DrawerState {
 
         DRAWING,
         COLOUR_MENU_ACTIVE,
         WIDTH_MENU_ACTIVE,
         FILL_ACTIVE,
-        TEXT_BOX_ACTIVE
+        TEXT_BOX_ACTIVE,
+        SENDING
     }
 
     @Override
@@ -189,9 +192,8 @@ public class DrawerFragment extends PApplet {
                 int requestType = (int) message.getData().get("requestType");
 
                 /* command to display a toast in response to a bluetooth event */
-                if (requestType == BLUETOOTH_CMD) {
+                if (requestType == TOAST_CMD) {
                     String msg = (String) message.getData().get("toast_message");
-
                     Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
 
 
@@ -269,6 +271,15 @@ public class DrawerFragment extends PApplet {
             }
         };
 
+
+        Bundle arguments = getArguments();
+        if(arguments.getString("load_note_path") != null){
+            String filePath = arguments.getString("load_note_path");
+            PImage img = loadImage(filePath);
+            image(img, 0, 0);
+            //Toast.makeText(getActivity(), "Loaded Note Successfully!", Toast.LENGTH_SHORT).show();
+            sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
+        }
     }
 
     @Override
@@ -442,6 +453,10 @@ public class DrawerFragment extends PApplet {
 
                 }
                 break;
+
+            /*case SENDING:
+                sendScreenState();
+                break;*/
         }
 
 
@@ -485,9 +500,10 @@ public class DrawerFragment extends PApplet {
 
         /* Add delay so that NIOS can process subsequent commands */
         try {
+
             Thread.sleep(80);
-        } catch (InterruptedException e) {
-        }
+        } catch (InterruptedException e) {}
+
 
         /* Set the pen size on the NIOS II */
         cmd = Command.createCommand(
@@ -499,17 +515,86 @@ public class DrawerFragment extends PApplet {
 
         /* Add delay so that NIOS can process subsequent commands */
         try {
+
             Thread.sleep(80);
-        } catch (InterruptedException e) {
-        }
+        } catch (InterruptedException e) {}
+
 
         /* Clear the screen on the NIOS II */
         cmd = Command.createCommand(Command.CLEAR);
 
         BluetoothActivity.writeToBTDevice(cmd);
+
+        try {
+
+            Thread.sleep(400);
+        }catch (InterruptedException e) {}
         Log.d(LOG_TAG, "Sent clear command to bluetooth:" + cmd);
 
     }
+
+
+    /*public void sendScreenState() {
+        int NIOSWIDTH = 681;
+        int NIOSHEIGHT = 478;
+        int lastidx = -1;
+        int thisidx = -1;
+        int count = 0;
+
+        Log.d("SCREEN_STATE", "Starting sendScreenState");
+        Log.d("SCREEN_STATE", "width: " + width + "\nheight: " + height);
+
+        // send a command that tells the board we are starting
+        BluetoothActivity.writeToBTDevice(Command.createCommand(Command.START_TRANSFER));
+
+        // wait to let the DE1 setup
+        try {
+            Thread.sleep(100);
+        }catch(InterruptedException e){}
+
+        // y goes from 1 to 478 on the DE1
+        for (int y = 0; y < NIOSHEIGHT; y++) {
+            // x goes from 34 to 714 on the DE1
+            for (int x = 0; x < NIOSWIDTH; x++) {
+                // get the colour of the pixel in the upper-left corner
+                int pixelValue = get(x * width / NIOSWIDTH, y * height / NIOSHEIGHT);
+                ColourMenu.Colour pixelColour = pixelDataToColour(pixelValue);
+
+                if (pixelColour == null) {
+                    // set to white if we don't know what the colour is
+                    thisidx = 15;
+                } else {
+                    thisidx = pixelColour.getIndex();
+                }
+
+                if (lastidx == -1) {
+                    lastidx = thisidx;
+                    count = 1;
+                } else if (lastidx == thisidx) {
+                    count++;
+                } else {
+                    String cmd = Command.createCommand(Command.TRANSFER, count, lastidx);
+                    Log.d("SCREEN_STATE", "cmd: " + cmd);
+                    BluetoothActivity.writeToBTDevice(cmd);
+
+                    try {
+                        // sleep for at least 80 ms, but sleep for longer if we are sending a large amount of data
+                        Thread.sleep(Math.max(count/100, 80));
+                    }catch(InterruptedException e){}
+
+                    lastidx = thisidx;
+                    count = 1;
+                }
+            }
+        }
+
+        // send the final sequence of data
+        String cmd = Command.createCommand(Command.TRANSFER, count, lastidx);
+        Log.d("SCREEN_STATE", "cmd: " + cmd + "\n" + count + " " + lastidx);
+        BluetoothActivity.writeToBTDevice(cmd);
+
+        Log.d("SCREEN_STATE", "Ending sendScreenState");
+    }*/
 
     public void fill(final int x, final int y, final ColourMenu.Colour colourToFill, final ColourMenu.Colour fillColour) {
 
@@ -932,8 +1017,9 @@ public class DrawerFragment extends PApplet {
     private void deactivateColourMenu() {
 
         mColourMenu.hideSelf();
-        mState = DrawerState.DRAWING;
         sendMessageToUI("deactivate_colour", UI_CMD);
+
+        mState = DrawerState.DRAWING;
 
 
     }
@@ -950,8 +1036,10 @@ public class DrawerFragment extends PApplet {
     private void deactivatePenWidthMenu() {
 
         mPenWidthMenu.hideSelf();
-        mState = DrawerState.DRAWING;
         sendMessageToUI("deactivate_penWidth", UI_CMD);
+
+        mState = DrawerState.DRAWING;
+
 
     }
 
@@ -1097,7 +1185,7 @@ public class DrawerFragment extends PApplet {
             message.setData(bundle);
             message.sendToTarget();
 
-        } else if (requestType == BLUETOOTH_CMD) {
+        } else if (requestType == TOAST_CMD) {
             Message message = mHandler.obtainMessage();
             Bundle bundle = new Bundle();
             bundle.putString("toast_message", msg);

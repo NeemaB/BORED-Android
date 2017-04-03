@@ -7,6 +7,6 @@
 
     <item
         android:id="@+id/load_my_note"
-        android:title="@string/popup_menu_load_image" />
+        android:title="@string/popup_menu_load_note" />
 
 </menu>

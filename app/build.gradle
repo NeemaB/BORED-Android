@@ -45,16 +45,15 @@ dependencies {
     compile 'com.joanzapata.iconify:android-iconify-entypo:2.2.1'
     compile 'org.greenrobot:greendao:3.2.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.google.firebase:firebase-database:10.0.1'
-    compile 'com.google.firebase:firebase-storage:10.0.1'
-    compile 'com.google.firebase:firebase-auth:10.0.1'
-    compile 'com.firebaseui:firebase-ui-storage:1.0.1'
-    compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.android.support:multidex:1.0.1'
+//    compile 'com.google.firebase:firebase-database:10.0.1'
+//    compile 'com.google.firebase:firebase-storage:10.0.1'
+//    compile 'com.firebaseui:firebase-ui-storage:1.0.1'
+//    compile 'com.github.bumptech.glide:glide:3.7.0'
+//    compile 'com.android.support:multidex:1.0.1'
     testCompile 'junit:junit:4.12'
-    compile ('com.google.cloud:google-cloud-storage:0.9.4-beta') {
-        exclude group: 'com.google.api-client', module: 'google-api-client-appengine'
-    }
+//    compile ('com.google.cloud:google-cloud-storage:0.9.4-beta') {
+//        exclude group: 'com.google.api-client', module: 'google-api-client-appengine'
+//    }
 }
 
-apply plugin: 'com.google.gms.google-services'
+//apply plugin: 'com.google.gms.google-services'

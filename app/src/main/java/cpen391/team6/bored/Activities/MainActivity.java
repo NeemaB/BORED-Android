@@ -43,10 +43,10 @@ public class MainActivity extends AppCompatActivity {
     private CharSequence mTitle;
     private Menu mMenu;
 
-    private static final int COURSE_NOTES_POSITION = 0;
-    private static final int MY_NOTES_POSITION = 1;
-    private static final int CREATE_NOTE_POSITION = 2;
-    private static final int SETTINGS_POSITION = 3;
+    public static final int COURSE_NOTES_POSITION = 0;
+    public static final int MY_NOTES_POSITION = 1;
+    public static final int CREATE_NOTE_POSITION = 2;
+    public static final int SETTINGS_POSITION = 3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -288,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
 
             case CREATE_NOTE_POSITION:
 
-                loadCreateNoteFragment();
+                loadCreateNoteFragment(null);
 
                 break;
 
@@ -400,6 +400,13 @@ public class MainActivity extends AppCompatActivity {
         //view.setTextColor(getResources().getColor(R.color.white));
 
     }
+    public void loadNote(Bundle arguments){
+        loadCreateNoteFragment(arguments);
+        mCurrentPosition = CREATE_NOTE_POSITION;
+        updateDrawerList();
+        // Highlight the selected item, update the title, and close the drawer
+        mDrawerList.setItemChecked(CREATE_NOTE_POSITION, true);
+    }
 
     private void loadCourseNotesFragment() {
 
@@ -450,10 +457,9 @@ public class MainActivity extends AppCompatActivity {
         if (fragment == null)
             fragment = new MyNotesFragment();
 
-                /* Replace the current fragment that is being displayed, provide it with a tag so we can
-                 * locate it in the future
-                 */
-
+        /* Replace the current fragment that is being displayed, provide it with a tag so we can
+         * locate it in the future
+         */
         transaction.replace(R.id.content_frame,
                 fragment,
                 getString(R.string.my_notes_fragment_tag));
@@ -475,17 +481,32 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void loadCreateNoteFragment() {
+    private void loadCreateNoteFragment(Bundle arguments) {
 
         Fragment fragment = null;
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-        /* First check to see if a fragment exists before we create a new one */
-        fragment = getFragmentManager()
-                .findFragmentByTag(getString(R.string.create_note_fragment_tag));
 
-        if (fragment == null)
-            fragment = new CreateNoteFragment();
+//        if(arguments != null) {
+//            fragment = new CreateNoteFragment();
+//
+//            /* Set the arguments for the fragment */
+//            fragment.setArguments(arguments);
+//
+//        }else {
+//        /* First check to see if a fragment exists before we create a new one */
+//            fragment = getFragmentManager()
+//                    .findFragmentByTag(getString(R.string.create_note_fragment_tag));
+//
+//            if (fragment == null)
+//                fragment = new CreateNoteFragment();
+//        }
+        fragment = new CreateNoteFragment();
+
+        if(arguments != null){
+            fragment.setArguments(arguments);
+        }
+
 
         /* Replace the current fragment that is being displayed, provide it with a tag so we can
          * locate it in the future
