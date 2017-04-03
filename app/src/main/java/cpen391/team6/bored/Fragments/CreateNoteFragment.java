@@ -474,7 +474,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
         /* Indicate that operation failed */
         if(bmp == null){
-            return false;
+            return true;
         }
 
         /* Create a jpeg file using the RGB array */
@@ -486,7 +486,8 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         File file = getActivity().getFilesDir();
         String path = file.getAbsolutePath();
 
-        String filename = (title + ".jpg").replaceAll("\\W+", "_");
+        /* Create a unique filename using the title and the date at which the note was created */
+        String filename = (title + noteDate.toString() + ".jpg").replaceAll("\\W+", "_");
 
         //TODO: Check for duplicates filnames here, inform user that existing note will be overwritten
         try{
@@ -511,9 +512,9 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
         /* If rowId = -1, indicate that save operation failed */
         if(localNoteDao.insert(localNote) == -1)
-            return false;
+            return true;
 
-        return true;
+        return false;
 
     }
     private void sendMessageToUI(String msg) {

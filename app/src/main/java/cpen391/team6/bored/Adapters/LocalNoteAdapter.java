@@ -118,6 +118,7 @@ public class LocalNoteAdapter extends ArrayAdapter<LocalNote> {
 
                             case R.id.delete_my_note:
 
+
                                 //TODO: Add confirmation alert dialog for deleting a note
                                 LocalNoteDao localNoteDao = BoredApplication
                                         .getDaoSession()
