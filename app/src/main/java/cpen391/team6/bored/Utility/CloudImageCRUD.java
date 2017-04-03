@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import com.google.api.client.googleapis.media.MediaHttpDownloader;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.model.StorageObject;
@@ -188,6 +189,97 @@ public class CloudImageCRUD {
         }
 
         return image;
+    }
+
+    /**
+     * Attempt to read an Image segment from the given GoogleStorage reference with the given full path,
+     * including filename.
+     * The image will be attempted read into a Bitmap object and then the Bitmap will be returned.
+     * <p/>
+     * NOTE: See full path explanation:
+     * https://github.com/Mithrandir21/GoogleCloudStorage#object-full-path
+     *
+     * @param context
+     * @param googleStorage
+     * @param imageFullPath
+     * @return
+     * @throws IOException
+     */
+    public static File readCloudImageSegment(Context context, CloudStorage googleStorage, String imageFullPath)
+            throws IOException
+    {
+        if( context == null )
+        {
+            throw new IllegalArgumentException("Given Context was null! Error!");
+        }
+
+        if( googleStorage == null )
+        {
+            throw new IllegalArgumentException("Given GoogleStorage was null! Error!");
+        }
+
+        if( (imageFullPath == null || imageFullPath.length() < 1) )
+        {
+            throw new IllegalArgumentException("Given imageFullPath was null or empty! Error!");
+        }
+
+
+        // .tmp extension automatically provided.
+        //File segment = new File();
+        File tempFile = File.createTempFile("downloaded", null, null);
+        Log.d(TAG, "Created temporary file for download:" + tempFile.getName());
+
+        try
+        {
+            Storage storage = googleStorage.getStorage();
+
+            Storage.Objects.Get get = storage.objects().get(googleStorage.getBucketName(), imageFullPath);
+            Log.d(TAG, "Retrieved File meta data from Cloud");
+
+            FileOutputStream streamOutput = new FileOutputStream(tempFile);
+            Log.d(TAG, "Created file output stream for actual data.");
+
+            try
+            {
+                get.executeMediaAndDownloadTo(streamOutput);
+                Log.d(TAG, "Finished reading data.");
+            }
+            finally
+            {
+                streamOutput.close();
+                Log.d(TAG, "Closing output stream.");
+            }
+
+            Uri uri = Uri.fromFile(tempFile);
+            Log.d(TAG, "Created URI for bitmap.");
+
+
+            //image = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
+            Log.d(TAG, "Creating bitmap.");
+        }
+        catch( Exception e )
+        {
+            /**
+             * This can happen for a number of reasons, like attempting to read a file that does
+             * not exist or attempting to read an file that is not an image.
+             */
+            if( e.getMessage().contains("404 Not Found") )
+            {
+                Log.w(TAG, "Cloud Object (" + imageFullPath + ") not found.");
+            }
+            else
+            {
+                Log.e(TAG, "Error:" + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        finally
+        {
+            //tempFile.delete();
+            Log.d(TAG, "Deleting the temporary download file.");
+        }
+
+        return tempFile;
     }
 
 

@@ -1,31 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/content_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white">
 
- <android.support.v4.widget.SwipeRefreshLayout
-     xmlns:android="http://schemas.android.com/apk/res/android"
-     android:id="@+id/swipeContainer"
-     android:layout_width="match_parent"
-     android:layout_height="match_parent">
+ <!--<android.support.v4.widget.SwipeRefreshLayout-->
+     <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+     <!--android:id="@+id/swipeContainer"-->
+     <!--android:layout_width="match_parent"-->
+     <!--android:layout_height="match_parent">-->
 
-  <ListView
-      android:id="@+id/noteListView"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:drawSelectorOnTop="true"
-      android:layout_alignParentLeft="true"
-      android:layout_alignParentStart="true" />
+  <!--<ListView-->
+      <!--android:id="@+id/noteListView"-->
+      <!--android:layout_width="wrap_content"-->
+      <!--android:layout_height="wrap_content"-->
+      <!--android:drawSelectorOnTop="true"-->
+      <!--android:layout_alignParentLeft="true"-->
+      <!--android:layout_alignParentStart="true" />-->
 
- </android.support.v4.widget.SwipeRefreshLayout>
+ <!--</android.support.v4.widget.SwipeRefreshLayout>-->
 
- <TextView
-     android:id="@+id/empty"
-     android:text="Your class code has not Bored's!"
-     android:layout_width="fill_parent"
-     android:layout_height="fill_parent"
-     android:gravity="center" />
+ <!--<TextView-->
+     <!--android:id="@+id/empty"-->
+     <!--android:text="Your class code has not Bored's!"-->
+     <!--android:layout_width="fill_parent"-->
+     <!--android:layout_height="fill_parent"-->
+     <!--android:gravity="center" />-->
+
+ <ImageView
+     android:id="@+id/imageView"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+     app:srcCompat="@android:drawable/ic_menu_report_image" />
 
 </FrameLayout>
