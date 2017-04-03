@@ -444,9 +444,9 @@ public class DrawerFragment extends PApplet {
                 }
                 break;
 
-            case SENDING:
+            /*case SENDING:
                 sendScreenState();
-                break;
+                break;*/
         }
 
 
@@ -490,7 +490,7 @@ public class DrawerFragment extends PApplet {
 
         /* Add delay so that NIOS can process subsequent commands */
         try {
-            Thread.sleep(80);
+            Thread.sleep(160);
         }catch(InterruptedException e){}
 
         /* Set the pen size on the NIOS II */
@@ -503,7 +503,7 @@ public class DrawerFragment extends PApplet {
 
         /* Add delay so that NIOS can process subsequent commands */
         try {
-            Thread.sleep(80);
+            Thread.sleep(160);
         }catch(InterruptedException e){}
 
         /* Clear the screen on the NIOS II */
@@ -514,7 +514,7 @@ public class DrawerFragment extends PApplet {
 
     }
 
-    public void sendScreenState() {
+    /*public void sendScreenState() {
         int NIOSWIDTH = 681;
         int NIOSHEIGHT = 478;
         int lastidx = -1;
@@ -574,7 +574,7 @@ public class DrawerFragment extends PApplet {
         BluetoothActivity.writeToBTDevice(cmd);
 
         Log.d("SCREEN_STATE", "Ending sendScreenState");
-    }
+    }*/
 
     public void fill(final int x, final int y, final ColourMenu.Colour colourToFill, final ColourMenu.Colour fillColour) {
 
