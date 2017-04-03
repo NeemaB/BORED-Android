@@ -293,6 +293,48 @@ public class MainActivity extends AppCompatActivity {
 
             case 2:
 
+                /* If we are on the create note page, inform the user that their unsaved changes will be lost,
+                *  if the user selects yes then we will transition to the new fragment, otherwise we will stay where
+                *  we are
+                */
+                if (mCurrentPosition == CREATE_NOTE_POSITION) {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            new ContextThemeWrapper(this, R.style.DialogTheme));
+
+                    builder.setTitle(getString(R.string.leave_fragment_title))
+                            .setMessage(R.string.leave_fragment_message)
+                            .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    loadSettingsFragment();
+                                    mCurrentPosition = position;
+                                    updateDrawerList();
+                                    // Highlight the selected item, update the title, and close the drawer
+                                    mDrawerList.setItemChecked(position, true);
+                                    //setTitle(mDrawerTitles[position]);
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+
+                    AlertDialog confirmationDialog = builder.create();
+                    confirmationDialog.setCanceledOnTouchOutside(true);
+                    confirmationDialog.show();
+
+                    UI_Util.setDialogStyle(confirmationDialog, this);
+
+                    mDrawerLayout.closeDrawer(mDrawerList);
+                    return;
+
+                }
+
                 loadSettingsFragment();
         }
 
@@ -302,7 +344,6 @@ public class MainActivity extends AppCompatActivity {
         mDrawerList.setItemChecked(position, true);
         //setTitle(mDrawerTitles[position]);
         mDrawerLayout.closeDrawer(mDrawerList);
-
 
     }
 
