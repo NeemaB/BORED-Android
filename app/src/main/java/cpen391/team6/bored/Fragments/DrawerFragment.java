@@ -522,12 +522,7 @@ public class DrawerFragment extends PApplet {
                     break;
                 case 'R':
                 case 'U':
-                case 'X':
-                    sleepTime = 80;
-                    break;
-                case 'C':
-                case 'S':
-                    sleepTime = 80;
+                    sleepTime = 150;
                     break;
                 default:
                     sleepTime = 80;
