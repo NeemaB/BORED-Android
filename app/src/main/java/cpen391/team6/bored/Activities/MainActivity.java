@@ -340,6 +340,8 @@ public class MainActivity extends AppCompatActivity {
 
                 loadSettingsFragment();
 
+                break;
+
             case MY_NOTES_POSITION:
 
                 /* If we are on the create note page, inform the user that their unsaved changes will be lost,

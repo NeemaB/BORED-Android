@@ -2,6 +2,7 @@ package cpen391.team6.bored.Fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,8 +30,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +41,8 @@ import com.codekrypt.greendao.db.LocalNote;
 import com.codekrypt.greendao.db.LocalNoteDao;
 import com.codekrypt.greendao.db.ScreenInfo;
 import com.joanzapata.iconify.widget.IconTextView;
+
+import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -57,13 +62,16 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import java.util.List;
 import java.util.Observer;
 
 import cpen391.team6.bored.Activities.BluetoothActivity;
 import cpen391.team6.bored.Activities.MainActivity;
+import cpen391.team6.bored.Adapters.DialogLocalNoteAdapter;
 import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Items.ColourMenu;
 import cpen391.team6.bored.Items.Command;
@@ -310,12 +318,12 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                                 mDrawer.mState = DrawerFragment.DrawerState.SENDING;
                                 mDrawer.mousePressed();
                                 mDrawer.mState = temp;*/
-                                sendMessageToUI("Able To Draw On NIOS", TOAST_CMD);
+                                sendMessageToUI("Streaming Permission Acquired ", TOAST_CMD);
                                 sendMessageToUI(R.string.connected_initializing_remote_screen, BLUETOOTH_STATUS_CMD);
                                 mDrawer.initRemoteScreen();
                                 sendMessageToUI(R.string.connected_can_draw_on_NIOS, BLUETOOTH_STATUS_CMD);
                             }else if(cmdString.equals("B")){
-                                sendMessageToUI("Unable To Draw On NIOS", TOAST_CMD);
+                                sendMessageToUI("Streaming Permission Revoked", TOAST_CMD);
                                 sendMessageToUI(R.string.connected_awaiting_permission, BLUETOOTH_STATUS_CMD);
                             }else{
                                                 /*do nothing */
@@ -441,6 +449,49 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 break;
 
             case R.id.load_draw_space:
+
+                /* Create view to place inside of the dialog window */
+                final View loadNoteDialogView = getActivity()
+                        .getLayoutInflater()
+                        .inflate(R.layout.dialog_load_note, null);
+
+                AlertDialog.Builder builder2 = new AlertDialog.Builder(
+                        new ContextThemeWrapper(getActivity(), R.style.DialogTheme));
+
+                builder2.setTitle(getString(R.string.load_note))
+                        .setView(loadNoteDialogView);
+
+                final AlertDialog loadNoteDialog = builder2.create();
+                loadNoteDialog.setCanceledOnTouchOutside(true);
+                loadNoteDialog.show();
+
+                final ListView dialogNoteListView = (ListView) loadNoteDialog.findViewById(R.id.simple_note_list);
+
+                /* Retrieve all the local notes */
+                LocalNoteDao localNoteDao = BoredApplication.getDaoSession().getLocalNoteDao();
+                QueryBuilder<LocalNote> qb = localNoteDao.queryBuilder();
+                final List<LocalNote> mNotesList = qb.list();
+
+                /* Load the local notes into the listView within the dialog */
+                DialogLocalNoteAdapter adapter = new DialogLocalNoteAdapter(
+                        getActivity(),
+                        R.layout.dialog_note_list_item,
+                        mNotesList);
+
+                dialogNoteListView.setAdapter(adapter);
+
+
+                dialogNoteListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                        mDrawer.loadNote(mNotesList.get(position).getFilePath());
+                        loadNoteDialog.dismiss();
+                    }
+                });
+
+                UI_Util.setDialogStyle(loadNoteDialog, getActivity());
+
 
                 break;
 

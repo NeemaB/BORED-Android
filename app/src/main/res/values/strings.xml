@@ -42,6 +42,7 @@
     <string name="select_topic_hint">Give your note a topic...</string>
     <string name="save_note">Save Note</string>
     <string name="title_error_message">Your note needs a title</string>
+    <string name="load_note">Load Note</string>
 
     <!-- Popup Menu Strings -->
     <string name="popup_menu_delete">Delete</string>
@@ -59,5 +60,6 @@
     <string name="class_code_title">Class Code</string>
     <string name="class_code_summary">Change your current class code.</string>
     <string name="class_code_message">Enter new class code:</string>
+    <string name="default_class_code">XXXX</string>
 
 </resources>
