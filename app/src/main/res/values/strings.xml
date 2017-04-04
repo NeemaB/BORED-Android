@@ -59,5 +59,6 @@
     <string name="class_code_title">Class Code</string>
     <string name="class_code_summary">Change your current class code.</string>
     <string name="class_code_message">Enter new class code:</string>
+    <string name="default_class_code">XXXX</string>
 
 </resources>
