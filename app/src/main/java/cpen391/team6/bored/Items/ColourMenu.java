@@ -30,9 +30,9 @@ public abstract class ColourMenu extends PopUpMenu {
         ORANGE(0xFF, 0xA5, 0x00, 0, 2, 2),
         PINK(0xFF, 0xC0, 0xCB, 0, 3, 3),
         TEAL(0xFF, 0xFF, 0x00, 1, 0, 4),
-        LIME(0x32, 0xCD, 0x32, 1, 1, 5),
-        DARK_SEA_GREEN(0x8F, 0xBC, 0x8F, 1, 3, 6),
-        GREEN(0x00, 0xFF, 0x00, 1, 2, 7),
+        LIME(0x00, 0xFF, 0x00, 1, 1, 5),
+        GREEN(0x00, 0x80, 0x00, 1, 2, 6),
+        DARK_SEA_GREEN(0x8F, 0xBC, 0x8F, 1, 3, 7),
         CYAN(0x00, 0xFF, 0xFF, 2, 0, 8),
         NAVY(0x00, 0x00, 0x80, 2, 1, 9),
         PURPLE(0x80, 0x00, 0x80, 2, 2, 10),
@@ -112,7 +112,7 @@ public abstract class ColourMenu extends PopUpMenu {
     public void drawSelf() {
 
         mDrawer.stroke(0);
-        mDrawer.strokeWeight(1);
+
 
         saveScreenState();
 
@@ -120,10 +120,24 @@ public abstract class ColourMenu extends PopUpMenu {
         for (Colour colour : mColourSet) {
             mDrawer.fill(colour);
 
-            mDrawer.rect(this.mLocX + colour.coloumn * mWidth / 4,
-                    this.mLocY + colour.row * mHeight / 4,
-                    mWidth / 4,
-                    mHeight / 4);
+            /* Highlight which penColour is currently selected */
+            if(mDrawer.getPenColour() == colour){
+                mDrawer.strokeWeight(10);
+                mDrawer.rect(this.mLocX + colour.coloumn * mWidth / 4 + 5,
+                        this.mLocY + colour.row * mHeight / 4 + 5,
+                        (mWidth/4) - 10,
+                        (mHeight / 4) - 10);
+            }else{
+                mDrawer.strokeWeight(1);
+                mDrawer.rect(this.mLocX + colour.coloumn * mWidth / 4,
+                        this.mLocY + colour.row * mHeight / 4,
+                        mWidth / 4,
+                        mHeight / 4);
+            }
+
+
+
+
         }
 
 

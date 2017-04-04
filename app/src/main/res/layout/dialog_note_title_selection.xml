@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/set_title_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingLeft="16dp"
+            android:paddingTop="8dp"
+            android:text="Set Title"
+            android:textSize="20sp"
+            android:textColor="@color/dark_gray" />
+
+
+        <TextView
+            android:id="@+id/title_error_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp"
+            android:paddingRight="16dp"
+            android:text="@string/title_error_message"
+            android:textColor="#FF0000"
+            android:visibility="gone" />
+
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/set_note_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorPrimary"
+        android:paddingTop="16dp"
+        android:paddingLeft="16dp"
+        android:singleLine="true"
+        android:hint="@string/select_title_hint"
+        android:textColor="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textCursorDrawable="@drawable/edit_text_cursor_drawable" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingTop="4dp"
+            android:text="Set Topic"
+            android:textSize="20sp"
+            android:textColor="@color/dark_gray"/>
+
+
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/set_note_topic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorPrimary"
+        android:padding="16dp"
+        android:singleLine="true"
+        android:textColor="@color/colorPrimary"
+        android:hint="@string/select_topic_hint"
+        android:textColorHint="@color/colorPrimary"
+        android:textCursorDrawable="@drawable/edit_text_cursor_drawable" />
+
+</LinearLayout>

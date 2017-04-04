@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 
 import java.io.IOException;
@@ -161,7 +162,7 @@ public class ImageUtil {
      * @param selectedImage Image URI
      * @return The resulted Bitmap after manipulation
      */
-    private static Bitmap rotateImageIfRequired(Bitmap img, Uri selectedImage) throws IOException {
+    public static Bitmap rotateImageIfRequired(Bitmap img, Uri selectedImage) throws IOException {
 
         ExifInterface ei = new ExifInterface(selectedImage.getPath());
         int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
@@ -178,7 +179,7 @@ public class ImageUtil {
         }
     }
 
-    private static Bitmap rotateImage(Bitmap img, int degree) {
+    public static Bitmap rotateImage(Bitmap img, int degree) {
         Matrix matrix = new Matrix();
         matrix.postRotate(degree);
         Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
@@ -187,7 +188,7 @@ public class ImageUtil {
     }
 
 
-    private int getImageOrientation() {
+    public static int getImageOrientation() {
         final String[] imageColumns = {MediaStore.Images.Media._ID, MediaStore.Images.ImageColumns.ORIENTATION};
         final String imageOrderBy = MediaStore.Images.Media._ID + " DESC";
         Cursor cursor = imgContext.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,

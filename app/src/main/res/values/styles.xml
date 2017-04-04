@@ -6,7 +6,7 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:textColorSecondary">@color/colorSecondary</item>
+        <item name="android:textColorSecondary">@color/textColorSecondary</item>
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
         <item name="android:actionBarStyle">@style/MyActionBar</item>
     </style>
@@ -27,7 +27,7 @@
 
     <style name="DialogTheme" parent="android:Theme.Holo.Light">
 
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/dark_gray</item>
         <item name="android:colorBackground">@color/white</item>
     </style>
 

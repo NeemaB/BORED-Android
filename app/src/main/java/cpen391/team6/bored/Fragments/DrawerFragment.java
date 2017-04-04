@@ -13,8 +13,15 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.List;
 import java.util.Observable;
+import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -31,6 +38,8 @@ import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.ImageUtil;
 import cpen391.team6.bored.Utility.UI_Util;
 import processing.core.PApplet;
+import processing.core.PImage;
+
 
 /**
  * Created by neema on 2017-03-12.
@@ -39,8 +48,14 @@ public class DrawerFragment extends PApplet {
 
     public static String LOG_TAG = "Drawer_Fragment";
 
-    private android.os.Handler mHandler;
+    /* Command flags */
+    private static int TOAST_CMD = 0;
+    private static int UI_CMD = 1;
 
+    /* Set of active threads spawned by this fragment */
+    private Set<Thread> mActiveThreads;
+
+    private android.os.Handler mHandler;
     private int mColourMenuX;
     private int mColourMenuY;
     private int mColourMenuWidth;
@@ -56,12 +71,14 @@ public class DrawerFragment extends PApplet {
 
     private ColourMenu mColourMenu;
     private PenWidthMenu mPenWidthMenu;
-    private DrawerState mState;
+    public DrawerState mState;
 
     private UndoList mUndoListHead; // Implements an undo list so that we can undo and redo
 
     private PenWidthMenu.PenWidth mPenWidth;
     private ColourMenu.Colour mPenColour;
+
+    private List<String> mCommandList;
 
     private enum DrawerState {
 
@@ -69,12 +86,30 @@ public class DrawerFragment extends PApplet {
         COLOUR_MENU_ACTIVE,
         WIDTH_MENU_ACTIVE,
         FILL_ACTIVE,
-        TEXT_BOX_ACTIVE
+        TEXT_BOX_ACTIVE,
+        SENDING
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Override
     public void onStart() {
         super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        if (mActiveThreads != null) {
+            for (Thread thread : mActiveThreads) {
+                thread.interrupt();
+            }
+        }
+
     }
 
     /***********************************************************************************************
@@ -101,6 +136,12 @@ public class DrawerFragment extends PApplet {
         mPenColour = ColourMenu.Colour.BLACK;
         mState = DrawerState.DRAWING;
 
+        mCommandList = new ArrayList<String>();
+        mCommandList.add(Command.createCommand(Command.CHANGE_COLOUR, mPenColour.getIndex()));
+        mCommandList.add(Command.createCommand(Command.CHANGE_PEN_WIDTH, mPenWidth.getSize()));
+
+        mActiveThreads = new HashSet<>();
+
         /* Create the color menu and implement the press handler */
         mColourMenu = new ColourMenu(this, mColourMenuX, mColourMenuY,
                 mColourMenuWidth, mColourMenuHeight) {
@@ -112,12 +153,13 @@ public class DrawerFragment extends PApplet {
                     /* If we are streaming to the device, send a command string
                      * to change the colour on the BORED
                      */
-                    if (BoredApplication.isConnectedToBluetooth) {
-                        String cmd;
-                        cmd = Command.createCommand(
-                                Command.CHANGE_COLOUR,
-                                mPenColour.getIndex());
+                    String cmd;
+                    cmd = Command.createCommand(
+                            Command.CHANGE_COLOUR,
+                            mPenColour.getIndex());
+                    mCommandList.add(cmd);
 
+                    if (BoredApplication.isConnectedToBluetooth) {
                         BluetoothActivity.writeToBTDevice(cmd);
                         Log.d(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
                     }
@@ -136,12 +178,13 @@ public class DrawerFragment extends PApplet {
                     /* If we are streaming to the device, send a command string
                      * to change the pen width on the BORED
                      */
-                    if (BoredApplication.isConnectedToBluetooth) {
-                        String cmd;
-                        cmd = Command.createCommand(
-                                Command.CHANGE_PEN_WIDTH,
-                                mPenWidth.getSize());
+                    String cmd;
+                    cmd = Command.createCommand(
+                            Command.CHANGE_PEN_WIDTH,
+                            mPenWidth.getSize());
+                    mCommandList.add(cmd);
 
+                    if (BoredApplication.isConnectedToBluetooth) {
                         BluetoothActivity.writeToBTDevice(cmd);
                         Log.d(LOG_TAG, "Sent change pen width command to bluetooth:" + cmd);
                     }
@@ -155,53 +198,104 @@ public class DrawerFragment extends PApplet {
 
             @Override
             public void handleMessage(Message message) {
-                String request = (String) message.getData().get("request");
 
-                switch (request) {
+                int requestType = (int) message.getData().get("requestType");
 
-                    case "activate_colour":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updateColourIcon(R.color.colorPrimary,
-                                        R.color.colorSecondary);
+                /* command to display a toast in response to a bluetooth event */
+                if (requestType == TOAST_CMD) {
+                    String msg = (String) message.getData().get("toast_message");
+                    Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
 
-                        break;
-                    case "deactivate_colour":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updateColourIcon(R.color.colorSecondary,
-                                        R.color.colorPrimary);
-                        break;
 
-                    case "activate_penWidth":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updatePenWidthIcon(R.color.colorPrimary,
-                                        R.color.colorSecondary);
-                        break;
+                /* Commands to update the UI of the parent fragment */
+                } else if (requestType == UI_CMD) {
+                    String request = (String) message.getData().get("request");
+                    switch (request) {
 
-                    case "deactivate_penWidth":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updatePenWidthIcon(R.color.colorSecondary,
-                                        R.color.colorPrimary);
-                        break;
+                        case "activate_colour":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateColourIcon(R.color.colorPrimary,
+                                            R.color.colorSecondary);
 
-                    case "activate_fill":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updateFillIcon(R.color.colorPrimary,
-                                        R.color.colorSecondary);
-                        break;
+                            break;
+                        case "deactivate_colour":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateColourIcon(R.color.colorSecondary,
+                                            R.color.colorPrimary);
+                            break;
 
-                    case "deactivate_fill":
-                        ((CreateNoteFragment) getParentFragment())
-                                .updateFillIcon(R.color.colorSecondary,
-                                        R.color.colorPrimary);
+                        case "activate_penWidth":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updatePenWidthIcon(R.color.colorPrimary,
+                                            R.color.colorSecondary);
+                            break;
 
+                        case "deactivate_penWidth":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updatePenWidthIcon(R.color.colorSecondary,
+                                            R.color.colorPrimary);
+                            break;
+
+                        case "activate_fill":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateFillIcon(R.color.colorPrimary,
+                                            R.color.colorSecondary);
+                            break;
+
+                        case "deactivate_fill":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateFillIcon(R.color.colorSecondary,
+                                            R.color.colorPrimary);
+
+                            break;
+
+                        case "highlight_undo_icon":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateUndoIcon(R.color.colorPrimary,
+                                            R.color.white);
+
+                            break;
+
+                        case "restore_undo_icon":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateUndoIcon(R.color.white,
+                                            R.color.colorPrimary);
+
+                            break;
+
+                        case "highlight_redo_icon":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateRedoIcon(R.color.colorPrimary,
+                                            R.color.white);
+
+                            break;
+
+                        case "restore_redo_icon":
+                            ((CreateNoteFragment) getParentFragment())
+                                    .updateRedoIcon(R.color.white,
+                                            R.color.colorPrimary);
+
+                            break;
+                    }
                 }
             }
         };
 
+
+        Bundle arguments = getArguments();
+        if(arguments.getString("load_note_path") != null){
+            String filePath = arguments.getString("load_note_path");
+            PImage img = loadImage(filePath);
+            image(img, 0, 0);
+            //Toast.makeText(getActivity(), "Loaded Note Successfully!", Toast.LENGTH_SHORT).show();
+            sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
+        }
     }
 
     @Override
     public void draw() {
+
+
 
         /* Drawing is done through user events so this loop is empty */
 
@@ -239,29 +333,28 @@ public class DrawerFragment extends PApplet {
                     mUndoListHead.getPointList().setNext(new PointList(new Point(mouseX, mouseY)));
                     mUndoListHead.setPointList(mUndoListHead.getPointList().getNext());
 
+                    Log.d(LOG_TAG, "Draw line in draw space");
                     line(mLastLocX, mLastLocY, mouseX, mouseY);
 
+                   /* Map the current point on the android draw space to a point
+                    * on the device
+                    */
+
+                    Point currentLoc = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
+                            this.width, this.height);
+
+                    Log.d(LOG_TAG, "currentLoc on the device will be:" + currentLoc.locX + " " + currentLoc.locY);
+
+                    /* Create our parameter list out of the new points */
+                    Integer[] params = new Integer[2];
+                    params[0] = currentLoc.locX;
+                    params[1] = currentLoc.locY;
+
+                    /* Specify a new point that the NIOS II can draw to */
+                    String cmd = Command.createCommand(Command.POINT, params);
+                    mCommandList.add(cmd);
                     if (BoredApplication.isConnectedToBluetooth) {
-
-                       /* Map the current point on the android draw space to a point
-                        * on the device
-                        */
-
-                        Point currentLoc = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
-                                this.width, this.height);
-
-                        Log.d(LOG_TAG, "currentLoc on the device will be:" + currentLoc.locX + " " + currentLoc.locY);
-
-                        /* Create our parameter list out of the new points */
-                        Integer[] params = new Integer[2];
-                        params[0] = currentLoc.locX;
-                        params[1] = currentLoc.locY;
-
-                        /* Specify a new point that the NIOS II can draw to */
-                        BluetoothActivity.writeToBTDevice(
-                                Command.createCommand(
-                                        Command.POINT,
-                                        params));
+                        BluetoothActivity.writeToBTDevice(cmd);
                     }
                 }
 
@@ -293,32 +386,33 @@ public class DrawerFragment extends PApplet {
     @Override
     public void mousePressed() {
 
+        Integer[] params;
+        String cmd;
+
         /* Perform a different action depending on what state we are in */
         switch (mState) {
 
 
             case DRAWING:
 
+                /* Map the current and last point on the android draw space to a point
+                 * on the device
+                 */
+                Point startPoint = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
+                        this.width, this.height);
+
+                Log.d(LOG_TAG, "Start drawing on the device from:" + startPoint.locX + " " + startPoint.locY);
+
+                /* Create our parameter list out of the new points */
+                params = new Integer[2];
+                params[0] = startPoint.locX;
+                params[1] = startPoint.locY;
+
+                /* Indicate to the NIOS II that we are starting to draw */
+                cmd = Command.createCommand(Command.START_DRAWING, params);
+                mCommandList.add(cmd);
                 if (BoredApplication.isConnectedToBluetooth) {
-
-                    /* Map the current and last point on the android draw space to a point
-                     * on the device
-                     */
-                    Point startPoint = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
-                            this.width, this.height);
-
-                    Log.d(LOG_TAG, "Start drawing on the device from:" + startPoint.locX + " " + startPoint.locY);
-
-                    /* Create our parameter list out of the new points */
-                    Integer[] params = new Integer[2];
-                    params[0] = startPoint.locX;
-                    params[1] = startPoint.locY;
-
-                    /* Indicate to the NIOS II that we are starting to draw */
-                    BluetoothActivity.writeToBTDevice(
-                            Command.createCommand(
-                                    Command.START_DRAWING,
-                                    params));
+                    BluetoothActivity.writeToBTDevice(cmd);
                 }
 
                 break;
@@ -345,29 +439,30 @@ public class DrawerFragment extends PApplet {
                 loadPixels();
                 fill(mouseX, mouseY, pixelDataToColour(get(mouseX, mouseY)), mPenColour);
 
+                /* Map the current and last point on the android draw space to a point
+                 * on the device
+                 */
+                Point fillPoint = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
+                        this.width, this.height);
+
+                Log.d(LOG_TAG, "Send fill command to bluetooth at:" + fillPoint.locX + " " + fillPoint.locY);
+
+                /* Create our parameter list out of the new points */
+                params = new Integer[2];
+                params[0] = fillPoint.locX;
+                params[1] = fillPoint.locY;
+
+                /* Tell NIOS II to fill in around the point specified in the parameter list */
+                cmd = Command.createCommand(Command.FILL, params);
                 if (BoredApplication.isConnectedToBluetooth) {
-
-                    /* Map the current and last point on the android draw space to a point
-                     * on the device
-                     */
-                    Point fillPoint = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
-                            this.width, this.height);
-
-                    Log.d(LOG_TAG, "Send fill command to bluetooth at:" + fillPoint.locX + " " + fillPoint.locY);
-
-                    /* Create our parameter list out of the new points */
-                    Integer[] params = new Integer[2];
-                    params[0] = fillPoint.locX;
-                    params[1] = fillPoint.locY;
-
-                    /* Tell NIOS II to fill in around the point specified in the parameter list */
-                    BluetoothActivity.writeToBTDevice(
-                            Command.createCommand(
-                                    Command.FILL,
-                                    params));
-
+                    BluetoothActivity.writeToBTDevice(cmd);
                 }
+
                 break;
+
+            /*case SENDING:
+                sendScreenState();
+                break;*/
         }
 
 
@@ -376,13 +471,11 @@ public class DrawerFragment extends PApplet {
     @Override
     public void mouseReleased() {
 
+        /* Tell NIOS-II to stop drawing */
+        String cmd = Command.createCommand(Command.STOP_DRAWING);
+        mCommandList.add(cmd);
         if (BoredApplication.isConnectedToBluetooth) {
-
-            /* Tell NIOS II to stop drawing now */
-            BluetoothActivity.writeToBTDevice(
-                    Command.createCommand(
-                            Command.STOP_DRAWING));
-
+            BluetoothActivity.writeToBTDevice(cmd);
         }
 
         /* InValidate last location since we don't want to draw a line
@@ -399,7 +492,53 @@ public class DrawerFragment extends PApplet {
      *********************************************************************************************/
     public void initRemoteScreen() {
 
+        // TODO: loop through mCommandList and execute all of the commands
+
         String cmd;
+
+        /* Clear the screen on the NIOS II */
+        cmd = Command.createCommand(Command.CLEAR);
+
+        BluetoothActivity.writeToBTDevice(cmd);
+        Log.d(LOG_TAG, "Sent clear command to bluetooth:" + cmd);
+
+        /* Add delay so that NIOS can process subsequent commands */
+        try {
+
+            Thread.sleep(80);
+        } catch (InterruptedException e) {}
+
+
+        for (String command : mCommandList) {
+            BluetoothActivity.writeToBTDevice(command);
+
+            int sleepTime;
+
+            switch (command.charAt(0)) {
+                case 'D':
+                case 'L':
+                case 'P':
+                    sleepTime = 5;
+                    break;
+                case 'R':
+                case 'U':
+                case 'X':
+                    sleepTime = 80;
+                    break;
+                case 'C':
+                case 'S':
+                    sleepTime = 80;
+                    break;
+                default:
+                    sleepTime = 80;
+                    break;
+            }
+
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+            }
+        }
 
         /* Set the pen colour on NIOS II */
         cmd = Command.createCommand(
@@ -408,6 +547,13 @@ public class DrawerFragment extends PApplet {
 
         BluetoothActivity.writeToBTDevice(cmd);
         Log.d(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
+
+        /* Add delay so that NIOS can process subsequent commands */
+        try {
+
+            Thread.sleep(80);
+        } catch (InterruptedException e) {}
+
 
         /* Set the pen size on the NIOS II */
         cmd = Command.createCommand(
@@ -419,71 +565,151 @@ public class DrawerFragment extends PApplet {
 
     }
 
+
+    /*public void sendScreenState() {
+        int NIOSWIDTH = 681;
+        int NIOSHEIGHT = 478;
+        int lastidx = -1;
+        int thisidx = -1;
+        int count = 0;
+
+        Log.d("SCREEN_STATE", "Starting sendScreenState");
+        Log.d("SCREEN_STATE", "width: " + width + "\nheight: " + height);
+
+        // send a command that tells the board we are starting
+        BluetoothActivity.writeToBTDevice(Command.createCommand(Command.START_TRANSFER));
+
+        // wait to let the DE1 setup
+        try {
+            Thread.sleep(100);
+        }catch(InterruptedException e){}
+
+        // y goes from 1 to 478 on the DE1
+        for (int y = 0; y < NIOSHEIGHT; y++) {
+            // x goes from 34 to 714 on the DE1
+            for (int x = 0; x < NIOSWIDTH; x++) {
+                // get the colour of the pixel in the upper-left corner
+                int pixelValue = get(x * width / NIOSWIDTH, y * height / NIOSHEIGHT);
+                ColourMenu.Colour pixelColour = pixelDataToColour(pixelValue);
+
+                if (pixelColour == null) {
+                    // set to white if we don't know what the colour is
+                    thisidx = 15;
+                } else {
+                    thisidx = pixelColour.getIndex();
+                }
+
+                if (lastidx == -1) {
+                    lastidx = thisidx;
+                    count = 1;
+                } else if (lastidx == thisidx) {
+                    count++;
+                } else {
+                    String cmd = Command.createCommand(Command.TRANSFER, count, lastidx);
+                    Log.d("SCREEN_STATE", "cmd: " + cmd);
+                    BluetoothActivity.writeToBTDevice(cmd);
+
+                    try {
+                        // sleep for at least 80 ms, but sleep for longer if we are sending a large amount of data
+                        Thread.sleep(Math.max(count/100, 80));
+                    }catch(InterruptedException e){}
+
+                    lastidx = thisidx;
+                    count = 1;
+                }
+            }
+        }
+
+        // send the final sequence of data
+        String cmd = Command.createCommand(Command.TRANSFER, count, lastidx);
+        Log.d("SCREEN_STATE", "cmd: " + cmd + "\n" + count + " " + lastidx);
+        BluetoothActivity.writeToBTDevice(cmd);
+
+        Log.d("SCREEN_STATE", "Ending sendScreenState");
+    }*/
+
     public void fill(final int x, final int y, final ColourMenu.Colour colourToFill, final ColourMenu.Colour fillColour) {
 
-        Thread thread = new Thread(new Runnable() {
+        /* Create a new worker thread to perform the algorithm off of the main UI thread */
+        final Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
+
+//                HashMap<Point, Boolean> checkedPoints = new HashMap<>();
+                /* Stack of points to examine */
                 Stack<Point> pointStack = new Stack<>();
                 Point nextPoint;
                 pointStack.push(new Point(x, y));
                 ColourMenu.Colour pixelColour;
 
                 do {
-                    nextPoint = pointStack.pop();
+                    /* The UI thread has requested us to stop so do so */
+                    if (Thread.interrupted()) {
+                        return;
+                    }
 
+                    /* Pixels on the stack should be filled in with the desired color */
+                    nextPoint = pointStack.pop();
                     set(nextPoint.locX, nextPoint.locY,
                             color(fillColour.getColourR(),
                                     fillColour.getColourG(),
                                     fillColour.getColourB()));
 
-                    pixels[nextPoint.locY * width + nextPoint.locX] = color(fillColour.getColourR(),
-                            fillColour.getColourG(),
-                            fillColour.getColourB());
 
-                    //updatePixels();
+                    /* Check the point to the right to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX + 1, nextPoint.locY));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
-
-                        pointStack.push(new Point(nextPoint.locX + 1, nextPoint.locY));
+                        Point checkPoint = new Point(nextPoint.locX + 1, nextPoint.locY);
+                        pointStack.push(checkPoint);
                     } else {
                         set(nextPoint.locX + 1, nextPoint.locY,
                                 color(fillColour.getColourR(),
                                         fillColour.getColourG(),
                                         fillColour.getColourB()));
                     }
+                    /* Check the point below to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX, nextPoint.locY + 1));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
+                        Point checkPoint = new Point(nextPoint.locX, nextPoint.locY + 1);
+                        pointStack.push(checkPoint);
 
-                        pointStack.push(new Point(nextPoint.locX, nextPoint.locY + 1));
                     } else {
                         set(nextPoint.locX, nextPoint.locY + 1,
                                 color(fillColour.getColourR(),
                                         fillColour.getColourG(),
                                         fillColour.getColourB()));
                     }
+                    /* Check the point to the left to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX - 1, nextPoint.locY));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
-                        pointStack.push(new Point(nextPoint.locX - 1, nextPoint.locY));
+                        Point checkPoint = new Point(nextPoint.locX - 1, nextPoint.locY);
+                        pointStack.push(checkPoint);
+
+
                     } else {
                         set(nextPoint.locX - 1, nextPoint.locY,
                                 color(fillColour.getColourR(),
                                         fillColour.getColourG(),
                                         fillColour.getColourB()));
                     }
+                    /* Check the point above to see if it should be filled in */
                     pixelColour = pixelDataToColour(get(nextPoint.locX, nextPoint.locY - 1));
                     if (pixelColour == colourToFill && pixelColour != fillColour) {
-                        pointStack.push(new Point(nextPoint.locX, nextPoint.locY - 1));
+                        Point checkPoint = new Point(nextPoint.locX, nextPoint.locY - 1);
+                        pointStack.push(checkPoint);
+
                     } else {
                         set(nextPoint.locX, nextPoint.locY - 1,
                                 color(fillColour.getColourR(),
                                         fillColour.getColourG(),
                                         fillColour.getColourB()));
                     }
-
+                /* Break out of loop when we have filled in all the points */
                 } while (!pointStack.isEmpty());
             }
         });
+        /* Add this thread to our set of active threads so that we can destroy it prematurely if needed */
+        mActiveThreads.add(thread);
         thread.start();
 
 
@@ -523,6 +749,7 @@ public class DrawerFragment extends PApplet {
 
                         mUndoListHead = null;
                         mValid = false;
+                        mCommandList.clear();
 
                         background(255);
                         if (BoredApplication.isConnectedToBluetooth) {
@@ -531,6 +758,14 @@ public class DrawerFragment extends PApplet {
                             BluetoothActivity.writeToBTDevice(cmd);
                             Log.d(LOG_TAG, "Sent clear screen command to bluetooth:" + cmd);
 
+                        }
+                        /* If we are currently filling something, stop the corresponding thread(s)
+                         * so we don't fill the screen with a new colour after clearing it
+                         */
+                        if (mActiveThreads != null) {
+                            for (Thread thread : mActiveThreads) {
+                                thread.interrupt();
+                            }
                         }
                         dialog.dismiss();
                     }
@@ -553,7 +788,7 @@ public class DrawerFragment extends PApplet {
      * Clear the last sequence of drawn lines from the draw space. A sequence is considered to be
      * every line drawn between when the user first touches the screen and when the user lets go
      * of the screen.
-     * <p>
+     * <p/>
      * Note: This function will also undo the sequence of lines drawn on the NIOS II if there is an
      * active bluetooth session
      **********************************************************************************************/
@@ -561,59 +796,17 @@ public class DrawerFragment extends PApplet {
 
         //TODO: Implement this on the android device, currently it just sends commands to NIOS
 
-        if (mState == DrawerState.DRAWING) {
-            if (mUndoListHead != null) {
+        switch (mState) {
 
-                strokeWeight(mUndoListHead.getPenWidth().dp + 1);
-                stroke(255);
+            case DRAWING:
+                sendMessageToUI("highlight_undo_icon", UI_CMD);
 
-                PointList head = mUndoListHead.getPointListHead();
+                if (mUndoListHead != null) {
 
-                while (head.getNext() != null) {
-                    line(head.getPoint().locX,
-                            head.getPoint().locY,
-                            head.getNext().getPoint().locX,
-                            head.getNext().getPoint().locY);
+                    strokeWeight(mUndoListHead.getPenWidth().dp + 1);
+                    stroke(255);
 
-                    head = head.getNext();
-                }
-
-                if (mUndoListHead.getPrev() != null) {
-                    mUndoListHead = mUndoListHead.getPrev();
-                }
-            }
-
-            if (BoredApplication.isConnectedToBluetooth) {
-                String cmd;
-                cmd = Command.createCommand(Command.UNDO);
-                BluetoothActivity.writeToBTDevice(cmd);
-                Log.d(LOG_TAG, "Sent undo command to device:" + cmd);
-
-            }
-        }
-
-
-    }
-
-    /**********************************************************************************************
-     * Redraw the last sequence of drawn lines that was cleared with Undo
-     * <p>
-     * Note: This function will also clear the drawing space on the NIOS II if there is an active
-     * bluetooth session
-     **********************************************************************************************/
-    public void redo() {
-
-        //TODO: Implement this on the android device, currently it just sends commands to NIOS
-
-        if (mState == DrawerState.DRAWING) {
-            if (mUndoListHead != null) {
-
-                if (mUndoListHead.getNext() != null) {
-                    mUndoListHead = mUndoListHead.getNext();
                     PointList head = mUndoListHead.getPointListHead();
-
-                    stroke(mUndoListHead.getColour());
-                    strokeWeight(mUndoListHead.getPenWidth());
 
                     while (head.getNext() != null) {
                         line(head.getPoint().locX,
@@ -623,17 +816,145 @@ public class DrawerFragment extends PApplet {
 
                         head = head.getNext();
                     }
+
+                    if (mUndoListHead.getPrev() != null) {
+                        mUndoListHead = mUndoListHead.getPrev();
+                    }
                 }
-            }
 
+                String cmd;
+                cmd = Command.createCommand(Command.UNDO);
+                mCommandList.add(cmd);
 
-            if (BoredApplication.isConnectedToBluetooth) {
+                if (BoredApplication.isConnectedToBluetooth) {
+                    BluetoothActivity.writeToBTDevice(cmd);
+                    Log.d(LOG_TAG, "Sent undo command to device:" + cmd);
+                }
+
+            /* Poll for about 80 milliseconds then inform the UI thread that
+             * it should update the undo icon in the parent fragment
+             */
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        int start_time = millis();
+                        while (millis() - start_time < 80) {
+                        }
+                        ;
+                        sendMessageToUI("restore_undo_icon", UI_CMD);
+                    }
+                });
+
+                thread.start();
+                break;
+            case WIDTH_MENU_ACTIVE:
+                deactivatePenWidthMenu();
+                break;
+            case COLOUR_MENU_ACTIVE:
+                deactivateColourMenu();
+                break;
+            case FILL_ACTIVE:
+                deactivateFill();
+                break;
+
+            //TODO: when other menu items have been implemented, make sure to deactivate active menu items
+        }
+
+    }
+
+    /**********************************************************************************************
+     * Redraw the last sequence of drawn lines that was cleared with Undo
+     * <p/>
+     * Note: This function will also clear the drawing space on the NIOS II if there is an active
+     * bluetooth session
+     **********************************************************************************************/
+    public void redo() {
+
+        //TODO: Implement this on the android device, currently it just sends commands to NIOS
+
+        switch (mState) {
+            case DRAWING:
+                sendMessageToUI("highlight_redo_icon", UI_CMD);
+
+                if (mUndoListHead != null) {
+
+                    if (mUndoListHead.getNext() != null) {
+                        mUndoListHead = mUndoListHead.getNext();
+                        PointList head = mUndoListHead.getPointListHead();
+
+                        stroke(mUndoListHead.getColour());
+                        strokeWeight(mUndoListHead.getPenWidth());
+
+                        while (head.getNext() != null) {
+                            line(head.getPoint().locX,
+                                    head.getPoint().locY,
+                                    head.getNext().getPoint().locX,
+                                    head.getNext().getPoint().locY);
+
+                            head = head.getNext();
+                        }
+                    }
+                }
+
                 String cmd;
                 cmd = Command.createCommand(Command.REDO);
-                BluetoothActivity.writeToBTDevice(cmd);
-                Log.d(LOG_TAG, "Sent redo command to device:" + cmd);
+                mCommandList.add(cmd);
 
-            }
+                if (BoredApplication.isConnectedToBluetooth) {
+                    BluetoothActivity.writeToBTDevice(cmd);
+                    Log.d(LOG_TAG, "Sent redo command to device:" + cmd);
+
+                }
+
+            /* Poll for about 80 milliseconds then inform the UI thread that
+             * it should update the redo icon in the parent fragment
+             */
+                Thread thread = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        int start_time = millis();
+                        while (millis() - start_time < 80) {
+                        }
+                        ;
+                        sendMessageToUI("restore_redo_icon", UI_CMD);
+                    }
+                });
+
+                thread.start();
+                break;
+            case COLOUR_MENU_ACTIVE:
+                deactivateColourMenu();
+                break;
+            case WIDTH_MENU_ACTIVE:
+                deactivatePenWidthMenu();
+                break;
+            case FILL_ACTIVE:
+                deactivateFill();
+                break;
+
+            //TODO: when other menu items have been implemented, make sure to deactivate active menu items
+        }
+    }
+
+    /***********************************************************************************************
+     * Public function to restore the draw space if popupmenus are active, this is useful when
+     * we want to save the screen to a jpeg file
+     *
+     **********************************************************************************************/
+    public void clearMenus(){
+
+        switch(mState){
+            case DRAWING:
+
+                /* Do Nothing */
+                break;
+
+            case COLOUR_MENU_ACTIVE:
+                deactivateColourMenu();
+                break;
+            case WIDTH_MENU_ACTIVE:
+                deactivatePenWidthMenu();
+                break;
 
         }
     }
@@ -720,7 +1041,7 @@ public class DrawerFragment extends PApplet {
 
         mColourMenu.drawSelf();
         mState = DrawerState.COLOUR_MENU_ACTIVE;
-        sendMessageToUI("activate_colour");
+        sendMessageToUI("activate_colour", UI_CMD);
 
 
     }
@@ -731,8 +1052,9 @@ public class DrawerFragment extends PApplet {
     private void deactivateColourMenu() {
 
         mColourMenu.hideSelf();
+        sendMessageToUI("deactivate_colour", UI_CMD);
+
         mState = DrawerState.DRAWING;
-        sendMessageToUI("deactivate_colour");
 
 
     }
@@ -742,28 +1064,30 @@ public class DrawerFragment extends PApplet {
 
         mPenWidthMenu.drawSelf();
         mState = DrawerState.WIDTH_MENU_ACTIVE;
-        sendMessageToUI("activate_penWidth");
+        sendMessageToUI("activate_penWidth", UI_CMD);
 
     }
 
     private void deactivatePenWidthMenu() {
 
         mPenWidthMenu.hideSelf();
+        sendMessageToUI("deactivate_penWidth", UI_CMD);
+
         mState = DrawerState.DRAWING;
-        sendMessageToUI("deactivate_penWidth");
+
 
     }
 
     private void activateFill() {
 
         mState = DrawerState.FILL_ACTIVE;
-        sendMessageToUI("activate_fill");
+        sendMessageToUI("activate_fill", UI_CMD);
     }
 
     private void deactivateFill() {
 
         mState = DrawerState.DRAWING;
-        sendMessageToUI("deactivate_fill");
+        sendMessageToUI("deactivate_fill", UI_CMD);
 
     }
 
@@ -806,15 +1130,19 @@ public class DrawerFragment extends PApplet {
         return mPenColour;
     }
 
+    public PenWidthMenu.PenWidth getPenWidth() {
+        return mPenWidth;
+    }
+
     /***********************************************************************************************
      * Function to save the screen state using a byte array
      *
      * @return a byte array with the following format
-     * <p>
+     * <p/>
      * byte[i + 0] = value of R colour
      * byte[i + 1] = value of G colour
      * byte[i + 2] = value of B colour
-     * <p>
+     * <p/>
      * The pixel location can be determined by the index
      * y = i / mWidth
      * x = i % mWidth
@@ -838,6 +1166,7 @@ public class DrawerFragment extends PApplet {
         return pixelData;
     }
 
+
     public ColourMenu.Colour pixelDataToColour(int pixel) {
         int R = (pixel >> 16) & 255;
         int G = (pixel >> 8) & 255;
@@ -853,6 +1182,12 @@ public class DrawerFragment extends PApplet {
                 | colour.getColourB();
 
         return returnData;
+    }
+
+    @Override
+    public void saveFrame(String filename) {
+
+
     }
 
     @Override
@@ -875,13 +1210,24 @@ public class DrawerFragment extends PApplet {
         }
     }
 
-    private void sendMessageToUI(String msg) {
+    private void sendMessageToUI(String msg, int requestType) {
 
-        Message message = mHandler.obtainMessage();
-        Bundle bundle = new Bundle();
-        bundle.putString("request", msg);
-        message.setData(bundle);
-        message.sendToTarget();
+        if (requestType == UI_CMD) {
+            Message message = mHandler.obtainMessage();
+            Bundle bundle = new Bundle();
+            bundle.putString("request", msg);
+            bundle.putInt("requestType", requestType);
+            message.setData(bundle);
+            message.sendToTarget();
+
+        } else if (requestType == TOAST_CMD) {
+            Message message = mHandler.obtainMessage();
+            Bundle bundle = new Bundle();
+            bundle.putString("toast_message", msg);
+            bundle.putInt("requestType", requestType);
+            message.setData(bundle);
+            message.sendToTarget();
+        }
     }
 
 
