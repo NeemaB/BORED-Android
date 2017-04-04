@@ -178,8 +178,8 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         mDrawFrame = (FrameLayout) view.findViewById(R.id.drawing_space);
         mColourPallette = (IconTextView) view.findViewById(R.id.colour_pallette);
         mPenWidth = (IconTextView) view.findViewById(R.id.pen_width);
-        mRedo = (IconTextView) view.findViewById(R.id.redo);
         mUndo = (IconTextView) view.findViewById(R.id.undo);
+        mRedo = (IconTextView) view.findViewById(R.id.redo);
         mFill = (IconTextView) view.findViewById(R.id.fill);
         mTextBox = (IconTextView) view.findViewById(R.id.text_box);
         mClear = (IconTextView) view.findViewById(R.id.clear_screen);
@@ -188,9 +188,8 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         /* Set Listeners */
         mColourPallette.setOnClickListener(this);
         mPenWidth.setOnClickListener(this);
-        mRedo.setOnClickListener(this);
-        mFill.setOnClickListener(this);
         mUndo.setOnClickListener(this);
+        mRedo.setOnClickListener(this);
         mFill.setOnClickListener(this);
         mTextBox.setOnClickListener(this);
         mClear.setOnClickListener(this);
