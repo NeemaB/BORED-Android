@@ -26,6 +26,7 @@ import java.util.logging.LogRecord;
 
 import cpen391.team6.bored.Activities.BluetoothActivity;
 import cpen391.team6.bored.BoredApplication;
+import cpen391.team6.bored.Data.Note;
 import cpen391.team6.bored.Items.ColourMenu;
 import cpen391.team6.bored.Items.Command;
 import cpen391.team6.bored.Items.PenWidthMenu;
@@ -277,7 +278,6 @@ public class DrawerFragment extends PApplet {
             String filePath = arguments.getString("load_note_path");
             PImage img = loadImage(filePath);
             image(img, 0, 0);
-            //Toast.makeText(getActivity(), "Loaded Note Successfully!", Toast.LENGTH_SHORT).show();
             sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
         }
     }
@@ -1149,11 +1149,15 @@ public class DrawerFragment extends PApplet {
         return returnData;
     }
 
-    @Override
-    public void saveFrame(String filename) {
 
+    public void loadNote(String filePath){
+
+        PImage img = loadImage(filePath);
+        image(img, 0, 0);
+        sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
 
     }
+
 
     @Override
     public void settings() {
