@@ -10,7 +10,7 @@ public class DatabaseGenerator {
 
         //place where db folder will be created inside the project folder
         Schema schema = new Schema(1,"com.codekrypt.greendao.db");
-
+        schema.enableKeepSectionsByDefault();
 
         Entity LocalNote = schema.addEntity("LocalNote");
         LocalNote.addIdProperty();

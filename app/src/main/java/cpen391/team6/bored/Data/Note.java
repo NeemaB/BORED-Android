@@ -1,7 +1,7 @@
 package cpen391.team6.bored.Data;
 
 /**
- * Created by andytertzakian on 2017-03-16.
+ * Created by spencerspenst on 4/4/2017.
  */
 
 public abstract class Note {
