@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.codekrypt.greendao.db.LocalNote;
 import com.codekrypt.greendao.db.LocalNoteDao;
+import com.codekrypt.greendao.db.ScreenInfo;
 import com.google.api.client.util.DateTime;
 import com.joanzapata.iconify.widget.IconTextView;
 import com.squareup.picasso.Picasso;
@@ -182,6 +183,24 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote> {
 
                                 if(cachedBitmaps[position] != null){
 
+                                    Bundle arguments = new Bundle();
+                                    ScreenInfo info = ScreenInfo.getInfo();
+
+                                    Bitmap scaledBitmap = Bitmap.createScaledBitmap
+                                            (cachedBitmaps[position],
+                                                    info.getWidth(),
+                                                    info.getHeight(),
+                                                    false);
+
+                                    String tempFilePath = createTempFile(scaledBitmap);
+                                    arguments.putString("load_note_path", tempFilePath);
+                                    arguments.putBoolean("external_note", true);
+
+                                    ((MainActivity) mContext).loadNote(arguments);
+
+
+                                }else{
+                                    Toast.makeText(mContext, "Image not yet loaded", Toast.LENGTH_SHORT).show();
                                 }
 //                                Bundle arguments = new Bundle();
 //                                arguments.putString("load_note_path", externalNote.getBitmap());
@@ -273,6 +292,33 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote> {
                 .setDuration(animDuration)
                 .setListener(null);
 
+    }
+
+    private String createTempFile(Bitmap bmp){
+
+        File outputDir = mContext.getCacheDir(); // context being the Activity pointer
+        String filename = null;
+        FileOutputStream out = null;
+        try {
+
+            File outputFile = File.createTempFile("temp", "jpg", outputDir);
+            filename = outputFile.getAbsolutePath();
+            out = new FileOutputStream(filename);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, out); // bmp is your Bitmap instance
+            // PNG is a lossless format, the compression factor (100) is ignored
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return filename;
     }
 
 //    private class FetchAndLoadImageTask extends AsyncTask<String, Void, Void>{

@@ -535,21 +535,6 @@ public class MainActivity extends AppCompatActivity {
         Fragment fragment = null;
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-
-//        if(arguments != null) {
-//            fragment = new CreateNoteFragment();
-//
-//            /* Set the arguments for the fragment */
-//            fragment.setArguments(arguments);
-//
-//        }else {
-//        /* First check to see if a fragment exists before we create a new one */
-//            fragment = getFragmentManager()
-//                    .findFragmentByTag(getString(R.string.create_note_fragment_tag));
-//
-//            if (fragment == null)
-//                fragment = new CreateNoteFragment();
-//        }
         fragment = new CreateNoteFragment();
 
         if(arguments != null){
