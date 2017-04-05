@@ -27,6 +27,9 @@ public class LocalNote extends Note {
     @NotNull
     private String filePath;
 
+    @NotNull
+    private String commandList;
+
     // KEEP FIELDS - put your custom fields here
     // KEEP FIELDS END
 
@@ -39,12 +42,13 @@ public class LocalNote extends Note {
     }
 
     @Generated
-    public LocalNote(Long id, java.util.Date Date, String Title, String Topic, String filePath) {
+    public LocalNote(Long id, java.util.Date Date, String Title, String Topic, String filePath, String commandList) {
         this.id = id;
         this.Date = Date;
         this.Title = Title;
         this.Topic = Topic;
         this.filePath = filePath;
+        this.commandList = commandList;
     }
 
     public Long getId() {
@@ -91,6 +95,16 @@ public class LocalNote extends Note {
     /** Not-null value; ensure this value is available before it is saved to the database. */
     public void setFilePath(@NotNull String filePath) {
         this.filePath = filePath;
+    }
+
+    @NotNull
+    public String getCommandList() {
+        return commandList;
+    }
+
+    /** Not-null value; ensure this value is available before it is saved to the database. */
+    public void setCommandList(@NotNull String commandList) {
+        this.commandList = commandList;
     }
 
     // KEEP METHODS - put your custom methods here

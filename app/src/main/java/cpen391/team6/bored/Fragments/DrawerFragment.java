@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -137,7 +138,11 @@ public class DrawerFragment extends PApplet {
         mPenColour = ColourMenu.Colour.BLACK;
         mState = DrawerState.DRAWING;
 
-        mCommandList = new ArrayList<String>();
+        if (mCommandList == null) {
+            mCommandList = new ArrayList<String>();
+        } else {
+            mCommandList.clear();
+        }
         mCommandList.add(Command.createCommand(Command.CHANGE_COLOUR, mPenColour.getIndex()));
         mCommandList.add(Command.createCommand(Command.CHANGE_PEN_WIDTH, mPenWidth.getSize()));
 
@@ -289,6 +294,10 @@ public class DrawerFragment extends PApplet {
             PImage img = loadImage(filePath);
             image(img, 0, 0);
             sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
+        }
+
+        if (arguments.getString("command_list") != null) {
+            mCommandList.addAll(Arrays.asList(arguments.getString("command_list").split(" ")));
         }
     }
 
@@ -1180,11 +1189,13 @@ public class DrawerFragment extends PApplet {
     }
 
 
-    public void loadNote(String filePath){
+    public void loadNote(String filePath, String commandList){
 
         PImage img = loadImage(filePath);
         image(img, 0, 0);
         sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
+
+        mCommandList.addAll(Arrays.asList(commandList.split(" ")));
 
     }
 
@@ -1229,5 +1240,8 @@ public class DrawerFragment extends PApplet {
         }
     }
 
+    public String getCommandList() {
+        return mCommandList.toString().replaceAll("[\\[\\],]", "");
+    }
 
 }

@@ -18,6 +18,7 @@ public class DatabaseGenerator {
         LocalNote.addStringProperty("Title").notNull();
         LocalNote.addStringProperty("Topic");
         LocalNote.addStringProperty("filePath").notNull();
+        LocalNote.addStringProperty("commandList").notNull();
 
         Entity screenInfo = schema.addEntity("ScreenInfo");
         screenInfo.addIntProperty("Width").notNull();

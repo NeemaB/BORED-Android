@@ -251,6 +251,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
                     if(myArguments != null){
                         arguments.putString("load_note_path", myArguments.getString("load_note_path"));
+                        arguments.putString("command_list", myArguments.getString("command_list"));
                     }
 
                     //TODO: These values are hardcoded so it will be easier to compress the image on the DE1 side,
@@ -485,7 +486,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                        mDrawer.loadNote(mNotesList.get(position).getFilePath());
+                        mDrawer.loadNote(mNotesList.get(position).getFilePath(), mNotesList.get(position).getCommandList());
                         loadNoteDialog.dismiss();
                     }
                 });
@@ -602,6 +603,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         localNote.setDate(noteDate);
         localNote.setTitle(title);
         localNote.setTopic(topic);
+        localNote.setCommandList(mDrawer.getCommandList());
 
         /* Load the RGB values so we can generate our jpeg file */
         mDrawer.loadPixels();

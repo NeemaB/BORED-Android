@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -150,6 +151,8 @@ public class LocalNoteAdapter extends ArrayAdapter<LocalNote> {
 
                                 Bundle arguments = new Bundle();
                                 arguments.putString("load_note_path", localNote.getFilePath());
+                                Log.d("CommandList", localNote.getCommandList());
+                                arguments.putString("command_list", localNote.getCommandList());
 
                                 ((MainActivity) context).loadNote(arguments);
                                 break;
