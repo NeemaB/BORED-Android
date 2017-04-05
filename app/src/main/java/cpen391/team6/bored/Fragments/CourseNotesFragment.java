@@ -1,5 +1,6 @@
 package cpen391.team6.bored.Fragments;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -8,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,6 +43,7 @@ import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.CloudImageCRUD;
 import cpen391.team6.bored.Utility.CloudStorage;
 import cpen391.team6.bored.Utility.CredentialBuilder;
+import cpen391.team6.bored.Utility.UI_Util;
 
 /**
  * Created by neema on 2017-03-14.
@@ -52,6 +55,8 @@ public class CourseNotesFragment extends Fragment {
     private ListView mCourseNotesListView;
 //    private List<ExternalNote> BoredApplication.mCourseNotes;
     private ExternalNoteAdapter mAdapter;
+
+    private AlertDialog mConnectionDialog;
 
     private FetchFileNamesTask mFileNamesTask;
     private InitCloudStorageTask mCloudStorageTask;
@@ -92,6 +97,7 @@ public class CourseNotesFragment extends Fragment {
             @Override
             public void onPostExecute(Void result) {
 
+                mConnectionDialog.dismiss();
                 if(BoredApplication.mCourseNotes.isEmpty()){
                     mCourseNotesListView.setVisibility(View.GONE);
                     mNoCourseNotes.setVisibility(View.VISIBLE);
@@ -102,10 +108,23 @@ public class CourseNotesFragment extends Fragment {
                     mAdapter = new ExternalNoteAdapter(getContext(), R.layout.note_list_item, mCourseCode, BoredApplication.mCourseNotes);
                     mCourseNotesListView.setAdapter(mAdapter);
                 }
+
             }
         };
 
         if(BoredApplication.mCloudStorage == null) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(
+                    new ContextThemeWrapper(getContext(), R.style.DialogTheme));
+
+            builder.setTitle(getString(R.string.fetching_course_notes))
+                    .setView(R.layout.dialog_progress_bar);
+
+            mConnectionDialog = builder.create();
+            mConnectionDialog.setCanceledOnTouchOutside(false);
+            mConnectionDialog.show();
+
+            UI_Util.setDialogStyle(mConnectionDialog, getContext());
 
             mCloudStorageTask = new InitCloudStorageTask(){
 
@@ -120,6 +139,17 @@ public class CourseNotesFragment extends Fragment {
 
         }else if (BoredApplication.mCourseNotes == null){
 
+            AlertDialog.Builder builder = new AlertDialog.Builder(
+                    new ContextThemeWrapper(getContext(), R.style.DialogTheme));
+
+            builder.setTitle(getString(R.string.fetching_course_notes))
+                    .setView(R.layout.dialog_progress_bar);
+
+            mConnectionDialog = builder.create();
+            mConnectionDialog.setCanceledOnTouchOutside(false);
+            mConnectionDialog.show();
+
+            UI_Util.setDialogStyle(mConnectionDialog, getContext());
             mFileNamesTask.execute();
 
         }else{
