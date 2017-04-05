@@ -2,7 +2,10 @@ package cpen391.team6.bored.Data;
 
 import android.graphics.Bitmap;
 
+import com.google.api.client.util.DateTime;
+
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,14 +14,18 @@ import java.util.List;
 
 public class ExternalNote extends Note {
 
-    private Bitmap mBitmap;
+    //private Bitmap mBitmap;
     private String mFileName;
+    private ArrayList<String> mFileNames;
     private String mCourseCode;
+    private DateTime mDateTime;
 
-    public ExternalNote(String filename, String courseCode, Bitmap bitmap){
+    public ExternalNote(String filename, ArrayList<String> filenames, String courseCode, DateTime dateTime){
         this.mFileName = filename;
+        this.mFileNames = filenames;
         this.mCourseCode = courseCode;
-        this.mBitmap = bitmap;
+//        this.mBitmap = bitmap;
+        this.mDateTime = dateTime;
     }
     public String getFilename() {
         return mFileName;
@@ -26,7 +33,11 @@ public class ExternalNote extends Note {
     public String getCourseCode() {
         return mCourseCode;
     }
-    public Bitmap getBitmap() {
-        return mBitmap;
+//    public Bitmap getBitmap() {
+//        return mBitmap;
+//    }
+
+    public DateTime getDateTime(){
+        return  mDateTime;
     }
 }

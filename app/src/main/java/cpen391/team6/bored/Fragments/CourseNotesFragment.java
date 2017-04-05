@@ -15,6 +15,7 @@ import android.widget.ListView;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.util.DateTime;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.regex.Pattern;
@@ -82,10 +84,6 @@ public class CourseNotesFragment extends Fragment {
                             .build();
 
                     mCloudStorage = CloudStorage.build(APP_CLOUD_BUCKET_NAME, mCred);
-
-                    for (String name : mFilenames) {
-                        Log.d("TEST", name);
-                    }
 
                 } catch (Exception e) {
                     Log.d("TEST", e.getMessage());
@@ -160,21 +158,26 @@ public class CourseNotesFragment extends Fragment {
 
         return new ExternalNote(
                 filenames.get(0).substring(coursecode.length() + 1, filenames.get(0).length() - 6),
+                filenames,
                 coursecode,
-                extBitmap);
+//                extBitmap,
+                dateTime
+                );
     }
 
     private File cloudFile1;
     private File cloudFile2;
+    private DateTime dateTime;
     public void getCloudFile(final String filename, final boolean first) {
 
+        dateTime = null;
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     if(first){
                         cloudFile1 = CloudImageCRUD.readCloudImageSegment(getActivity().getApplicationContext(), mCloudStorage, filename);
-
+                        dateTime = CloudImageCRUD.getFileDateTime(mCloudStorage, APP_CLOUD_BUCKET_NAME, filename);
                     }else{
                         cloudFile2 = CloudImageCRUD.readCloudImageSegment(getActivity().getApplicationContext(), mCloudStorage, filename);
                     }
