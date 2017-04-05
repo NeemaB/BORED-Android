@@ -9,15 +9,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import com.google.firebase.storage.StorageReference;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
-
-import cpen391.team6.bored.Adapters.NoteImageAdapter;
 
 public class PhotoManager {
     private static PhotoManager instance = null;
