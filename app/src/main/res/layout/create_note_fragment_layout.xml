@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/content_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/light_gray"
@@ -28,9 +29,12 @@
             </FrameLayout>
 
             <LinearLayout
+                android:id="@+id/bluetooth_status_bar"
                 android:layout_width="match_parent"
                 android:layout_height="20dp"
-                android:layout_margin="6dp"
+                android:layout_marginLeft="6dp"
+                android:layout_marginRight="6dp"
+                android:layout_marginBottom="6dp"
                 android:background="@color/black">
 
                 <TextView

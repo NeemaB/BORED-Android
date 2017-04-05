@@ -33,6 +33,7 @@ import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -99,6 +100,12 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     private static int CONNECT_BLUETOOTH = 0;
     private static int DISCONNECT_BLUETOOTH = 1;
 
+    private Integer mStatusBarHeight;
+    private Integer mStatusBarWidth;
+
+    private boolean mDrawFrameInit;
+    private boolean mStatusBarInit;
+
     /* Command flags */
     private static int TOAST_CMD = 0;
     private static int BLUETOOTH_STATUS_CMD = 1;
@@ -114,11 +121,16 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     private IconTextView mTextBox;
     private IconTextView mClear;
 
+    private LinearLayout mContentView;
+    private LinearLayout mStatusBar;
     private TextView mBluetoothStatus;
 
     @Override
     public void onCreate(Bundle onSavedInstanceState) {
         super.onCreate(onSavedInstanceState);
+
+        mStatusBarInit = false;
+        mDrawFrameInit = false;
 
         mHandler = new android.os.Handler(Looper.getMainLooper()) {
 
@@ -192,6 +204,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         mTextBox = (IconTextView) view.findViewById(R.id.text_box);
         mClear = (IconTextView) view.findViewById(R.id.clear_screen);
         mBluetoothStatus = (TextView) view.findViewById(R.id.bluetooth_status);
+        mStatusBar = (LinearLayout) view.findViewById(R.id.bluetooth_status_bar);
 
         /* Set Listeners */
         mColourPallette.setOnClickListener(this);
@@ -207,57 +220,29 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         /* We have to wait until the frame layout's dimensions have been determined before we can attach the
          * Processing fragment
          */
-        mDrawFrame.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+        mStatusBar.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                mDrawFrame.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                if (mDrawer == null) {
+                mStatusBar.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                mStatusBarHeight = mStatusBar.getHeight();
+                mStatusBarWidth = mStatusBar.getWidth();
+
+                if(mDrawFrameInit){
 
                     Bundle myArguments = getArguments();
-
-                    /* Get Width and add an additional offset, for some reason getWidth()
-                     * doesn't provide the full width of the layout
-                     */
-
                     Bundle arguments = new Bundle();
-
-                    /* To fix bug where screen size is determined incorrectly upon re-creating this fragment,
-                     * persist the screen dimensions the first time we create the fragment so we can retrieve it later
-                     * (screen size) isn't going to change dynamically of course
-                     */
-
-                    if(ScreenInfo.getInfo() == null){
-
-                        mDrawFrameWidth = mDrawFrame.getWidth() + 100;
-                        mDrawFrameHeight = mDrawFrame.getHeight();
-
-                        ScreenInfo.saveInfo(mDrawFrameWidth, mDrawFrameHeight);
-
-                    }else{
-
-                        ScreenInfo screenInfo = ScreenInfo.getInfo();
-
-                        mDrawFrameWidth = screenInfo.getWidth();
-                        mDrawFrameHeight = screenInfo.getHeight();
-                    }
-
-
-                    System.out.println("Draw Frame Width:" + mDrawFrameWidth);
-                    System.out.println("Draw Frame Height:" + mDrawFrameHeight);
-
-                    //pass width and height of screen as arguments to launch animation
-                    arguments.putDouble("width", mDrawFrameWidth);
-                    arguments.putDouble("height", mDrawFrameHeight);
 
                     if(myArguments != null){
                         arguments.putString("load_note_path", myArguments.getString("load_note_path"));
                     }
 
-                    //TODO: These values are hardcoded so it will be easier to compress the image on the DE1 side,
-                    //TODO: Need to find a better work around to accomodate variable screen sizes
+                    //pass width and height of screen as arguments to launch animation
+                    arguments.putInt("width", mDrawFrameWidth);
+                    arguments.putInt("height", mDrawFrameHeight - mStatusBarHeight);
 
-                    //arguments.putDouble("width", 1362);
-                    //arguments.putDouble("height", 956);
+                    Log.i(LOG_TAG, "Draw Frame Height With Status Bar Offset:" + (mDrawFrameHeight - mStatusBarHeight));
 
                     mDrawer = new DrawerFragment();
                     mDrawer.setArguments(arguments);
@@ -277,7 +262,88 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
                     /* Actually make the transition */
                     transaction.commit();
+                }
 
+                mStatusBarInit = true;
+
+            }
+        });
+        mDrawFrame.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                mDrawFrame.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                if (mDrawer == null) {
+
+                    /* To fix bug where screen size is determined incorrectly upon re-creating this fragment,
+                     * persist the screen dimensions the first time we create the fragment so we can retrieve it later
+                     * (screen size) isn't going to change dynamically of course
+                     */
+
+                    if (ScreenInfo.getInfo() == null) {
+
+                        mDrawFrameWidth = mDrawFrame.getWidth() + 100;
+                        mDrawFrameHeight = mDrawFrame.getHeight();
+
+                        ScreenInfo.saveInfo(mDrawFrameWidth, mDrawFrameHeight);
+
+                    } else {
+
+                        ScreenInfo screenInfo = ScreenInfo.getInfo();
+
+                        mDrawFrameWidth = screenInfo.getWidth();
+                        mDrawFrameHeight = screenInfo.getHeight();
+                    }
+
+
+                    Log.i(LOG_TAG, "Draw Frame Width:" + mDrawFrameWidth);
+                    Log.i(LOG_TAG, "Draw Frame Height:" + mDrawFrameHeight);
+
+
+                    if (mStatusBarInit) {
+                        Bundle myArguments = getArguments();
+
+                    /* Get Width and add an additional offset, for some reason getWidth()
+                     * doesn't provide the full width of the layout
+                     */
+
+                        Log.i(LOG_TAG, "Draw Frame Height With Status Bar Offset:" + (mDrawFrameHeight - mStatusBarHeight));
+                        Bundle arguments = new Bundle();
+
+                        //pass width and height of screen as arguments to launch animation
+                        arguments.putInt("width", mDrawFrameWidth);
+                        arguments.putInt("height", mDrawFrameHeight - mStatusBarHeight);
+
+                        if (myArguments != null) {
+                            arguments.putString("load_note_path", myArguments.getString("load_note_path"));
+                        }
+
+                        //TODO: These values are hardcoded so it will be easier to compress the image on the DE1 side,
+                        //TODO: Need to find a better work around to accomodate variable screen sizes
+
+                        //arguments.putDouble("width", 1362);
+                        //arguments.putDouble("height", 956);
+
+                        mDrawer = new DrawerFragment();
+                        mDrawer.setArguments(arguments);
+
+                        FragmentTransaction transaction = getChildFragmentManager().beginTransaction();
+
+                    /* Replace the current fragment that is being displayed, provide it with a tag so we can
+                    * locate it in the future
+                    */
+                        transaction.replace(R.id.drawing_space, mDrawer, "draw_space");
+
+                    /* This call is necessary so we don't create a new fragment by default, not sure why */
+                        transaction.addToBackStack(null);
+
+                    /* allows for smoother transitions between screens */
+                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+
+                    /* Actually make the transition */
+                        transaction.commit();
+
+                    }
+                    mDrawFrameInit = true;
                 }
             }
         });

@@ -27,8 +27,8 @@ public class BoredApplication extends Application {
     public static boolean isConnectedToBluetooth = false;
 
     /* Global variables for the width and height of the actual device in pixels */
-    public static int boredScreenWidth = 681;
-    public static int boredScreenHeight = 478;
+    public static int boredScreenWidth = 714;
+    public static int boredScreenHeight = 479;
 
     /* DaoSession used for database access within application */
     private static DaoSession daoSession;

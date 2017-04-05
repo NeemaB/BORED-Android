@@ -343,18 +343,22 @@ public class DrawerFragment extends PApplet {
                     Point currentLoc = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
                             this.width, this.height);
 
-                    Log.d(LOG_TAG, "currentLoc on the device will be:" + currentLoc.locX + " " + currentLoc.locY);
+                    if(currentLoc.locX < BoredApplication.boredScreenWidth
+                            && currentLoc.locY < BoredApplication.boredScreenHeight) {
 
-                    /* Create our parameter list out of the new points */
-                    Integer[] params = new Integer[2];
-                    params[0] = currentLoc.locX;
-                    params[1] = currentLoc.locY;
+                        Log.d(LOG_TAG, "currentLoc on the device will be:" + currentLoc.locX + " " + currentLoc.locY);
 
-                    /* Specify a new point that the NIOS II can draw to */
-                    String cmd = Command.createCommand(Command.POINT, params);
-                    mCommandList.add(cmd);
-                    if (BoredApplication.isConnectedToBluetooth) {
-                        BluetoothActivity.writeToBTDevice(cmd);
+                        /* Create our parameter list out of the new points */
+                        Integer[] params = new Integer[2];
+                        params[0] = currentLoc.locX;
+                        params[1] = currentLoc.locY;
+
+                        /* Specify a new point that the NIOS II can draw to */
+                        String cmd = Command.createCommand(Command.POINT, params);
+                        mCommandList.add(cmd);
+                        if (BoredApplication.isConnectedToBluetooth) {
+                            BluetoothActivity.writeToBTDevice(cmd);
+                        }
                     }
                 }
 
@@ -1195,7 +1199,7 @@ public class DrawerFragment extends PApplet {
         Bundle arguments = getArguments();
 
         /* Set the size of the draw space based on the arguments */
-        size((int) arguments.getDouble("width"), (int) arguments.getDouble("height"));
+        size( arguments.getInt("width"), arguments.getInt("height"));
 
 
     }
