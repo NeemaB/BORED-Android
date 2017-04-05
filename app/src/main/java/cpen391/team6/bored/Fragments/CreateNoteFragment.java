@@ -83,7 +83,6 @@ import cpen391.team6.bored.Utility.UI_Util;
 import processing.core.PApplet;
 
 
-
 /**
  * Created by neema on 2017-03-12.
  */
@@ -144,11 +143,11 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     String msg = (String) message.getData().get("toast_message");
                     Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
 
-                }else if (requestType == BLUETOOTH_STATUS_CMD){
+                } else if (requestType == BLUETOOTH_STATUS_CMD) {
 
                     int request = (int) message.getData().get("request");
 
-                    switch(request){
+                    switch (request) {
 
 
                         case R.string.connected_awaiting_permission:
@@ -167,7 +166,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                             );
                             break;
 
-                        case R.string.connected_can_draw_on_NIOS :
+                        case R.string.connected_can_draw_on_NIOS:
 
                             updateBluetoothStatus(
                                     getString(R.string.connected_can_draw_on_NIOS),
@@ -229,12 +228,12 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 mStatusBarHeight = mStatusBar.getHeight();
                 mStatusBarWidth = mStatusBar.getWidth();
 
-                if(mDrawFrameInit){
+                if (mDrawFrameInit) {
 
                     Bundle myArguments = getArguments();
                     Bundle arguments = new Bundle();
 
-                    if(myArguments != null){
+                    if (myArguments != null) {
                         arguments.putString("load_note_path", myArguments.getString("load_note_path"));
                     }
 
@@ -301,13 +300,20 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
                     if (mStatusBarInit) {
                         Bundle myArguments = getArguments();
+                        Bundle arguments = new Bundle();
+
+                        if (myArguments != null) {
+                            arguments.putString("load_note_path", myArguments.getString("load_note_path"));
+                            arguments.putString("command_list", myArguments.getString("command_list"));
+                        }
+
 
                     /* Get Width and add an additional offset, for some reason getWidth()
                      * doesn't provide the full width of the layout
                      */
 
                         Log.i(LOG_TAG, "Draw Frame Height With Status Bar Offset:" + (mDrawFrameHeight - mStatusBarHeight));
-                        Bundle arguments = new Bundle();
+
 
                         //pass width and height of screen as arguments to launch animation
                         arguments.putInt("width", mDrawFrameWidth);
@@ -354,8 +360,8 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == Activity.RESULT_OK){
-            if(requestCode == CONNECT_BLUETOOTH){
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == CONNECT_BLUETOOTH) {
                 //mDrawer.initRemoteScreen();
                 //BoredApplication.isConnectedToBluetooth = true ;
                 ((MainActivity) getActivity()).updateMenu(
@@ -370,31 +376,34 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
                         //BoredApplication.isConnectedLock.lock();
 
-                        for(;;){
+                        for (; ; ) {
 
-                            if(Thread.interrupted()){
+                            if (Thread.interrupted()) {
                                 return;
                             }
 
                             String cmdString = BluetoothActivity.readFromBTDevice();
                             //BoredApplication.isConnectedLock.unlock();
-                            if(cmdString.equals("A")){
+                            if (cmdString.equals("A")) {
                                 /*sendMessageToUI("Sending Screen State To NIOS");
                                 DrawerFragment.DrawerState temp = mDrawer.mState;
                                 mDrawer.mState = DrawerFragment.DrawerState.SENDING;
                                 mDrawer.mousePressed();
                                 mDrawer.mState = temp;*/
+                                mDrawer.permissionToDraw = true;
                                 sendMessageToUI("Streaming Permission Acquired ", TOAST_CMD);
                                 sendMessageToUI(R.string.connected_initializing_remote_screen, BLUETOOTH_STATUS_CMD);
                                 mDrawer.initRemoteScreen();
                                 sendMessageToUI(R.string.connected_can_draw_on_NIOS, BLUETOOTH_STATUS_CMD);
-                            }else if(cmdString.equals("B")){
+                            } else if (cmdString.equals("B")) {
+                                mDrawer.permissionToDraw = false;
                                 sendMessageToUI("Streaming Permission Revoked", TOAST_CMD);
                                 sendMessageToUI(R.string.connected_awaiting_permission, BLUETOOTH_STATUS_CMD);
-                            }else{
+                            } else {
                                                 /*do nothing */
                             }
 
+                            Log.d("CommandList", cmdString);
                             //BoredApplication.isConnectedLock.lock();
                         }
 
@@ -404,7 +413,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 mListener.start();
 
 
-            }else if(requestCode == DISCONNECT_BLUETOOTH){
+            } else if (requestCode == DISCONNECT_BLUETOOTH) {
                 //BoredApplication.isConnectedToBluetooth = false ;
                 ((MainActivity) getActivity()).updateMenu(
                         R.id.stream_to_device,
@@ -435,7 +444,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
                     intent.putExtra("bluetooth_request", BluetoothActivity.CLOSE_CONNECTION);
 
-                    if(mListener != null)
+                    if (mListener != null)
                         mListener.interrupt();
                     startActivityForResult(intent, DISCONNECT_BLUETOOTH);
 
@@ -488,10 +497,10 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                         /* If the user has not entered a title, display error message */
                         EditText setTitleEditText = (EditText) titleDialogView.findViewById(R.id.set_note_title);
                         Log.d(LOG_TAG, "" + setTitleEditText.getText().length());
-                        if(setTitleEditText.getText().length() == 0){
+                        if (setTitleEditText.getText().length() == 0) {
                             titleDialogView.findViewById(R.id.title_error_message)
                                     .setVisibility(View.VISIBLE);
-                        }else {
+                        } else {
 
                             EditText setTopicEditText = (EditText) titleDialogView.findViewById(R.id.set_note_topic);
 
@@ -502,9 +511,9 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                             err = saveNote(noteTitle, noteTopic);
 
                             /* Inform the user that note was saved successfully */
-                            if(err){
+                            if (err) {
                                 Toast.makeText(getActivity(), "Failed to save note!", Toast.LENGTH_SHORT).show();
-                            }else {
+                            } else {
                                 Toast.makeText(getActivity(), "Saved note successfully!", Toast.LENGTH_SHORT).show();
                             }
                             titleDialog.dismiss();
@@ -551,7 +560,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                        mDrawer.loadNote(mNotesList.get(position).getFilePath());
+                        mDrawer.loadNote(mNotesList.get(position).getFilePath(), mNotesList.get(position).getCommandList());
                         loadNoteDialog.dismiss();
                     }
                 });
@@ -560,8 +569,6 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
 
                 break;
-
-
 
 
         }
@@ -597,10 +604,10 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
     @Override
-    public void onStop(){
+    public void onStop() {
         super.onStop();
 
-        if(BoredApplication.isConnectedToBluetooth) {
+        if (BoredApplication.isConnectedToBluetooth) {
             Intent intent = new Intent(getActivity(), BluetoothActivity.class);
             String cmd = Command.createCommand(Command.TERMINATE);
             BluetoothActivity.writeToBTDevice(cmd);
@@ -614,8 +621,8 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         }
 
 
-
     }
+
     @Override
     public void onClick(View v) {
 
@@ -650,7 +657,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     }
 
 
-    private boolean saveNote(String title, String topic){
+    private boolean saveNote(String title, String topic) {
 
         /* Clear any visible popup menus */
         mDrawer.clearMenus();
@@ -668,6 +675,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         localNote.setDate(noteDate);
         localNote.setTitle(title);
         localNote.setTopic(topic);
+        localNote.setCommandList(mDrawer.getCommandList());
 
         /* Load the RGB values so we can generate our jpeg file */
         mDrawer.loadPixels();
@@ -677,7 +685,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 Bitmap.Config.ARGB_8888);
 
         /* Indicate that operation failed */
-        if(bmp == null){
+        if (bmp == null) {
             return true;
         }
 
@@ -694,11 +702,11 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         String filename = (title + noteDate.toString() + ".jpg").replaceAll("\\W+", "_");
 
         //TODO: Check for duplicates filnames here, inform user that existing note will be overwritten
-        try{
+        try {
             outputStream = new FileOutputStream(path + "/" + filename);
             outputStream.write(byteArray);
             outputStream.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -715,12 +723,13 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         localNote.setFilePath(path + "/" + filename);
 
         /* If rowId = -1, indicate that save operation failed */
-        if(localNoteDao.insert(localNote) == -1)
+        if (localNoteDao.insert(localNote) == -1)
             return true;
 
         return false;
 
     }
+
     private void sendMessageToUI(Object msg, int requestType) {
 
         if (requestType == BLUETOOTH_STATUS_CMD) {
@@ -734,7 +743,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         } else if (requestType == TOAST_CMD) {
             Message message = mHandler.obtainMessage();
             Bundle bundle = new Bundle();
-            bundle.putString("toast_message",(String) msg);
+            bundle.putString("toast_message", (String) msg);
             bundle.putInt("requestType", requestType);
             message.setData(bundle);
             message.sendToTarget();
@@ -742,39 +751,39 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
     }
 
-    private void updateBluetoothStatus(String status, int textColorId){
-        if(this.mBluetoothStatus != null) {
+    private void updateBluetoothStatus(String status, int textColorId) {
+        if (this.mBluetoothStatus != null) {
             this.mBluetoothStatus.setText(status);
             this.mBluetoothStatus.setTextColor(getResources().getColor(textColorId));
         }
 //        this.mBluetoothStatus.setTextColor(textColorId);
 
     }
-    public void updateRedoIcon(int iconColorId, int backgroundColorId){
+
+    public void updateRedoIcon(int iconColorId, int backgroundColorId) {
         mRedo.setTextColor(getResources().getColor(iconColorId));
         mRedo.setBackgroundColor(getResources().getColor(backgroundColorId));
     }
 
-    public void updateUndoIcon(int iconColorId, int backgroundColorId){
+    public void updateUndoIcon(int iconColorId, int backgroundColorId) {
         mUndo.setTextColor(getResources().getColor(iconColorId));
         mUndo.setBackgroundColor(getResources().getColor(backgroundColorId));
     }
 
-    public void updateColourIcon(int iconColorId, int backgroundColorId){
+    public void updateColourIcon(int iconColorId, int backgroundColorId) {
         mColourPallette.setTextColor(getResources().getColor(iconColorId));
         mColourPallette.setBackgroundColor(getResources().getColor(backgroundColorId));
     }
 
-    public void updatePenWidthIcon(int iconColorId, int backgroundColorId){
+    public void updatePenWidthIcon(int iconColorId, int backgroundColorId) {
         mPenWidth.setTextColor(getResources().getColor(iconColorId));
         mPenWidth.setBackgroundColor(getResources().getColor(backgroundColorId));
     }
 
-    public void updateFillIcon(int iconColorId, int backgroundColorId){
+    public void updateFillIcon(int iconColorId, int backgroundColorId) {
         mFill.setTextColor(getResources().getColor(iconColorId));
         mFill.setBackgroundColor(getResources().getColor(backgroundColorId));
     }
-
 
 
 }

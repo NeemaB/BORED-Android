@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -48,6 +49,8 @@ import processing.core.PImage;
 public class DrawerFragment extends PApplet {
 
     public static String LOG_TAG = "Drawer_Fragment";
+
+    public boolean permissionToDraw = false;
 
     /* Command flags */
     private static int TOAST_CMD = 0;
@@ -137,7 +140,11 @@ public class DrawerFragment extends PApplet {
         mPenColour = ColourMenu.Colour.BLACK;
         mState = DrawerState.DRAWING;
 
-        mCommandList = new ArrayList<String>();
+        if (mCommandList == null) {
+            mCommandList = new ArrayList<String>();
+        } else {
+            mCommandList.clear();
+        }
         mCommandList.add(Command.createCommand(Command.CHANGE_COLOUR, mPenColour.getIndex()));
         mCommandList.add(Command.createCommand(Command.CHANGE_PEN_WIDTH, mPenWidth.getSize()));
 
@@ -160,7 +167,7 @@ public class DrawerFragment extends PApplet {
                             mPenColour.getIndex());
                     mCommandList.add(cmd);
 
-                    if (BoredApplication.isConnectedToBluetooth) {
+                    if (permissionToDraw) {
                         BluetoothActivity.writeToBTDevice(cmd);
                         Log.d(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
                     }
@@ -185,7 +192,7 @@ public class DrawerFragment extends PApplet {
                             mPenWidth.getSize());
                     mCommandList.add(cmd);
 
-                    if (BoredApplication.isConnectedToBluetooth) {
+                    if (permissionToDraw) {
                         BluetoothActivity.writeToBTDevice(cmd);
                         Log.d(LOG_TAG, "Sent change pen width command to bluetooth:" + cmd);
                     }
@@ -284,11 +291,15 @@ public class DrawerFragment extends PApplet {
 
 
         Bundle arguments = getArguments();
-        if(arguments.getString("load_note_path") != null){
+        if (arguments.getString("load_note_path") != null) {
             String filePath = arguments.getString("load_note_path");
             PImage img = loadImage(filePath);
             image(img, 0, 0);
             sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
+        }
+
+        if (arguments.getString("command_list") != null) {
+            mCommandList.addAll(Arrays.asList(arguments.getString("command_list").split(" ")));
         }
     }
 
@@ -343,21 +354,23 @@ public class DrawerFragment extends PApplet {
                     Point currentLoc = ImageUtil.mapPointToDevice(new Point(mouseX, mouseY),
                             this.width, this.height);
 
-                    if(currentLoc.locX < BoredApplication.boredScreenWidth
+                    if (currentLoc.locX < BoredApplication.boredScreenWidth
                             && currentLoc.locY < BoredApplication.boredScreenHeight) {
 
                         Log.d(LOG_TAG, "currentLoc on the device will be:" + currentLoc.locX + " " + currentLoc.locY);
+
 
                         /* Create our parameter list out of the new points */
                         Integer[] params = new Integer[2];
                         params[0] = currentLoc.locX;
                         params[1] = currentLoc.locY;
 
-                        /* Specify a new point that the NIOS II can draw to */
+                    /* Specify a new point that the NIOS II can draw to */
                         String cmd = Command.createCommand(Command.POINT, params);
                         mCommandList.add(cmd);
-                        if (BoredApplication.isConnectedToBluetooth) {
+                        if (permissionToDraw) {
                             BluetoothActivity.writeToBTDevice(cmd);
+
                         }
                     }
                 }
@@ -415,7 +428,7 @@ public class DrawerFragment extends PApplet {
                 /* Indicate to the NIOS II that we are starting to draw */
                 cmd = Command.createCommand(Command.START_DRAWING, params);
                 mCommandList.add(cmd);
-                if (BoredApplication.isConnectedToBluetooth) {
+                if (permissionToDraw) {
                     BluetoothActivity.writeToBTDevice(cmd);
                 }
 
@@ -458,7 +471,8 @@ public class DrawerFragment extends PApplet {
 
                 /* Tell NIOS II to fill in around the point specified in the parameter list */
                 cmd = Command.createCommand(Command.FILL, params);
-                if (BoredApplication.isConnectedToBluetooth) {
+                mCommandList.add(cmd);
+                if (permissionToDraw) {
                     BluetoothActivity.writeToBTDevice(cmd);
                 }
 
@@ -478,7 +492,7 @@ public class DrawerFragment extends PApplet {
         /* Tell NIOS-II to stop drawing */
         String cmd = Command.createCommand(Command.STOP_DRAWING);
         mCommandList.add(cmd);
-        if (BoredApplication.isConnectedToBluetooth) {
+        if (permissionToDraw) {
             BluetoothActivity.writeToBTDevice(cmd);
         }
 
@@ -494,9 +508,8 @@ public class DrawerFragment extends PApplet {
      * Initializes the NIOS II screen so that it has the same parameters as
      * the current drawer, we need to send the pen colour and pen size
      *********************************************************************************************/
-    public void initRemoteScreen() {
 
-        // TODO: loop through mCommandList and execute all of the commands
+    public void initRemoteScreen() {
 
         String cmd;
 
@@ -510,7 +523,8 @@ public class DrawerFragment extends PApplet {
         try {
 
             Thread.sleep(80);
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+        }
 
 
         for (String command : mCommandList) {
@@ -527,6 +541,12 @@ public class DrawerFragment extends PApplet {
                 case 'R':
                 case 'U':
                     sleepTime = 150;
+                    break;
+                case 'F':
+                    String data = BluetoothActivity.readFromBTDevice();
+                    Log.d("CommandList", data);
+                    assert (data.equals("G"));
+                    sleepTime = 80;
                     break;
                 default:
                     sleepTime = 80;
@@ -551,7 +571,8 @@ public class DrawerFragment extends PApplet {
         try {
 
             Thread.sleep(80);
-        } catch (InterruptedException e) {}
+        } catch (InterruptedException e) {
+        }
 
 
         /* Set the pen size on the NIOS II */
@@ -751,7 +772,7 @@ public class DrawerFragment extends PApplet {
                         mCommandList.clear();
 
                         background(255);
-                        if (BoredApplication.isConnectedToBluetooth) {
+                        if (permissionToDraw) {
                             String cmd;
                             cmd = Command.createCommand(Command.CLEAR);
                             BluetoothActivity.writeToBTDevice(cmd);
@@ -825,7 +846,7 @@ public class DrawerFragment extends PApplet {
                 cmd = Command.createCommand(Command.UNDO);
                 mCommandList.add(cmd);
 
-                if (BoredApplication.isConnectedToBluetooth) {
+                if (permissionToDraw) {
                     BluetoothActivity.writeToBTDevice(cmd);
                     Log.d(LOG_TAG, "Sent undo command to device:" + cmd);
                 }
@@ -899,7 +920,7 @@ public class DrawerFragment extends PApplet {
                 cmd = Command.createCommand(Command.REDO);
                 mCommandList.add(cmd);
 
-                if (BoredApplication.isConnectedToBluetooth) {
+                if (permissionToDraw) {
                     BluetoothActivity.writeToBTDevice(cmd);
                     Log.d(LOG_TAG, "Sent redo command to device:" + cmd);
 
@@ -938,11 +959,10 @@ public class DrawerFragment extends PApplet {
     /***********************************************************************************************
      * Public function to restore the draw space if popupmenus are active, this is useful when
      * we want to save the screen to a jpeg file
-     *
      **********************************************************************************************/
-    public void clearMenus(){
+    public void clearMenus() {
 
-        switch(mState){
+        switch (mState) {
             case DRAWING:
 
                 /* Do Nothing */
@@ -1184,11 +1204,18 @@ public class DrawerFragment extends PApplet {
     }
 
 
-    public void loadNote(String filePath){
+    public void loadNote(String filePath, String commandList) {
 
         PImage img = loadImage(filePath);
         image(img, 0, 0);
         sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
+
+        mCommandList.clear();
+        mCommandList.addAll(Arrays.asList(commandList.split(" ")));
+
+        if (permissionToDraw) {
+            initRemoteScreen();
+        }
 
     }
 
@@ -1199,7 +1226,7 @@ public class DrawerFragment extends PApplet {
         Bundle arguments = getArguments();
 
         /* Set the size of the draw space based on the arguments */
-        size( arguments.getInt("width"), arguments.getInt("height"));
+        size(arguments.getInt("width"), arguments.getInt("height"));
 
 
     }
@@ -1233,5 +1260,8 @@ public class DrawerFragment extends PApplet {
         }
     }
 
+    public String getCommandList() {
+        return mCommandList.toString().replaceAll("[\\[\\],]", "");
+    }
 
 }

@@ -27,6 +27,7 @@ public class LocalNoteDao extends AbstractDao<LocalNote, Long> {
         public final static Property Title = new Property(2, String.class, "Title", false, "TITLE");
         public final static Property Topic = new Property(3, String.class, "Topic", false, "TOPIC");
         public final static Property FilePath = new Property(4, String.class, "filePath", false, "FILE_PATH");
+        public final static Property CommandList = new Property(5, String.class, "commandList", false, "COMMAND_LIST");
     }
 
 
@@ -46,7 +47,8 @@ public class LocalNoteDao extends AbstractDao<LocalNote, Long> {
                 "\"DATE\" INTEGER NOT NULL ," + // 1: Date
                 "\"TITLE\" TEXT NOT NULL ," + // 2: Title
                 "\"TOPIC\" TEXT," + // 3: Topic
-                "\"FILE_PATH\" TEXT NOT NULL );"); // 4: filePath
+                "\"FILE_PATH\" TEXT NOT NULL ," + // 4: filePath
+                "\"COMMAND_LIST\" TEXT NOT NULL );"); // 5: commandList
     }
 
     /** Drops the underlying database table. */
@@ -71,6 +73,7 @@ public class LocalNoteDao extends AbstractDao<LocalNote, Long> {
             stmt.bindString(4, Topic);
         }
         stmt.bindString(5, entity.getFilePath());
+        stmt.bindString(6, entity.getCommandList());
     }
 
     @Override
@@ -89,6 +92,7 @@ public class LocalNoteDao extends AbstractDao<LocalNote, Long> {
             stmt.bindString(4, Topic);
         }
         stmt.bindString(5, entity.getFilePath());
+        stmt.bindString(6, entity.getCommandList());
     }
 
     @Override
@@ -103,7 +107,8 @@ public class LocalNoteDao extends AbstractDao<LocalNote, Long> {
             new java.util.Date(cursor.getLong(offset + 1)), // Date
             cursor.getString(offset + 2), // Title
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // Topic
-            cursor.getString(offset + 4) // filePath
+            cursor.getString(offset + 4), // filePath
+            cursor.getString(offset + 5) // commandList
         );
         return entity;
     }
@@ -115,6 +120,7 @@ public class LocalNoteDao extends AbstractDao<LocalNote, Long> {
         entity.setTitle(cursor.getString(offset + 2));
         entity.setTopic(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setFilePath(cursor.getString(offset + 4));
+        entity.setCommandList(cursor.getString(offset + 5));
      }
     
     @Override
