@@ -12,10 +12,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.util.DateTime;
+import com.joanzapata.iconify.widget.IconTextView;
+
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,13 +50,11 @@ import cpen391.team6.bored.Utility.CredentialBuilder;
 public class CourseNotesFragment extends Fragment {
 
     private ListView mCourseNotesListView;
-    private List<ExternalNote> mCourseNotes;
+//    private List<ExternalNote> BoredApplication.mCourseNotes;
     private ExternalNoteAdapter mAdapter;
 
-    private FetchFileNamesTask mTask;
-
-    private File cloudFile1;
-    private File cloudFile2;
+    private FetchFileNamesTask mFileNamesTask;
+    private InitCloudStorageTask mCloudStorageTask;
 
     private static final String APP_CLOUD_BUCKET_NAME = "boredpupil-ceed0.appspot.com";
     private static final String APP_CLOUD_ACCOUNT_ID = "bored-633@boredpupil-ceed0.iam.gserviceaccount.com";
@@ -60,10 +63,14 @@ public class CourseNotesFragment extends Fragment {
     private ArrayList<String> mFilenames;
     private SharedPreferences mSharedPrefs;
 
+    private TextView mNoNotesMessage;
+    private IconTextView mNoNotesIcon;
+    private RelativeLayout mNoCourseNotes;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCourseNotes = new ArrayList<ExternalNote>();
+
     }
 
     @Override
@@ -72,22 +79,62 @@ public class CourseNotesFragment extends Fragment {
         View view = inflater.inflate(R.layout.course_notes_fragment_layout, container, false);
 
         mCourseNotesListView = (ListView) view.findViewById(R.id.course_notes_list);
+        mNoNotesMessage = (TextView) view.findViewById(R.id.no_course_notes_message);
+        mNoNotesIcon = (IconTextView) view.findViewById(R.id.no_course_notes_icon);
+        mNoCourseNotes = (RelativeLayout) view.findViewById(R.id.no_course_notes);
 
         mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         mCourseCode = mSharedPrefs.getString("classCodePref", "");
 
-        mTask = new FetchFileNamesTask() {
+
+        mFileNamesTask = new FetchFileNamesTask() {
             @Override
             public void onPostExecute(Void result) {
 
+                if(BoredApplication.mCourseNotes.isEmpty()){
+                    mCourseNotesListView.setVisibility(View.GONE);
+                    mNoCourseNotes.setVisibility(View.VISIBLE);
 
-                mAdapter = new ExternalNoteAdapter(getContext(), R.layout.note_list_item, mCourseCode, mCourseNotes);
-                mCourseNotesListView.setAdapter(mAdapter);
+                }else {
+                    mCourseNotesListView.setVisibility(View.VISIBLE);
+                    mNoCourseNotes.setVisibility(View.GONE);
+                    mAdapter = new ExternalNoteAdapter(getContext(), R.layout.note_list_item, mCourseCode, BoredApplication.mCourseNotes);
+                    mCourseNotesListView.setAdapter(mAdapter);
+                }
             }
         };
 
-        mTask.execute();
+        if(BoredApplication.mCloudStorage == null) {
+
+            mCloudStorageTask = new InitCloudStorageTask(){
+
+                @Override
+                public void onPostExecute(Void result) {
+                    mFileNamesTask.execute();
+
+                }
+            };
+
+            mCloudStorageTask.execute();
+
+        }else if (BoredApplication.mCourseNotes == null){
+
+            mFileNamesTask.execute();
+
+        }else{
+
+            if(BoredApplication.mCourseNotes.isEmpty()){
+                mCourseNotesListView.setVisibility(View.GONE);
+                mNoCourseNotes.setVisibility(View.VISIBLE);
+
+            }else {
+                mCourseNotesListView.setVisibility(View.VISIBLE);
+                mNoCourseNotes.setVisibility(View.GONE);
+                mAdapter = new ExternalNoteAdapter(getContext(), R.layout.note_list_item, mCourseCode, BoredApplication.mCourseNotes);
+                mCourseNotesListView.setAdapter(mAdapter);
+            }
+        }
 
         return view;
     }
@@ -106,7 +153,11 @@ public class CourseNotesFragment extends Fragment {
     @Override
     public void onStop(){
         super.onStop();
-        mTask.cancel(true);
+        if(mFileNamesTask != null)
+            mFileNamesTask.cancel(true);
+
+        if(mCloudStorageTask != null)
+            mCloudStorageTask.cancel(true);
     }
 
 
@@ -152,8 +203,10 @@ public class CourseNotesFragment extends Fragment {
     private void createExternalNoteList() {
 
         DateTime dateTime = null;
-        if(mCourseNotes != null){
-            mCourseNotes.clear();
+        if(BoredApplication.mCourseNotes != null){
+            BoredApplication.mCourseNotes.clear();
+        }else{
+            BoredApplication.mCourseNotes = new ArrayList<>();
         }
 
 //        String courseCode = mSharedPrefs.getString("classCodePref", "");
@@ -174,11 +227,11 @@ public class CourseNotesFragment extends Fragment {
                     dateTime = CloudImageCRUD.getFileDateTime(BoredApplication.mCloudStorage, APP_CLOUD_BUCKET_NAME, file);
                 }catch(Exception e){e.printStackTrace();}
 
-                mCourseNotes.add(makeExternalNote(fileSegs, mCourseCode, dateTime));
+                BoredApplication.mCourseNotes.add(makeExternalNote(fileSegs, mCourseCode, dateTime));
             }
         }
 
-        Log.d("TEST", "# of pics: " + Integer.toString(mCourseNotes.size()));
+        Log.d("TEST", "# of pics: " + Integer.toString(BoredApplication.mCourseNotes.size()));
 
     }
 
@@ -194,10 +247,10 @@ public class CourseNotesFragment extends Fragment {
     }
 
 
-    private class FetchFileNamesTask extends AsyncTask<Void, Void, Void> {
+    private class InitCloudStorageTask extends AsyncTask<Void, Void, Void> {
 
         @Override
-        public Void doInBackground(Void... params) {
+        public Void doInBackground(Void ... params) {
 
             try {
 
@@ -209,8 +262,8 @@ public class CourseNotesFragment extends Fragment {
 
                 BoredApplication.mCloudStorage = CloudStorage.build(APP_CLOUD_BUCKET_NAME, BoredApplication.mCred);
 
-                getFileNames();
-                createExternalNoteList();
+//                getFileNames();
+//                createExternalNoteList();
 
                 for (String name : mFilenames) {
                     Log.d("TEST", name);
@@ -223,14 +276,19 @@ public class CourseNotesFragment extends Fragment {
             return null;
         }
 
-
-//        @Override
-//        public void onPostExecute(Void result){
-//
-//
-//            getFileNames();
-//            //getCourseNotes();
-//        }
     }
+
+    private class FetchFileNamesTask extends AsyncTask <Void, Void, Void> {
+
+        @Override
+        public Void doInBackground(Void ... params){
+            getFileNames();
+            createExternalNoteList();
+
+            return null;
+        }
+    }
+
+
 
 }

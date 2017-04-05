@@ -52,6 +52,7 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote> {
     private Context mContext;
     private String mCourseCode;
 
+    private Bitmap [] cachedBitmaps;
     private List<? extends Note> notes;
     private String[] imageUrls;
 
@@ -69,6 +70,8 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote> {
         this.mContext = context;
         this.mCourseCode = courseCode;
         this.notes = notes;
+
+        cachedBitmaps = new Bitmap [notes.size()];
     }
 
     @Override
@@ -110,54 +113,53 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote> {
         viewHolder.mNoteDate.setText(formattedDate);
 
 
-        new AsyncTask<Integer, Integer, Bitmap>() {
+        if(cachedBitmaps[position] == null) {
+            new AsyncTask<Integer, Integer, Bitmap>() {
 
-            @Override
-            public Bitmap doInBackground(Integer... params) {
+                @Override
+                public Bitmap doInBackground(Integer... params) {
 
-                ArrayList<String> fileSegs = externalNote.getFileNames();
-                File cloudFile1 = null;
-                File cloudFile2 = null;
-                for (int i = 0; i < fileSegs.size(); i++) {
+                    ArrayList<String> fileSegs = externalNote.getFileNames();
+                    File cloudFile1 = null;
+                    File cloudFile2 = null;
+                    for (int i = 0; i < fileSegs.size(); i++) {
+                        publishProgress(params[0]);
+                        if (i == 0) {
+                            cloudFile1 = getCloudFile(fileSegs.get(i));
+                        } else {
+                            cloudFile2 = getCloudFile(fileSegs.get(i));
+                            combineFiles(cloudFile1, cloudFile2);
+                        }
+                    }
                     publishProgress(params[0]);
-                    if (i == 0) {
-                        cloudFile1 = getCloudFile(fileSegs.get(i));
-                    } else {
-                        cloudFile2 = getCloudFile(fileSegs.get(i));
-                        combineFiles(cloudFile1, cloudFile2);
+                    if(!isCancelled()) {
+                        Bitmap bm = getBitmap(cloudFile1);
+                        cachedBitmaps[position] = bm;
+                        return bm;
+                    }
+                    return null;
+
+                }
+
+                @Override
+                public void onProgressUpdate(Integer... tags) {
+
+                    if (!tags[0].equals(viewHolder.mNoteImage.getTag())) {
+                        cancel(true);
                     }
                 }
-                publishProgress(params[0]);
-                return getBitmap(cloudFile1);
 
-            }
+                @Override
+                public void onPostExecute(Bitmap result) {
 
-            @Override
-            public void onProgressUpdate(Integer ... tags) {
+                    loadBitmap(viewHolder.mNoteImage, result, 200);
 
-                if (!tags[0].equals(viewHolder.mNoteImage.getTag())) {
-                    cancel(true);
                 }
-            }
 
-            @Override
-            public void onPostExecute(Bitmap result) {
-
-                viewHolder.mNoteImage.setImageBitmap(result);
-
-                viewHolder.mNoteImage.setAlpha(0f);
-                viewHolder.mNoteImage.setVisibility(View.VISIBLE);
-
-                // Animate the content view to 100% opacity, and clear any animation
-                // listener set on the view.
-                viewHolder.mNoteImage.animate()
-                        .alpha(1f)
-                        .setDuration(300)
-                        .setListener(null);
-
-            }
-
-        }.execute((Integer) viewHolder.mNoteImage.getTag());
+            }.execute((Integer) viewHolder.mNoteImage.getTag());
+        }else{
+            loadBitmap(viewHolder.mNoteImage, cachedBitmaps[position], 450);
+        }
 
         // Need one for course code...
 
@@ -252,6 +254,22 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote> {
         return bitmap;
     }
 
+    private void loadBitmap(ImageView imageView, Bitmap bm, int animDuration){
+
+
+        imageView.setImageBitmap(bm);
+
+        imageView.setAlpha(0f);
+        imageView.setVisibility(View.VISIBLE);
+
+        // Animate the content view to 100% opacity, and clear any animation
+        // listener set on the view.
+        imageView.animate()
+                .alpha(1f)
+                .setDuration(animDuration)
+                .setListener(null);
+
+    }
 
 //    private class FetchAndLoadImageTask extends AsyncTask<String, Void, Void>{
 //

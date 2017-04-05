@@ -61,4 +61,7 @@
     <string name="class_code_message">Enter new class code:</string>
     <string name="default_class_code">XXXX</string>
 
+    <!-- Course Notes Fragment -->
+    <string name="no_notes_for_class_code">Unknown class code, visit your settings page to change your class code</string>
+
 </resources>

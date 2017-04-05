@@ -1,22 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
- <ListView
-     android:id="@+id/course_notes_list"
-     android:layout_width="match_parent"
-     android:layout_height="match_parent"
-     android:dividerHeight="8dp">
+    <ListView
+        android:id="@+id/course_notes_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:dividerHeight="8dp">
 
- </ListView>
+    </ListView>
 
- <TextView
-     android:id="@+id/no_course_notes_message"
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     android:layout_gravity="center"
-     android:gravity="center"/>
+    <RelativeLayout
+        android:id="@+id/no_course_notes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/no_course_notes_message"
+            android:layout_width="match_parent"
+            android:padding="16dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="@string/no_notes_for_class_code"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/dark_gray"/>
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/no_course_notes_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/no_course_notes_message"
+            android:textColor="@color/dark_gray"
+            android:layout_centerHorizontal="true"
+            android:text="{md-info-outline}"
+            android:textSize="30sp"/>
+
+    </RelativeLayout>
 
 </LinearLayout>

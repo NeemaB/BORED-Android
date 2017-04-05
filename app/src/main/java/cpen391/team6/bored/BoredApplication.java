@@ -15,10 +15,12 @@ import com.joanzapata.iconify.fonts.MaterialModule;
 
 import org.greenrobot.greendao.database.Database;
 
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
+import cpen391.team6.bored.Data.ExternalNote;
 import cpen391.team6.bored.Utility.CloudStorage;
 
 /**
@@ -35,6 +37,8 @@ public class BoredApplication extends Application {
 
     public static Credential mCred;
     public static CloudStorage mCloudStorage;
+
+    public static ArrayList<ExternalNote> mCourseNotes;
 
     /* DaoSession used for database access within application */
     private static DaoSession daoSession;
