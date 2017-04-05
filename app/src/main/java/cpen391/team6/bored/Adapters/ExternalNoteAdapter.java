@@ -3,6 +3,7 @@ package cpen391.team6.bored.Adapters;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,8 +16,10 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import com.codekrypt.greendao.db.LocalNote;
 import com.codekrypt.greendao.db.LocalNoteDao;
+import com.google.api.client.util.DateTime;
 import com.joanzapata.iconify.widget.IconTextView;
 import com.squareup.picasso.Picasso;
 
@@ -28,6 +31,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,7 +48,7 @@ import cpen391.team6.bored.Utility.DataUtil;
 /**
  * Created by neema on 2017-04-04.
  */
-public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote>{
+public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote> {
     private Context mContext;
     private String mCourseCode;
 
@@ -53,12 +58,13 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote>{
     private static class ViewHolder {
         ImageView mNoteImage;
         TextView mNoteTitle;
+        TextView mNoteTopic;
         TextView mNoteDate;
-//        TextView mNoteCourseCode;
+        //        TextView mNoteCourseCode;
         IconTextView mNoteActions; // Do we need this??
     }
 
-    public  ExternalNoteAdapter(Context context, int resourceId, String courseCode, List<ExternalNote> notes) {
+    public ExternalNoteAdapter(Context context, int resourceId, String courseCode, List<ExternalNote> notes) {
         super(context, resourceId, notes);
         this.mContext = context;
         this.mCourseCode = courseCode;
@@ -79,29 +85,79 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote>{
 
             viewHolder.mNoteImage = (ImageView) convertView.findViewById(R.id.note_image);
             viewHolder.mNoteTitle = (TextView) convertView.findViewById(R.id.note_title);
+            viewHolder.mNoteTopic = (TextView) convertView.findViewById(R.id.note_topic);
+            viewHolder.mNoteDate = (TextView) convertView.findViewById(R.id.note_date);
             viewHolder.mNoteActions = (IconTextView) convertView.findViewById(R.id.note_item_actions);
 
             convertView.setTag(viewHolder);
-        }else{
+        } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-
         final ExternalNote externalNote = (ExternalNote) note;
+        viewHolder.mNoteImage.setTag(position);
 
-        String title = externalNote.getFilename();
-//        String courseCode = externalNote.getCourseCode();
+        DateTime dateTime = externalNote.getDateTime();
+        Date date = new Date(dateTime.getValue());
 
+        DateFormat df = new SimpleDateFormat("MMM d, h:mm a");
+        String formattedDate = df.format(date);
+        String title = externalNote.getTitle();
 
-        /* WE DON'T HAVE ANYTHING THAT REQUIRES THIS*/
-//        if (topic.length() == 0) {
-//            viewHolder.mNoteTopic.setVisibility(View.GONE);
-//        }else{
-//            viewHolder.mNoteTopic.setVisibility(View.VISIBLE);
-//        }
-
-
+        viewHolder.mNoteImage.setImageBitmap(null);
+        viewHolder.mNoteTopic.setVisibility(View.GONE);
         viewHolder.mNoteTitle.setText(title);
+        viewHolder.mNoteDate.setText(formattedDate);
+
+
+        new AsyncTask<Integer, Integer, Bitmap>() {
+
+            @Override
+            public Bitmap doInBackground(Integer... params) {
+
+                ArrayList<String> fileSegs = externalNote.getFileNames();
+                File cloudFile1 = null;
+                File cloudFile2 = null;
+                for (int i = 0; i < fileSegs.size(); i++) {
+                    publishProgress(params[0]);
+                    if (i == 0) {
+                        cloudFile1 = getCloudFile(fileSegs.get(i));
+                    } else {
+                        cloudFile2 = getCloudFile(fileSegs.get(i));
+                        combineFiles(cloudFile1, cloudFile2);
+                    }
+                }
+                publishProgress(params[0]);
+                return getBitmap(cloudFile1);
+
+            }
+
+            @Override
+            public void onProgressUpdate(Integer ... tags) {
+
+                if (!tags[0].equals(viewHolder.mNoteImage.getTag())) {
+                    cancel(true);
+                }
+            }
+
+            @Override
+            public void onPostExecute(Bitmap result) {
+
+                viewHolder.mNoteImage.setImageBitmap(result);
+
+                viewHolder.mNoteImage.setAlpha(0f);
+                viewHolder.mNoteImage.setVisibility(View.VISIBLE);
+
+                // Animate the content view to 100% opacity, and clear any animation
+                // listener set on the view.
+                viewHolder.mNoteImage.animate()
+                        .alpha(1f)
+                        .setDuration(300)
+                        .setListener(null);
+
+            }
+
+        }.execute((Integer) viewHolder.mNoteImage.getTag());
 
         // Need one for course code...
 
@@ -111,10 +167,13 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote>{
                 PopupMenu popup = new PopupMenu(mContext, viewHolder.mNoteActions);
 
                 popup.getMenuInflater().inflate(R.menu.note_action_popup_menu, popup.getMenu());
+
+                popup.getMenu().findItem(R.id.delete_my_note).setVisible(false);
+
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        switch(item.getItemId()){
+                        switch (item.getItemId()) {
 
                             case R.id.load_my_note:
 
@@ -139,7 +198,6 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote>{
 //                .into(viewHolder.mNoteImage);
 
 
-
         //TODO: Do something with the local note here to fetch the imag  e and populate the image view
 
 
@@ -147,39 +205,66 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote>{
     }
 
 
-    private void getCourseNotes() {
+    public File getCloudFile(final String filename) {
 
+        try {
+            return CloudImageCRUD.readCloudImageSegment(mContext, BoredApplication.mCloudStorage, filename);
 
+        } catch (Exception e) {
+            Log.d("TEST", e.getMessage());
+        }
+        return null;
     }
 
+    private void combineFiles(File cloudFile1, File cloudFile2) {
+        try {
 
+            Log.d("TEST", "Before: " + Long.toString(cloudFile1.length()));
 
-    private File cloudFile1;
-    private File cloudFile2;
+            OutputStream os = new FileOutputStream(cloudFile1, true);
+            InputStream is = new FileInputStream(cloudFile2);
 
+            byte[] b = new byte[(int) cloudFile2.length()];
+            is.read(b);
+            os.write(b);
 
-    public void getCloudFile(final String filename, final boolean first) {
+            os.close();
+            is.close();
 
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if(first){
-                        cloudFile1 = CloudImageCRUD.readCloudImageSegment(getActivity().getApplicationContext(), mCloudStorage, filename);
+            Log.d("TEST", "After: " + Long.toString(cloudFile1.length()));
 
-                    }else{
-                        cloudFile2 = CloudImageCRUD.readCloudImageSegment(getActivity().getApplicationContext(), mCloudStorage, filename);
-                    }
-                } catch (Exception e) {
-                    Log.d("TEST", e.getMessage());
-                }
-            }
-        });
-
-        thread.start();
-
-        while(thread.getState() != Thread.State.TERMINATED){
-            //Log.d("TEST", "Waiting to get cloudfile: " + filename);
+        } catch (Exception e) {
+            Log.d("TEST", e.getMessage());
         }
     }
+
+    private Bitmap getBitmap(File cloudFile) {
+
+        Bitmap bitmap = null;
+        try {
+            InputStream is = new FileInputStream(cloudFile);
+            bitmap = BitmapFactory.decodeStream(is);
+            is.close();
+        } catch (IOException e) {
+            Log.d("TEST", e.getMessage());
+        }
+
+        return bitmap;
+    }
+
+
+//    private class FetchAndLoadImageTask extends AsyncTask<String, Void, Void>{
+//
+//        @Override
+//        public Void doInBackground(String ... params){
+//
+//
+//        }
+//
+//        @Override
+//        public void onPostExecute(Void result){
+//
+//        }
+//    }
+
 }

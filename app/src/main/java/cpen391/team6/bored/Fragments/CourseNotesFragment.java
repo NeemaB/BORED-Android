@@ -15,6 +15,7 @@ import android.widget.ListView;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.util.DateTime;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,10 +25,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
 import cpen391.team6.bored.Adapters.ExternalNoteAdapter;
+import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Data.ExternalNote;
 import cpen391.team6.bored.R;
 import cpen391.team6.bored.Utility.CloudImageCRUD;
@@ -45,13 +48,16 @@ public class CourseNotesFragment extends Fragment {
     private List<ExternalNote> mCourseNotes;
     private ExternalNoteAdapter mAdapter;
 
+    private FetchFileNamesTask mTask;
+
+    private File cloudFile1;
+    private File cloudFile2;
+
     private static final String APP_CLOUD_BUCKET_NAME = "boredpupil-ceed0.appspot.com";
     private static final String APP_CLOUD_ACCOUNT_ID = "bored-633@boredpupil-ceed0.iam.gserviceaccount.com";
 
     private String mCourseCode;
     private ArrayList<String> mFilenames;
-    private Credential mCred;
-    private CloudStorage mCloudStorage;
     private SharedPreferences mSharedPrefs;
 
     @Override
@@ -67,22 +73,21 @@ public class CourseNotesFragment extends Fragment {
 
         mCourseNotesListView = (ListView) view.findViewById(R.id.course_notes_list);
 
-        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         mCourseCode = mSharedPrefs.getString("classCodePref", "");
 
-        FetchFileNamesTask fetchFileNamesTask = new FetchFileNamesTask() {
+        mTask = new FetchFileNamesTask() {
             @Override
             public void onPostExecute(Void result) {
 
-                createExternalNoteList();
-                mAdapter = new ExternalNoteAdapter(getActivity(), R.layout.note_list_item, mCourseCode, mCourseNotes);
-                
+
+                mAdapter = new ExternalNoteAdapter(getContext(), R.layout.note_list_item, mCourseCode, mCourseNotes);
                 mCourseNotesListView.setAdapter(mAdapter);
             }
         };
 
-        fetchFileNamesTask.execute();
+        mTask.execute();
 
         return view;
     }
@@ -98,15 +103,21 @@ public class CourseNotesFragment extends Fragment {
         super.onResume();
     }
 
+    @Override
+    public void onStop(){
+        super.onStop();
+        mTask.cancel(true);
+    }
+
 
     private void getFileNames() {
 
-        if (mCloudStorage == null) {
+        if (BoredApplication.mCloudStorage == null) {
             return;
         }
 
         try {
-            mFilenames = CloudImageCRUD.listBucketContents(mCloudStorage, APP_CLOUD_BUCKET_NAME);
+            mFilenames = CloudImageCRUD.listBucketContents(BoredApplication.mCloudStorage, APP_CLOUD_BUCKET_NAME);
         } catch (Exception e) {
             Log.d("TEST", e.getMessage());
         }
@@ -120,7 +131,7 @@ public class CourseNotesFragment extends Fragment {
 
     ArrayList<String> getMatchingStrings(ArrayList<String> list, String regex) {
 
-        if (list == null) {
+        if(list == null){
             return null;
         }
 
@@ -140,6 +151,7 @@ public class CourseNotesFragment extends Fragment {
 
     private void createExternalNoteList() {
 
+        DateTime dateTime = null;
         if(mCourseNotes != null){
             mCourseNotes.clear();
         }
@@ -158,7 +170,11 @@ public class CourseNotesFragment extends Fragment {
                 ArrayList<String> fileSegs = getMatchingStrings(files, mCourseCode + "/" + name + "-[0-9]+.bmp");
                 remaining.removeAll(fileSegs);
 
-                mCourseNotes.add(makeExternalNote(fileSegs, mCourseCode));
+                try {
+                    dateTime = CloudImageCRUD.getFileDateTime(BoredApplication.mCloudStorage, APP_CLOUD_BUCKET_NAME, file);
+                }catch(Exception e){e.printStackTrace();}
+
+                mCourseNotes.add(makeExternalNote(fileSegs, mCourseCode, dateTime));
             }
         }
 
@@ -166,23 +182,15 @@ public class CourseNotesFragment extends Fragment {
 
     }
 
-    private ExternalNote makeExternalNote(final ArrayList<String> filenames, String coursecode) {
+    private ExternalNote makeExternalNote(final ArrayList<String> filenames, String coursecode, DateTime dateTime) {
 
-//        for(int i = 0; i < filenames.size(); i++){
-//            if(i == 0){
-//                getCloudFile(filenames.get(i), true);
-//            }else{
-//                getCloudFile(filenames.get(i), false);
-//                combineFiles();
-//            }
-//        }
-
-//        Bitmap extBitmap = getBitmap();
 
         return new ExternalNote(
                 filenames.get(0).substring(coursecode.length() + 1, filenames.get(0).length() - 6),
+                filenames,
                 coursecode,
-                extBitmap);
+                dateTime);
+
     }
 
 
@@ -193,15 +201,17 @@ public class CourseNotesFragment extends Fragment {
 
             try {
 
-                mCred = CredentialBuilder
+                BoredApplication.mCred = CredentialBuilder
                         .setup(getActivity().getApplicationContext(), R.raw.key, APP_CLOUD_ACCOUNT_ID)
                         .transporter(new NetHttpTransport())
                         .scope(CredentialBuilder.CredentialScope.DEVSTORAGE_READ_WRITE)
                         .build();
 
-                mCloudStorage = CloudStorage.build(APP_CLOUD_BUCKET_NAME, mCred);
+                BoredApplication.mCloudStorage = CloudStorage.build(APP_CLOUD_BUCKET_NAME, BoredApplication.mCred);
 
                 getFileNames();
+                createExternalNoteList();
+
                 for (String name : mFilenames) {
                     Log.d("TEST", name);
                 }

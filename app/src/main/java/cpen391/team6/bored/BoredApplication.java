@@ -7,6 +7,7 @@ import android.support.multidex.MultiDex;
 
 import com.codekrypt.greendao.db.DaoMaster;
 import com.codekrypt.greendao.db.DaoSession;
+import com.google.api.client.auth.oauth2.Credential;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.EntypoModule;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
@@ -17,6 +18,8 @@ import org.greenrobot.greendao.database.Database;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
+
+import cpen391.team6.bored.Utility.CloudStorage;
 
 /**
  * Created by neema on 2017-03-12.
@@ -29,6 +32,9 @@ public class BoredApplication extends Application {
     /* Global variables for the width and height of the actual device in pixels */
     public static int boredScreenWidth = 681;
     public static int boredScreenHeight = 478;
+
+    public static Credential mCred;
+    public static CloudStorage mCloudStorage;
 
     /* DaoSession used for database access within application */
     private static DaoSession daoSession;

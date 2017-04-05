@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.google.api.client.googleapis.media.MediaHttpDownloader;
 import com.google.api.client.http.InputStreamContent;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.model.StorageObject;
 
@@ -391,5 +392,30 @@ public class CloudImageCRUD {
         }
 
         return files;
+    }
+
+    public static DateTime getFileDateTime(CloudStorage googleStorage, String bucket, String imageFullPath)
+            throws Exception {
+        if (googleStorage == null) {
+            throw new IllegalArgumentException("Given GoogleStorage was null! Error!");
+        }
+
+        // Get the storage reference
+        Storage storage = googleStorage.getStorage();
+
+        DateTime dateTime = null;
+
+        List<StorageObject> objects = storage.objects().list(bucket).execute().getItems();
+        if(objects != null){
+            for(StorageObject so : objects){
+                if(so.getName().equals(imageFullPath)){
+                    dateTime = so.getTimeCreated();
+                }
+
+            }
+        }
+
+        return dateTime;
+
     }
 }
