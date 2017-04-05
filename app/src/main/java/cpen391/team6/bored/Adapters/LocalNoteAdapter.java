@@ -32,6 +32,7 @@ import cpen391.team6.bored.Activities.MainActivity;
 import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.Data.ExternalNote;
 import cpen391.team6.bored.Data.Note;
+import cpen391.team6.bored.Fragments.MyNotesFragment;
 import cpen391.team6.bored.Items.Point;
 import cpen391.team6.bored.Items.PopUpMenu;
 import cpen391.team6.bored.R;
@@ -46,6 +47,7 @@ public class LocalNoteAdapter extends ArrayAdapter<LocalNote> {
 
     private List<? extends Note> notes;
     private String[] imageUrls;
+    private MyNotesFragment mMyNotesFragment;
 
     private static class ViewHolder {
         ImageView mNoteImage;
@@ -55,11 +57,12 @@ public class LocalNoteAdapter extends ArrayAdapter<LocalNote> {
         IconTextView mNoteActions;
     }
 
-    public LocalNoteAdapter(Context context, int resourceId, List<LocalNote> notes) {
+    public LocalNoteAdapter(Context context, int resourceId, List<LocalNote> notes, MyNotesFragment mMyNotesFragment) {
         super(context, resourceId, notes);
 
         this.context = context;
         this.notes = notes;
+        this.mMyNotesFragment = mMyNotesFragment;
     }
 
     @Override
@@ -142,6 +145,9 @@ public class LocalNoteAdapter extends ArrayAdapter<LocalNote> {
                                     notes.remove(position);
                                     Toast.makeText(context, "Deleted Note!", Toast.LENGTH_SHORT).show();
                                     notifyDataSetChanged();
+                                    if (qb.list().isEmpty()) {
+                                        mMyNotesFragment.setMyNotesVisibility(false);
+                                    }
                                     return true;
                                 }else{
                                     return false;
