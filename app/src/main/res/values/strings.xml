@@ -42,7 +42,8 @@
     <string name="select_topic_hint">Give your note a topic...</string>
     <string name="save_note">Save Note</string>
     <string name="title_error_message">Your note needs a title</string>
-    <string name="load_note">Load Note</string>
+    <string name="load_saved_note">Load Saved Note</string>
+    <string name="no_saved_notes_message">You have no saved notes</string>
 
     <!-- Popup Menu Strings -->
     <string name="popup_menu_delete">Delete</string>

@@ -35,6 +35,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -117,7 +118,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
     private IconTextView mRedo;
     private IconTextView mUndo;
     private IconTextView mFill;
-    private IconTextView mTextBox;
+//    private IconTextView mTextBox;
     private IconTextView mClear;
 
     private LinearLayout mContentView;
@@ -200,7 +201,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         mUndo = (IconTextView) view.findViewById(R.id.undo);
         mRedo = (IconTextView) view.findViewById(R.id.redo);
         mFill = (IconTextView) view.findViewById(R.id.fill);
-        mTextBox = (IconTextView) view.findViewById(R.id.text_box);
+//        mTextBox = (IconTextView) view.findViewById(R.id.text_box);
         mClear = (IconTextView) view.findViewById(R.id.clear_screen);
         mBluetoothStatus = (TextView) view.findViewById(R.id.bluetooth_status);
         mStatusBar = (LinearLayout) view.findViewById(R.id.bluetooth_status_bar);
@@ -211,7 +212,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
         mUndo.setOnClickListener(this);
         mRedo.setOnClickListener(this);
         mFill.setOnClickListener(this);
-        mTextBox.setOnClickListener(this);
+//        mTextBox.setOnClickListener(this);
         mClear.setOnClickListener(this);
 
         mDrawer = (DrawerFragment) getActivity().getFragmentManager().findFragmentById(R.id.drawing_space);
@@ -235,6 +236,7 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
                     if (myArguments != null) {
                         arguments.putString("load_note_path", myArguments.getString("load_note_path"));
+                        arguments.putString("command_list", myArguments.getString("command_list"));
                     }
 
                     //pass width and height of screen as arguments to launch animation
@@ -525,6 +527,13 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
 
             case R.id.load_draw_space:
 
+
+                /* Retrieve all the local notes */
+                LocalNoteDao localNoteDao = BoredApplication.getDaoSession().getLocalNoteDao();
+                QueryBuilder<LocalNote> qb = localNoteDao.queryBuilder();
+                final List<LocalNote> mNotesList = qb.list();
+
+
                 /* Create view to place inside of the dialog window */
                 final View loadNoteDialogView = getActivity()
                         .getLayoutInflater()
@@ -533,27 +542,30 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                 AlertDialog.Builder builder2 = new AlertDialog.Builder(
                         new ContextThemeWrapper(getActivity(), R.style.DialogTheme));
 
-                builder2.setTitle(getString(R.string.load_note))
+                builder2.setTitle(getString(R.string.load_saved_note))
                         .setView(loadNoteDialogView);
 
                 final AlertDialog loadNoteDialog = builder2.create();
                 loadNoteDialog.setCanceledOnTouchOutside(true);
                 loadNoteDialog.show();
 
+                final RelativeLayout noNotes = (RelativeLayout) loadNoteDialog.findViewById(R.id.no_saved_notes);
                 final ListView dialogNoteListView = (ListView) loadNoteDialog.findViewById(R.id.simple_note_list);
 
-                /* Retrieve all the local notes */
-                LocalNoteDao localNoteDao = BoredApplication.getDaoSession().getLocalNoteDao();
-                QueryBuilder<LocalNote> qb = localNoteDao.queryBuilder();
-                final List<LocalNote> mNotesList = qb.list();
-
+                if(!(mNotesList.size() == 0)) {
                 /* Load the local notes into the listView within the dialog */
-                DialogLocalNoteAdapter adapter = new DialogLocalNoteAdapter(
-                        getActivity(),
-                        R.layout.dialog_note_list_item,
-                        mNotesList);
 
-                dialogNoteListView.setAdapter(adapter);
+                    noNotes.setVisibility(View.GONE);
+                    DialogLocalNoteAdapter adapter = new DialogLocalNoteAdapter(
+                            getActivity(),
+                            R.layout.dialog_note_list_item,
+                            mNotesList);
+
+                    dialogNoteListView.setAdapter(adapter);
+                }else{
+                    dialogNoteListView.setVisibility(View.GONE);
+                    noNotes.setVisibility(View.VISIBLE);
+                }
 
 
                 dialogNoteListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

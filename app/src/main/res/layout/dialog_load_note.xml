@@ -8,8 +8,35 @@
         android:id="@+id/simple_note_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-
-
     </ListView>
 
+    <RelativeLayout
+        android:id="@+id/no_saved_notes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/no_saved_notes_message"
+            android:layout_width="match_parent"
+            android:padding="16dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="@string/no_saved_notes_message"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/dark_gray"/>
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/no_course_notes_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/no_saved_notes_message"
+            android:padding="16dp"
+            android:textColor="@color/dark_gray"
+            android:layout_centerHorizontal="true"
+            android:text="{md-info-outline}"
+            android:textSize="24sp"/>
+
+    </RelativeLayout>
 </LinearLayout>

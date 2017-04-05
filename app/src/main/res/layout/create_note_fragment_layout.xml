@@ -119,16 +119,16 @@
                 android:textColor="@color/colorSecondary"
                 android:textSize="30sp" />
 
-            <com.joanzapata.iconify.widget.IconTextView
-                android:id="@+id/text_box"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:paddingTop="8dp"
-                android:text="{md-text-format}"
-                android:textColor="@color/colorSecondary"
-                android:textSize="30sp" />
+            <!--<com.joanzapata.iconify.widget.IconTextView-->
+                <!--android:id="@+id/text_box"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="0dp"-->
+                <!--android:layout_weight="1"-->
+                <!--android:gravity="center"-->
+                <!--android:paddingTop="8dp"-->
+                <!--android:text="{md-text-format}"-->
+                <!--android:textColor="@color/colorSecondary"-->
+                <!--android:textSize="30sp" />-->
 
             <com.joanzapata.iconify.widget.IconTextView
                 android:id="@+id/clear_screen"

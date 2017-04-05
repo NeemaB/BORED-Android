@@ -8,7 +8,7 @@
         <EditTextPreference
             android:dialogTitle="@string/class_code_message"
             android:key="classCodePref"
-            android:defaultValue="@string/default_class_code"
+            android:defaultValue=""
             android:maxLength="4"
             android:summary="@string/class_code_summary"
             android:title="@string/class_code_title"/>

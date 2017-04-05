@@ -179,6 +179,10 @@ public class ExternalNoteAdapter extends ArrayAdapter<ExternalNote> {
 
                             case R.id.load_my_note:
 
+
+                                if(cachedBitmaps[position] != null){
+
+                                }
 //                                Bundle arguments = new Bundle();
 //                                arguments.putString("load_note_path", externalNote.getBitmap());
 //
