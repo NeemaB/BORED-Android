@@ -1,33 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/content_view"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/white">
+    android:layout_height="match_parent">
 
- <!--<android.support.v4.widget.SwipeRefreshLayout-->
-     <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
-     <!--android:id="@+id/swipeContainer"-->
-     <!--android:layout_width="match_parent"-->
-     <!--android:layout_height="match_parent">-->
+ <ListView
+     android:id="@+id/course_notes_list"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:dividerHeight="8dp">
 
-  <!--<ListView-->
-      <!--android:id="@+id/noteListView"-->
-      <!--android:layout_width="wrap_content"-->
-      <!--android:layout_height="wrap_content"-->
-      <!--android:drawSelectorOnTop="true"-->
-      <!--android:layout_alignParentLeft="true"-->
-      <!--android:layout_alignParentStart="true" />-->
+ </ListView>
 
- <!--</android.support.v4.widget.SwipeRefreshLayout>-->
-
-
- <ImageView
-     android:id="@+id/imageView"
+ <TextView
+     android:id="@+id/no_course_notes_message"
      android:layout_width="wrap_content"
      android:layout_height="wrap_content"
-     app:srcCompat="@android:drawable/ic_menu_report_image" />
+     android:layout_gravity="center"
+     android:gravity="center"/>
 
-
-</FrameLayout>
+</LinearLayout>

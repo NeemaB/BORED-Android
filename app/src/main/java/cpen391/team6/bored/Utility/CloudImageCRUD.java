@@ -375,13 +375,13 @@ public class CloudImageCRUD {
         return true;
     }
 
-    public static List<String> listBucketContents(CloudStorage googleStorage, String bucket)
+    public static ArrayList<String> listBucketContents(CloudStorage googleStorage, String bucket)
         throws Exception{
 
         // Get the storage reference
         Storage storage = googleStorage.getStorage();
 
-        List<String> files = new ArrayList<String>();
+        ArrayList<String> files = new ArrayList<String>();
 
         List<StorageObject> objects = storage.objects().list(bucket).execute().getItems();
         if(objects != null){

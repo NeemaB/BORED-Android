@@ -85,6 +85,15 @@
                 android:textColor="@color/colorSecondary"
                 android:textSize="30sp" />
 
+            <com.joanzapata.iconify.widget.IconTextView
+                android:id="@+id/undo"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="{md-undo}"
+                android:textColor="@color/colorSecondary"
+                android:textSize="30sp" />
 
             <com.joanzapata.iconify.widget.IconTextView
                 android:id="@+id/redo"
@@ -93,16 +102,6 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="{md-redo}"
-                android:textColor="@color/colorSecondary"
-                android:textSize="30sp" />
-
-            <com.joanzapata.iconify.widget.IconTextView
-                android:id="@+id/undo"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="{md-undo}"
                 android:textColor="@color/colorSecondary"
                 android:textSize="30sp" />
 
