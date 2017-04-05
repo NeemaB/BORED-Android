@@ -172,7 +172,7 @@ public class DrawerFragment extends PApplet {
                         Log.d(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
                     }
                 }
-                deactivateColourMenu();
+                //deactivateColourMenu();
             }
         };
 
@@ -197,7 +197,7 @@ public class DrawerFragment extends PApplet {
                         Log.d(LOG_TAG, "Sent change pen width command to bluetooth:" + cmd);
                     }
                 }
-                deactivatePenWidthMenu();
+                //deactivatePenWidthMenu();
 
             }
         };
@@ -438,7 +438,6 @@ public class DrawerFragment extends PApplet {
                 /* Handle the press and revert back to our default state */
                 mColourMenu.handlePress(new Point(mouseX, mouseY));
 
-
                 break;
 
             case WIDTH_MENU_ACTIVE:
@@ -488,13 +487,35 @@ public class DrawerFragment extends PApplet {
 
     @Override
     public void mouseReleased() {
+        switch (mState) {
+            case DRAWING:
+                /* Tell NIOS-II to stop drawing */
+                String cmd = Command.createCommand(Command.STOP_DRAWING);
+                mCommandList.add(cmd);
+                if (permissionToDraw) {
+                    BluetoothActivity.writeToBTDevice(cmd);
+                }
+                break;
 
-        /* Tell NIOS-II to stop drawing */
-        String cmd = Command.createCommand(Command.STOP_DRAWING);
-        mCommandList.add(cmd);
-        if (permissionToDraw) {
-            BluetoothActivity.writeToBTDevice(cmd);
+            case COLOUR_MENU_ACTIVE:
+                deactivateColourMenu();
+                //mState = DrawerState.DRAWING;
+                break;
+
+            case WIDTH_MENU_ACTIVE:
+                deactivatePenWidthMenu();
+                //mState = DrawerState.DRAWING;
+                break;
+
+            case TEXT_BOX_ACTIVE:
+
+                break;
+
+            case FILL_ACTIVE:
+
+                break;
         }
+
 
         /* InValidate last location since we don't want to draw a line
          * as soon as the user presses the screen again

@@ -240,7 +240,7 @@ public class CourseNotesFragment extends Fragment {
         }
 
 //        String courseCode = mSharedPrefs.getString("classCodePref", "");
-        ArrayList<String> files = getMatchingStrings(mFilenames, mCourseCode + "/[a-z]+-[0-9]+.bmp");
+        ArrayList<String> files = getMatchingStrings(mFilenames, mCourseCode + "/[a-zA-Z]+-[0-9]+.bmp");
 
         if(files == null){
             return;
