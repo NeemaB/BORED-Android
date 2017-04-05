@@ -465,6 +465,7 @@ public class DrawerFragment extends PApplet {
 
                 /* Tell NIOS II to fill in around the point specified in the parameter list */
                 cmd = Command.createCommand(Command.FILL, params);
+                mCommandList.add(cmd);
                 if (permissionToDraw) {
                     BluetoothActivity.writeToBTDevice(cmd);
                 }
@@ -532,6 +533,12 @@ public class DrawerFragment extends PApplet {
                 case 'R':
                 case 'U':
                     sleepTime = 150;
+                    break;
+                case 'F':
+                    String data = BluetoothActivity.readFromBTDevice();
+                    Log.d("CommandList", data);
+                    assert(data.equals("G"));
+                    sleepTime = 80;
                     break;
                 default:
                     sleepTime = 80;

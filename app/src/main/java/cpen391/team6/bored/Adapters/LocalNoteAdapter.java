@@ -151,7 +151,6 @@ public class LocalNoteAdapter extends ArrayAdapter<LocalNote> {
 
                                 Bundle arguments = new Bundle();
                                 arguments.putString("load_note_path", localNote.getFilePath());
-                                Log.d("CommandList", localNote.getCommandList());
                                 arguments.putString("command_list", localNote.getCommandList());
 
                                 ((MainActivity) context).loadNote(arguments);
