@@ -50,6 +50,8 @@ public class DrawerFragment extends PApplet {
 
     public static String LOG_TAG = "Drawer_Fragment";
 
+    public boolean permissionToDraw = false;
+
     /* Command flags */
     private static int TOAST_CMD = 0;
     private static int UI_CMD = 1;
@@ -165,7 +167,7 @@ public class DrawerFragment extends PApplet {
                             mPenColour.getIndex());
                     mCommandList.add(cmd);
 
-                    if (BoredApplication.isConnectedToBluetooth) {
+                    if (permissionToDraw) {
                         BluetoothActivity.writeToBTDevice(cmd);
                         Log.d(LOG_TAG, "Sent change colour command to bluetooth:" + cmd);
                     }
@@ -190,7 +192,7 @@ public class DrawerFragment extends PApplet {
                             mPenWidth.getSize());
                     mCommandList.add(cmd);
 
-                    if (BoredApplication.isConnectedToBluetooth) {
+                    if (permissionToDraw) {
                         BluetoothActivity.writeToBTDevice(cmd);
                         Log.d(LOG_TAG, "Sent change pen width command to bluetooth:" + cmd);
                     }
@@ -362,7 +364,7 @@ public class DrawerFragment extends PApplet {
                     /* Specify a new point that the NIOS II can draw to */
                     String cmd = Command.createCommand(Command.POINT, params);
                     mCommandList.add(cmd);
-                    if (BoredApplication.isConnectedToBluetooth) {
+                    if (permissionToDraw) {
                         BluetoothActivity.writeToBTDevice(cmd);
                     }
                 }
@@ -420,7 +422,7 @@ public class DrawerFragment extends PApplet {
                 /* Indicate to the NIOS II that we are starting to draw */
                 cmd = Command.createCommand(Command.START_DRAWING, params);
                 mCommandList.add(cmd);
-                if (BoredApplication.isConnectedToBluetooth) {
+                if (permissionToDraw) {
                     BluetoothActivity.writeToBTDevice(cmd);
                 }
 
@@ -463,7 +465,7 @@ public class DrawerFragment extends PApplet {
 
                 /* Tell NIOS II to fill in around the point specified in the parameter list */
                 cmd = Command.createCommand(Command.FILL, params);
-                if (BoredApplication.isConnectedToBluetooth) {
+                if (permissionToDraw) {
                     BluetoothActivity.writeToBTDevice(cmd);
                 }
 
@@ -483,7 +485,7 @@ public class DrawerFragment extends PApplet {
         /* Tell NIOS-II to stop drawing */
         String cmd = Command.createCommand(Command.STOP_DRAWING);
         mCommandList.add(cmd);
-        if (BoredApplication.isConnectedToBluetooth) {
+        if (permissionToDraw) {
             BluetoothActivity.writeToBTDevice(cmd);
         }
 
@@ -500,8 +502,6 @@ public class DrawerFragment extends PApplet {
      * the current drawer, we need to send the pen colour and pen size
      *********************************************************************************************/
     public void initRemoteScreen() {
-
-        // TODO: loop through mCommandList and execute all of the commands
 
         String cmd;
 
@@ -756,7 +756,7 @@ public class DrawerFragment extends PApplet {
                         mCommandList.clear();
 
                         background(255);
-                        if (BoredApplication.isConnectedToBluetooth) {
+                        if (permissionToDraw) {
                             String cmd;
                             cmd = Command.createCommand(Command.CLEAR);
                             BluetoothActivity.writeToBTDevice(cmd);
@@ -830,7 +830,7 @@ public class DrawerFragment extends PApplet {
                 cmd = Command.createCommand(Command.UNDO);
                 mCommandList.add(cmd);
 
-                if (BoredApplication.isConnectedToBluetooth) {
+                if (permissionToDraw) {
                     BluetoothActivity.writeToBTDevice(cmd);
                     Log.d(LOG_TAG, "Sent undo command to device:" + cmd);
                 }
@@ -904,7 +904,7 @@ public class DrawerFragment extends PApplet {
                 cmd = Command.createCommand(Command.REDO);
                 mCommandList.add(cmd);
 
-                if (BoredApplication.isConnectedToBluetooth) {
+                if (permissionToDraw) {
                     BluetoothActivity.writeToBTDevice(cmd);
                     Log.d(LOG_TAG, "Sent redo command to device:" + cmd);
 
@@ -1195,7 +1195,12 @@ public class DrawerFragment extends PApplet {
         image(img, 0, 0);
         sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
 
+        mCommandList.clear();
         mCommandList.addAll(Arrays.asList(commandList.split(" ")));
+
+        if (permissionToDraw) {
+            initRemoteScreen();
+        }
 
     }
 

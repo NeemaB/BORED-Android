@@ -319,11 +319,13 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                                 mDrawer.mState = DrawerFragment.DrawerState.SENDING;
                                 mDrawer.mousePressed();
                                 mDrawer.mState = temp;*/
+                                mDrawer.permissionToDraw = true;
                                 sendMessageToUI("Streaming Permission Acquired ", TOAST_CMD);
                                 sendMessageToUI(R.string.connected_initializing_remote_screen, BLUETOOTH_STATUS_CMD);
                                 mDrawer.initRemoteScreen();
                                 sendMessageToUI(R.string.connected_can_draw_on_NIOS, BLUETOOTH_STATUS_CMD);
                             }else if(cmdString.equals("B")){
+                                mDrawer.permissionToDraw = false;
                                 sendMessageToUI("Streaming Permission Revoked", TOAST_CMD);
                                 sendMessageToUI(R.string.connected_awaiting_permission, BLUETOOTH_STATUS_CMD);
                             }else{
