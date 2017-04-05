@@ -7,6 +7,9 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.storage.Storage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by andytertzakian on 2017-03-30.
  */
@@ -124,6 +127,14 @@ public class CloudStorage {
                 .build();
     }
 
+
+    public List<String> getCourseNotes(String courseCode){
+        List<String> fileNames = new ArrayList<>();
+
+
+
+        return fileNames;
+    }
 
     public String getBucketName()
     {

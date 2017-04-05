@@ -108,7 +108,7 @@ public enum Command {
                  */
                 command = "F";
                 for(int j = 0; j < params.length; j++){
-                    for(int i = 0; i < 3 - params[j].toString().length(); j++){
+                    for(int i = 0; i < 3 - params[j].toString().length(); i++){
                         command += "0";
                     }
                     command += params[j].toString();

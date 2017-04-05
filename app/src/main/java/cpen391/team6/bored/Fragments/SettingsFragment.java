@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
+import cpen391.team6.bored.BoredApplication;
 import cpen391.team6.bored.R;
 
 /**
@@ -37,6 +38,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         if (key.equals("classCodePref")) {
             Preference pref = findPreference(key);
             pref.setSummary(getClassCode());
+            BoredApplication.mCourseNotes = null;
         }
     }
 }
