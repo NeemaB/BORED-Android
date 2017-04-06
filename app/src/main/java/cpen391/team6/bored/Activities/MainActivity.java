@@ -290,7 +290,9 @@ public class MainActivity extends AppCompatActivity {
 
             case CREATE_NOTE_POSITION:
 
-                loadCreateNoteFragment(null);
+                Bundle arguments = new Bundle();
+                arguments.putBoolean("external_note", false);
+                loadCreateNoteFragment(arguments);
 
                 break;
 

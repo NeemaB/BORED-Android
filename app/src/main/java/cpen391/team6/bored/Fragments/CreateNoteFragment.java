@@ -237,6 +237,11 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                     if (myArguments != null) {
                         arguments.putString("load_note_path", myArguments.getString("load_note_path"));
                         arguments.putString("command_list", myArguments.getString("command_list"));
+                        if(myArguments.getBoolean("external_note")){
+                            arguments.putBoolean("external_note", true);
+                        }else{
+                            arguments.putBoolean("external_note", false);
+                        }
                     }
 
                     //pass width and height of screen as arguments to launch animation
@@ -307,6 +312,11 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                         if (myArguments != null) {
                             arguments.putString("load_note_path", myArguments.getString("load_note_path"));
                             arguments.putString("command_list", myArguments.getString("command_list"));
+                            if(myArguments.getBoolean("external_note")){
+                                arguments.putBoolean("external_note", true);
+                            }else{
+                                arguments.putBoolean("external_note", false);
+                            }
                         }
 
 
@@ -321,9 +331,9 @@ public class CreateNoteFragment extends Fragment implements View.OnClickListener
                         arguments.putInt("width", mDrawFrameWidth);
                         arguments.putInt("height", mDrawFrameHeight - mStatusBarHeight);
 
-                        if (myArguments != null) {
-                            arguments.putString("load_note_path", myArguments.getString("load_note_path"));
-                        }
+//                        if (myArguments != null) {
+//                            arguments.putString("load_note_path", myArguments.getString("load_note_path"));
+//                        }
 
                         //TODO: These values are hardcoded so it will be easier to compress the image on the DE1 side,
                         //TODO: Need to find a better work around to accomodate variable screen sizes

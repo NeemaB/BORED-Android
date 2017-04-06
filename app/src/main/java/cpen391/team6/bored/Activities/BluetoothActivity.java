@@ -106,7 +106,7 @@ public class BluetoothActivity extends Activity {
         String s = new String("");
 
         try { // Read from the InputStream using polling and timeout
-            for (int i = 0; i < 200; i++) { // try to read for 2 seconds max
+            for (int i = 0; i < 4; i++) { // try to read for 2 seconds max
                 SystemClock.sleep(10);
                 if (mmInStream != null && mmInStream.available() > 0) {
                     if ((c = (byte) mmInStream.read()) != '\r') // '\r' terminator

@@ -72,6 +72,7 @@ public class DrawerFragment extends PApplet {
     private int mLastLocX;   //Save the last x location of the user's finger
     private int mLastLocY;   //Save the last y location of the user's finger
     private boolean mValid;  //Variable that determines whether the lastLocation is valid
+    private boolean mClearOnInit;
 
     private ColourMenu mColourMenu;
     private PenWidthMenu mPenWidthMenu;
@@ -139,6 +140,7 @@ public class DrawerFragment extends PApplet {
         mPenWidth = PenWidthMenu.PenWidth.SMALL;
         mPenColour = ColourMenu.Colour.BLACK;
         mState = DrawerState.DRAWING;
+        mClearOnInit = true;
 
         if (mCommandList == null) {
             mCommandList = new ArrayList<String>();
@@ -300,6 +302,10 @@ public class DrawerFragment extends PApplet {
 
         if (arguments.getString("command_list") != null) {
             mCommandList.addAll(Arrays.asList(arguments.getString("command_list").split(" ")));
+        }
+
+        if(arguments.getBoolean("external_note")) {
+            mClearOnInit = false;
         }
     }
 
@@ -532,12 +538,15 @@ public class DrawerFragment extends PApplet {
 
     public void initRemoteScreen() {
 
-        String cmd;
+        String cmd = "";
 
         /* Clear the screen on the NIOS II */
-        cmd = Command.createCommand(Command.CLEAR);
 
-        BluetoothActivity.writeToBTDevice(cmd);
+        if(mClearOnInit) {
+            cmd = Command.createCommand(Command.CLEAR);
+
+            BluetoothActivity.writeToBTDevice(cmd);
+        }
         Log.d(LOG_TAG, "Sent clear command to bluetooth:" + cmd);
 
         /* Add delay so that NIOS can process subsequent commands */
@@ -788,6 +797,7 @@ public class DrawerFragment extends PApplet {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
+                        mClearOnInit = true;
                         mUndoListHead = null;
                         mValid = false;
                         mCommandList.clear();
@@ -1227,6 +1237,7 @@ public class DrawerFragment extends PApplet {
 
     public void loadNote(String filePath, String commandList) {
 
+        mClearOnInit = true;
         PImage img = loadImage(filePath);
         image(img, 0, 0);
         sendMessageToUI("Loaded Note Successfully!", TOAST_CMD);
