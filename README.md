@@ -6,8 +6,10 @@
   
 
 BORED is a simple drawing application for android that can be used as a standalone application for note taking
-and doodling or can be coupled with the NIOS II BORED application to facilitate an interactive learning 
-environment where students can answer questions posed by an instructor and vice versa.
+and doodling. 
+
+Alternatively, BORED can be coupled with the NIOS II application to facilitate an interactive learning 
+environment where students can answer questions posed by an instructor using an FPGA connected to a monitor and vice versa.
 
 ## Features
 
