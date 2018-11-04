@@ -29,8 +29,6 @@ environment where students can answer questions posed by an instructor and vice 
 
 </div>
 
-<p align="center" width=400>
-   <img align="left" src="https://github.com/NeemaB/BORED-Android/blob/master/images/image2.png">
-   <img align="left" src="https://github.com/NeemaB/BORED-Android/blob/master/images/image4.png">
- </p>
+<img align="left" src="https://github.com/NeemaB/BORED-Android/blob/master/images/image2.png">
+
 
