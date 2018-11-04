@@ -14,12 +14,9 @@ environment where students can answer questions posed by an instructor and vice 
 <div>
   <img align="right" src="https://github.com/NeemaB/BORED-Android/blob/master/images/image1.png">
 
-
   - Drawing with 3 different pen sizes and 9 different colors
 
-
   - Filling in shapes 
-
 
   - Saving and reloading notes 
   
@@ -28,7 +25,8 @@ environment where students can answer questions posed by an instructor and vice 
   - Loading notes saved from google firebase using a class code 
 
 </div>
-
+<div style="height: 100px;"/>
 <img align="left" src="https://github.com/NeemaB/BORED-Android/blob/master/images/image2.png">
+
 
 
